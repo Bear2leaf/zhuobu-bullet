@@ -35,8 +35,8 @@ async function start(device: Device) {
     await stage.load();
     await audio.load();
     setTimeout(() => {
-        device.sendmessage && device.sendmessage(10);
-    }, 3000);
+        device.sendmessage && device.sendmessage(12);
+    }, 1000);
     stage.onclick = (tag?: string) => {
         audio.play(tag);
     }

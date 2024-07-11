@@ -58,7 +58,7 @@ export default class Stage {
                 }
             });
             if (index === 0) {
-                const geometry = new Plane(gl, {width: 20, height: 2});
+                const geometry = new Plane(gl, { width: 20, height: 2 });
                 const mesh = new Mesh(gl, {
                     geometry,
                     program,
@@ -67,7 +67,7 @@ export default class Stage {
                 mesh.position.y = 20;
                 mesh.setParent(scene);
             } else if (index === 1) {
-                const geometry = new Plane(gl, {width: 20, height: 2});
+                const geometry = new Plane(gl, { width: 20, height: 2 });
                 const mesh = new Mesh(gl, {
                     geometry,
                     program,
@@ -76,7 +76,7 @@ export default class Stage {
                 mesh.position.y = -20;
                 mesh.setParent(scene);
             } else if (index === 2) {
-                const geometry = new Plane(gl, {width: 2, height: 40});
+                const geometry = new Plane(gl, { width: 2, height: 40 });
                 const mesh = new Mesh(gl, {
                     geometry,
                     program,
@@ -85,7 +85,7 @@ export default class Stage {
                 mesh.position.x = 10;
                 mesh.setParent(scene);
             } else if (index === 3) {
-                const geometry = new Plane(gl, {width: 2, height: 40});
+                const geometry = new Plane(gl, { width: 2, height: 40 });
                 const mesh = new Mesh(gl, {
                     geometry,
                     program,
@@ -94,7 +94,7 @@ export default class Stage {
                 mesh.position.x = -10;
                 mesh.setParent(scene);
             } else if (index === 4) {
-                const geometry = new Plane(gl, {width: 20, height: 40});
+                const geometry = new Plane(gl, { width: 20, height: 40 });
                 const mesh = new Mesh(gl, {
                     geometry,
                     program,
@@ -102,7 +102,7 @@ export default class Stage {
                 mesh.position.z = -1;
                 mesh.setParent(scene);
             } else if (index === 5) {
-                const geometry = new Plane(gl, {width: 20, height: 40});
+                const geometry = new Plane(gl, { width: 20, height: 40 });
                 const mesh = new Mesh(gl, {
                     geometry,
                     program,
@@ -143,7 +143,7 @@ export default class Stage {
                 const object = scene.children[index + 6];
                 object.position.fromArray(phyObject.slice(0, 3))
                 object.quaternion.fromArray(phyObject.slice(3, 7))
-            } else {
+            } else if (index < 10) {
                 const program = new Program(this.renderer.gl, {
                     vertex,
                     fragment,
@@ -153,7 +153,47 @@ export default class Stage {
                         }
                     }
                 });
-                const geometry = new Sphere(gl, {radius: 1});
+                const geometry = new Sphere(gl, { radius: 1 });
+                const mesh = new Mesh(gl, {
+                    geometry,
+                    program,
+                });
+                mesh.setParent(scene);
+            } else if (index === 10) {
+                const program = new Program(this.renderer.gl, {
+                    vertex,
+                    fragment,
+                    uniforms: {
+                        uColor: {
+                            value: new Vec3(0., 0., 1.0)
+                        }
+                    }
+                });
+                const geometry = new Box(gl, {
+                    width: 2,
+                    height: 2,
+                    depth: 2
+                });
+                const mesh = new Mesh(gl, {
+                    geometry,
+                    program,
+                });
+                mesh.setParent(scene);
+            } else if (index === 11) {
+                const program = new Program(this.renderer.gl, {
+                    vertex,
+                    fragment,
+                    uniforms: {
+                        uColor: {
+                            value: new Vec3(0.7, 0.8, 1.0)
+                        }
+                    }
+                });
+                const geometry = new Box(gl, {
+                    width: 10,
+                    height: 2,
+                    depth: 2
+                });
                 const mesh = new Mesh(gl, {
                     geometry,
                     program,

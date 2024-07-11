@@ -101,34 +101,70 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     var sphereShape = new Ammo.btSphereShape(1);
 
     function resetPositions() {
-        var side = Math.ceil(NUM / 2);
-        var i = 1;
-        for (var x = 0; x < side; x++) {
-            for (var y = 0; y < side; y++) {
-                if (i == bodies.length) break;
-                var body = bodies[i++];
-                var origin = body.getWorldTransform().getOrigin();
-                origin.setX(side * (Math.random() * 2 - 1));
-                origin.setY(y * (2 + Math.random()));
-                body.activate();
-            }
+        console.log(NUM, NUMRANGE)
+        for (var x = 1; x <= 10; x++) {
+            var body = bodies[x];
+            var origin = body.getWorldTransform().getOrigin();
+            origin.setX(10 * (Math.random() * 2 - 1));
+            origin.setY((4 + Math.random()));
+            body.activate();
         }
     }
 
+    var constraint: Ammo.btHingeConstraint;
     function startUp() {
         NUMRANGE.forEach(function (i) {
-            var startTransform = new Ammo.btTransform();
-            startTransform.setIdentity();
-            var mass = 1;
-            var localInertia = new Ammo.btVector3(0, 0, 0);
-            sphereShape.calculateLocalInertia(mass, localInertia);
+            if (i === 12) {
+                (function () {
+                    var mass = 10;
+                    var paddleTransform = new Ammo.btTransform();
+                    paddleTransform.setIdentity();
+                    paddleTransform.setOrigin(new Ammo.btVector3(0, 0, 0));
+                    var paddleShape = new Ammo.btBoxShape(new Ammo.btVector3(5, 1, 1));
+                    var localInertia = new Ammo.btVector3(0, 0, 0);
+                    paddleShape.calculateLocalInertia(mass, localInertia);
+                    var myMotionState = new Ammo.btDefaultMotionState(paddleTransform);
+                    var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, paddleShape, localInertia);
+                    var body = new Ammo.btRigidBody(rbInfo);
 
-            var myMotionState = new Ammo.btDefaultMotionState(startTransform);
-            var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, sphereShape, localInertia);
-            var body = new Ammo.btRigidBody(rbInfo);
+                    const axisA = new Ammo.btVector3(0, 0, 1);
+                    const axisB = new Ammo.btVector3(0, 0, 1);
+                    const pivotA = new Ammo.btVector3(6, 0, 0);
+                    const pivotB = new Ammo.btVector3(-2, 0, 0);
+                    constraint = new Ammo.btHingeConstraint(body, bodies[11], pivotA, pivotB, axisA, axisB);
+                    constraint.setLimit(Math.PI * 1.5, Math.PI * 2, 0.5, 0.5);
+                    dynamicsWorld.addConstraint(constraint);
+                    dynamicsWorld.addRigidBody(body);
+                    bodies.push(body);
+                })();
+            } else if (i === 11) {
+                (function () {
+                    var mass = 0;
+                    var paddleTransform = new Ammo.btTransform();
+                    paddleTransform.setIdentity();
+                    paddleTransform.setOrigin(new Ammo.btVector3(5, 0, 0));
+                    var paddleShape = new Ammo.btBoxShape(new Ammo.btVector3(1, 1, 1));
+                    var localInertia = new Ammo.btVector3(0, 0, 0);
+                    var myMotionState = new Ammo.btDefaultMotionState(paddleTransform);
+                    var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, paddleShape, localInertia);
+                    var body = new Ammo.btRigidBody(rbInfo);
+                    dynamicsWorld.addRigidBody(body);
+                    bodies.push(body);
+                })();
+            } else {
+                var startTransform = new Ammo.btTransform();
+                startTransform.setIdentity();
+                var mass = 1;
+                var localInertia = new Ammo.btVector3(0, 0, 0);
+                sphereShape.calculateLocalInertia(mass, localInertia);
 
-            dynamicsWorld.addRigidBody(body);
-            bodies.push(body);
+                var myMotionState = new Ammo.btDefaultMotionState(startTransform);
+                var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, sphereShape, localInertia);
+                var body = new Ammo.btRigidBody(rbInfo);
+
+                dynamicsWorld.addRigidBody(body);
+                bodies.push(body);
+            }
         });
 
         resetPositions();
@@ -182,7 +218,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         return false;
     }
     function jump() {
-        const idx = Math.max(1, Math.floor(Math.random() * NUM));
+        const idx = Math.min(Math.max(1, Math.floor(Math.random() * NUM)), 10);
         bodies[idx].applyCentralImpulse(new Ammo.btVector3(0, 10, 0));
     }
     var meanDt = 0, meanDt2 = 0, frame = 1;
@@ -217,7 +253,12 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
         handler.postMessage(data);
 
-        if (timeToRestart()) resetPositions();
+        if (timeToRestart()) {
+            // resetPositions();
+            // constraint.enableAngularMotor(true, Math.PI * 0.5, Math.PI);
+            bodies[12].applyImpulse(new Ammo.btVector3(100, 500, 0), new Ammo.btVector3(5, 0, 0))
+            bodies[12].activate();
+        }
         if (timeToJump()) jump();
     }
 
