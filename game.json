@@ -5,5 +5,5 @@
       "root": "resources"
     }
   ],
-  "workers": "worker"
+  "workers": "dist/worker"
 }

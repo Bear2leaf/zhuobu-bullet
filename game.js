@@ -1,4 +1,4 @@
-import { mainMinigame, start } from "./dist/main";
+import { mainMinigame, start } from "./dist/client/main";
 
 const windowInfo = wx.getWindowInfo();
 
