@@ -151,6 +151,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     }
 
     var nextTimeToRestart = 0;
+    var nextTimeToJump = 0;
     function timeToRestart() { // restart if at least one is inactive - the scene is starting to get boring
         if (nextTimeToRestart) {
             if (Date.now() >= nextTimeToRestart) {
@@ -168,7 +169,22 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         }
         return false;
     }
+    function timeToJump() { // restart if at least one is inactive - the scene is starting to get boring
+        if (nextTimeToJump) {
+            if (Date.now() >= nextTimeToJump) {
+                nextTimeToJump = 0;
+                return true;
+            }
+            return false;
+        }
+        nextTimeToJump = Date.now() + 200; // add another second after first is inactive
 
+        return false;
+    }
+    function jump() {
+        const idx = Math.max(1, Math.floor(Math.random() * NUM));
+        bodies[idx].applyCentralImpulse(new Ammo.btVector3(0, 10, 0));
+    }
     var meanDt = 0, meanDt2 = 0, frame = 1;
 
     function simulate(dt: number) {
@@ -202,6 +218,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         handler.postMessage(data);
 
         if (timeToRestart()) resetPositions();
+        if (timeToJump()) jump();
     }
 
     var interval: number | null = null;
