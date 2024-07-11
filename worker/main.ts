@@ -14,46 +14,103 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     var dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
     dynamicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
 
-    var groundShape = new Ammo.btBoxShape(new Ammo.btVector3(50, 50, 50));
 
     var bodies: Ammo.btRigidBody[] = [];
 
-    var groundTransform = new Ammo.btTransform();
-    groundTransform.setIdentity();
-    groundTransform.setOrigin(new Ammo.btVector3(0, -56, 0));
-
     (function () {
         var mass = 0;
+        var groundTransform = new Ammo.btTransform();
+        groundTransform.setIdentity();
+        groundTransform.setOrigin(new Ammo.btVector3(0, -20, 0));
+        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 1, 0), 0);
         var localInertia = new Ammo.btVector3(0, 0, 0);
         var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
-        var rbInfo = new Ammo.btRigidBodyConstructionInfo(0, myMotionState, groundShape, localInertia);
+        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
         var body = new Ammo.btRigidBody(rbInfo);
 
         dynamicsWorld.addRigidBody(body);
         bodies.push(body);
     })();
+    (function () {
+        var mass = 0;
+        var groundTransform = new Ammo.btTransform();
+        groundTransform.setIdentity();
+        groundTransform.setOrigin(new Ammo.btVector3(0, 20, 0));
+        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, -1, 0), 0);
+        var localInertia = new Ammo.btVector3(0, 0, 0);
+        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
+        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
+        var body = new Ammo.btRigidBody(rbInfo);
 
-    var boxShape = new Ammo.btBoxShape(new Ammo.btVector3(1, 1, 1));
+        dynamicsWorld.addRigidBody(body);
+    })();
+    (function () {
+        var mass = 0;
+        var groundTransform = new Ammo.btTransform();
+        groundTransform.setIdentity();
+        groundTransform.setOrigin(new Ammo.btVector3(-10, 0, 0));
+        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(1, 0, 0), 0);
+        var localInertia = new Ammo.btVector3(0, 0, 0);
+        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
+        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
+        var body = new Ammo.btRigidBody(rbInfo);
+
+        dynamicsWorld.addRigidBody(body);
+    })();
+    (function () {
+        var mass = 0;
+        var groundTransform = new Ammo.btTransform();
+        groundTransform.setIdentity();
+        groundTransform.setOrigin(new Ammo.btVector3(10, 0, 0));
+        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(-1, 0, 0), 0);
+        var localInertia = new Ammo.btVector3(0, 0, 0);
+        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
+        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
+        var body = new Ammo.btRigidBody(rbInfo);
+
+        dynamicsWorld.addRigidBody(body);
+    })();
+    (function () {
+        var mass = 0;
+        var groundTransform = new Ammo.btTransform();
+        groundTransform.setIdentity();
+        groundTransform.setOrigin(new Ammo.btVector3(0, 0, 1));
+        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, -1), 0);
+        var localInertia = new Ammo.btVector3(0, 0, 0);
+        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
+        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
+        var body = new Ammo.btRigidBody(rbInfo);
+
+        dynamicsWorld.addRigidBody(body);
+    })();
+    (function () {
+        var mass = 0;
+        var groundTransform = new Ammo.btTransform();
+        groundTransform.setIdentity();
+        groundTransform.setOrigin(new Ammo.btVector3(0, 0, -1));
+        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
+        var localInertia = new Ammo.btVector3(0, 0, 0);
+        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
+        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
+        var body = new Ammo.btRigidBody(rbInfo);
+
+        dynamicsWorld.addRigidBody(body);
+    })();
+
+
+    var sphereShape = new Ammo.btSphereShape(1);
 
     function resetPositions() {
-        var side = Math.ceil(Math.pow(NUM, 1 / 3));
+        var side = Math.ceil(NUM / 2);
         var i = 1;
         for (var x = 0; x < side; x++) {
             for (var y = 0; y < side; y++) {
-                for (var z = 0; z < side; z++) {
-                    if (i == bodies.length) break;
-                    var body = bodies[i++];
-                    var origin = body.getWorldTransform().getOrigin();
-                    origin.setX((x - side / 2) * (2.2 + Math.random()));
-                    origin.setY(y * (3 + Math.random()));
-                    origin.setZ((z - side / 2) * (2.2 + Math.random()) - side - 3);
-                    body.activate();
-                    var rotation = body.getWorldTransform().getRotation();
-                    rotation.setX(1);
-                    rotation.setY(0);
-                    rotation.setZ(0);
-                    rotation.setW(1);
-                }
+                if (i == bodies.length) break;
+                var body = bodies[i++];
+                var origin = body.getWorldTransform().getOrigin();
+                origin.setX(side * (Math.random() * 2 - 1));
+                origin.setY(y * (2 + Math.random()));
+                body.activate();
             }
         }
     }
@@ -64,10 +121,10 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             startTransform.setIdentity();
             var mass = 1;
             var localInertia = new Ammo.btVector3(0, 0, 0);
-            boxShape.calculateLocalInertia(mass, localInertia);
+            sphereShape.calculateLocalInertia(mass, localInertia);
 
             var myMotionState = new Ammo.btDefaultMotionState(startTransform);
-            var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, boxShape, localInertia);
+            var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, sphereShape, localInertia);
             var body = new Ammo.btRigidBody(rbInfo);
 
             dynamicsWorld.addRigidBody(body);
@@ -116,7 +173,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
     function simulate(dt: number) {
         dt = dt || 1;
-
         dynamicsWorld.stepSimulation(dt, 2);
 
         var alpha;
@@ -162,6 +218,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         var last = Date.now();
         function mainLoop() {
             var now = Date.now();
+            // dynamicsWorld.setGravity(new Ammo.btVector3(Math.sin(now) * 10, Math.cos(now) * 10 ,0))
             simulate(now - last);
             last = now;
         }

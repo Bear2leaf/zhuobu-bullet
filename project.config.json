@@ -2,7 +2,12 @@
   "compileType": "game",
   "libVersion": "3.4.3",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "value": "worker",
+        "type": "folder"
+      }
+    ],
     "include": []
   },
   "setting": {
