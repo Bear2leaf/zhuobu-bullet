@@ -1,0 +1,9 @@
+{
+  "subpackages": [
+    {
+      "name": "resources",
+      "root": "resources"
+    }
+  ],
+  "workers": "worker"
+}

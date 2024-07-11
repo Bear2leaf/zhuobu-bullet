@@ -1,0 +1,21 @@
+{
+  "name": "zhuobu-bullet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/main.ts --target=es2015 --outdir=dist --bundle --format=esm",
+    "dev": "esbuild --sourcemap src/main.ts --outdir=dist --bundle --format=esm --watch  --servedir=.",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ogl": "^1.0.7"
+  },
+  "devDependencies": {
+    "esbuild": "^0.23.0",
+    "minigame-api-typings": "^3.8.4"
+  }
+}
