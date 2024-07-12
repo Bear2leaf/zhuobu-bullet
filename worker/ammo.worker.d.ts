@@ -1,5 +1,7 @@
+import type { MainMessage, WorkerMessage } from "../client/device/Device.js";
+
 export default Ammo;
-declare const config : {
+declare const config: {
     wasmBinary: Uint8Array;
     locateFile: string
 }
@@ -7,8 +9,8 @@ declare const Module: {
     TOTAL_MEMORY: number
 }
 declare const handler: {
-    onmessage: (data: any) => void;
-    postMessage: (data: any) => void;
+    onmessage: (message: MainMessage) => void;
+    postMessage: (message: WorkerMessage) => void;
 }
 export { config, Module, handler }
 declare function Ammo<T>(target?: T): Promise<T & typeof Ammo>;

@@ -1,5 +1,5 @@
 import { Box, Camera, Mesh, Program, Renderer, Transform, Vec3, Plane, Sphere } from "ogl";
-import Device from "./device/Device.js";
+import Device, { WorkerMessage } from "./device/Device.js";
 import UI from "./UI.js";
 
 export default class Stage {
@@ -131,7 +131,7 @@ export default class Stage {
         this.ui.render();
         this.click = "";
     }
-    onMessage(message: any) {
+    onUpdate(message: WorkerMessage & { type: "update" }) {
         const gl = this.renderer.gl;
         const vertex = this.vertex;
         const fragment = this.fragment;

@@ -1,5 +1,5 @@
 import 'minigame-api-typings';
-import Device from "./Device";
+import Device, { MainMessage, WorkerMessage } from "./Device";
 
 
 export default class MinigameDevice implements Device {
@@ -67,12 +67,12 @@ export default class MinigameDevice implements Device {
         if (!this.onmessage) {
             throw new Error("onmessage not set");
         }
-        this.worker.onMessage((data) => this.onmessage && this.onmessage(data))
+        this.worker.onMessage((message) => this.onmessage && this.onmessage(message as unknown as WorkerMessage))
         this.sendmessage = this.worker!.postMessage.bind(this.worker)
     }
     onaccelerometerchange?: ((x: number, y: number, z: number) => void) | undefined;
-    onmessage?: (data: any) => void;
-    sendmessage?: (data: any) => void;
+    onmessage?: (message: WorkerMessage) => void;
+    sendmessage?: (message: MainMessage) => void;
     terminateWorker(): void {
         this.worker?.terminate();
     }

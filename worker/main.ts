@@ -1,5 +1,6 @@
 import { mat4, vec3 } from "gl-matrix";
 import Ammo, { config, Module, handler } from "./ammo.worker.js"
+import { WorkerMessage } from "../client/device/Device.js";
 
 
 
@@ -198,17 +199,13 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         var alpha2 = 1 / frame++;
         meanDt2 = alpha2 * dt + (1 - alpha2) * meanDt2;
 
-        var data: {
-            objects: number[][],
-            currFPS: number,
-            allFPS: number
-        } = { objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
+        var message: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
 
         // Read bullet data into JS objects
         for (var i = 0; i < NUM; i++) {
             var object: number[] = [];
             readBulletObject(i + 1, object);
-            data.objects[i] = object;
+            message.objects[i] = object;
         }
 
         const mState = bodies[12].getMotionState();
@@ -221,38 +218,39 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         transform.setFromOpenGLMatrix([...matrix]);
         mState.setWorldTransform(transform);
         bodies[12].setMotionState(mState)
-        handler.postMessage(data);
+        handler.postMessage(message);
     }
     var gravity = new Ammo.btVector3(0, 0, 0);
     var interval: number | null = null;
-    handler.onmessage = function (data) {
-        if (typeof data === "string") {
-            const g = data.split(",").map(x => parseFloat(x));
+    handler.onmessage = function (message) {
+        if (message.type === "updateGravity") {
+            const g = message.data.split(",").map(x => parseFloat(x));
             gravity.setX(g[0])
             gravity.setY(g[1])
             gravity.setZ(g[2])
             dynamicsWorld.setGravity(gravity);
             return;
+        } else if (message.type === "init") {
+            NUM = message.data;
+            NUMRANGE.length = 0;
+            while (NUMRANGE.length < NUM) NUMRANGE.push(NUMRANGE.length + 1);
+
+            frame = 1;
+            meanDt = meanDt2 = 0;
+
+            startUp();
+
+            var last = Date.now();
+            function mainLoop() {
+                var now = Date.now();
+                // dynamicsWorld.setGravity(new Ammo.btVector3(Math.sin(now) * 10, Math.cos(now) * 10 ,0))
+                simulate(now - last);
+                last = now;
+            }
+
+            if (interval) clearInterval(interval);
+            interval = setInterval(mainLoop, 1000 / 60);
+            handler.postMessage({ type: "ready" });
         }
-        NUM = data;
-        NUMRANGE.length = 0;
-        while (NUMRANGE.length < NUM) NUMRANGE.push(NUMRANGE.length + 1);
-
-        frame = 1;
-        meanDt = meanDt2 = 0;
-
-        startUp();
-
-        var last = Date.now();
-        function mainLoop() {
-            var now = Date.now();
-            // dynamicsWorld.setGravity(new Ammo.btVector3(Math.sin(now) * 10, Math.cos(now) * 10 ,0))
-            simulate(now - last);
-            last = now;
-        }
-
-        if (interval) clearInterval(interval);
-        interval = setInterval(mainLoop, 1000 / 60);
     }
-    handler.postMessage({ isReady: true });
 });

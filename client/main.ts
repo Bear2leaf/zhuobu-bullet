@@ -23,8 +23,20 @@ async function start(device: Device) {
     const stage = new Stage(device);
     device.onmessage = (message) => {
         // console.log("message from worker", message);
-        if (message.allFPS) {
-            stage.onMessage(message);
+        if (message.type === "update") {
+            stage.onUpdate(message);
+        } else if (message.type === "ready") {
+
+            device.onaccelerometerchange = (x, y, z) => {
+
+                device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${x * 10},${y * 10},${z * 10}` });
+            }
+            requestAnimationFrame((t) => {
+                last = startTime = t;
+                audio.initAudio();
+                stage.start();
+                update(t);
+            });
         }
     };
     device.createWorker("dist/worker/main.js");
@@ -34,22 +46,13 @@ async function start(device: Device) {
     let last = 0;
     await stage.load();
     await audio.load();
-    setTimeout(() => {
-        device.sendmessage && device.sendmessage(12);
-    }, 1000);
-    device.onaccelerometerchange = (x, y, z) => {
-
-        device.sendmessage && device.sendmessage(`${x * 10},${y * 10},${z * 10}`);
-    }
+    device.sendmessage && device.sendmessage({
+        type: "init",
+        data: 12
+    })
     stage.onclick = (tag?: string) => {
         audio.play(tag);
     }
-    requestAnimationFrame((t) => {
-        last = startTime = t;
-        audio.initAudio();
-        stage.start();
-        update(t);
-    });
     function update(t: number) {
         delta = (t - last) / 1000;
         last = t;

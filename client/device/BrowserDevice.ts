@@ -1,4 +1,4 @@
-import Device from "./Device";
+import Device, { MainMessage, WorkerMessage } from "./Device";
 export default class BrowserDevice implements Device {
     private worker?: Worker;
     private isMouseDown: boolean;
@@ -39,8 +39,8 @@ export default class BrowserDevice implements Device {
         this.sendmessage = this.worker!.postMessage.bind(this.worker)
     }
     onaccelerometerchange?: ((x: number, y: number, z: number) => void) | undefined;
-    onmessage?: (data: any) => void;
-    sendmessage?: (data: any) => void;
+    onmessage?: (message: WorkerMessage) => void;
+    sendmessage?: (message: MainMessage) => void;
     terminateWorker(): void {
         this.worker?.terminate();
     }

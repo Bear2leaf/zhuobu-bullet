@@ -1,10 +1,24 @@
 
-export type MainMessage = any;
-export type WorkerMessage = any;
+export type MainMessage = {
+  type: "init"
+  data: number
+} | {
+  type: "updateGravity",
+  data: string
+}
+export type WorkerMessage = {
+  type: "worker"
+  data: number[]
+} | {
+  type: "update",
+  objects: number[][], allFPS: number, currFPS: number
+} | {
+  type: "ready",
+}
 export default interface Device {
-  sendmessage?: (data: MainMessage) => void;
+  sendmessage?: (message: MainMessage) => void;
   onaccelerometerchange?: (x: number, y: number, z: number) => void;
-  onmessage?: (data: WorkerMessage) => void;
+  onmessage?: (message: WorkerMessage) => void;
   createWorker(url: string): void;
   terminateWorker(): void;
   getCanvasGL(): HTMLCanvasElement;
