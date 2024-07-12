@@ -181,6 +181,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         object[6] = rotation.w();
     }
 
+    const matrix = mat4.create();
     var meanDt = 0, meanDt2 = 0, frame = 1;
     function simulate(dt: number) {
         dt = dt || 1;
@@ -211,9 +212,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         }
 
         const mState = bodies[12].getMotionState();
-        const transform = new Ammo.btTransform();
-        mState.getWorldTransform(transform);
-        const matrix = mat4.create();
+        mat4.identity(matrix);
         mat4.translate(matrix, matrix, vec3.fromValues(5, 0, 0));
         const angle = Math.sin(((frame * 4) % 120) / 60 * Math.PI) * Math.PI * 0.25;
 
@@ -224,12 +223,15 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         bodies[12].setMotionState(mState)
         handler.postMessage(data);
     }
-
+    var gravity = new Ammo.btVector3(0, 0, 0);
     var interval: number | null = null;
     handler.onmessage = function (data) {
         if (typeof data === "string") {
-            const gravity = data.split(",").map(x => parseFloat(x));
-            dynamicsWorld.setGravity(new Ammo.btVector3(gravity[0], gravity[1], gravity[2]));
+            const g = data.split(",").map(x => parseFloat(x));
+            gravity.setX(g[0])
+            gravity.setY(g[1])
+            gravity.setZ(g[2])
+            dynamicsWorld.setGravity(gravity);
             return;
         }
         NUM = data;
