@@ -1,3 +1,4 @@
+import { mat4, vec3 } from "gl-matrix";
 import Ammo, { config, Module, handler } from "./ammo.worker.js"
 
 
@@ -110,13 +111,13 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             body.activate();
         }
     }
-
-    var constraint: Ammo.btHingeConstraint;
+    const DISABLE_DEACTIVATION = 4;
+    const CF_KINEMATIC_OBJECT = 2;
     function startUp() {
         NUMRANGE.forEach(function (i) {
             if (i === 12) {
                 (function () {
-                    var mass = 10;
+                    var mass = 0;
                     var paddleTransform = new Ammo.btTransform();
                     paddleTransform.setIdentity();
                     paddleTransform.setOrigin(new Ammo.btVector3(0, 0, 0));
@@ -126,14 +127,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                     var myMotionState = new Ammo.btDefaultMotionState(paddleTransform);
                     var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, paddleShape, localInertia);
                     var body = new Ammo.btRigidBody(rbInfo);
-
-                    const axisA = new Ammo.btVector3(0, 0, 1);
-                    const axisB = new Ammo.btVector3(0, 0, 1);
-                    const pivotA = new Ammo.btVector3(6, 0, 0);
-                    const pivotB = new Ammo.btVector3(-2, 0, 0);
-                    constraint = new Ammo.btHingeConstraint(body, bodies[11], pivotA, pivotB, axisA, axisB);
-                    constraint.setLimit(Math.PI * 1.5, Math.PI * 2, 0.5, 0.5);
-                    dynamicsWorld.addConstraint(constraint);
+                    body.setCollisionFlags(body.getCollisionFlags() | CF_KINEMATIC_OBJECT)
+                    body.setActivationState(DISABLE_DEACTIVATION);
                     dynamicsWorld.addRigidBody(body);
                     bodies.push(body);
                 })();
@@ -142,7 +137,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                     var mass = 0;
                     var paddleTransform = new Ammo.btTransform();
                     paddleTransform.setIdentity();
-                    paddleTransform.setOrigin(new Ammo.btVector3(5, 0, 0));
+                    paddleTransform.setOrigin(new Ammo.btVector3(6, 0, 0));
                     var paddleShape = new Ammo.btBoxShape(new Ammo.btVector3(1, 1, 1));
                     var localInertia = new Ammo.btVector3(0, 0, 0);
                     var myMotionState = new Ammo.btDefaultMotionState(paddleTransform);
@@ -222,7 +217,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         bodies[idx].applyCentralImpulse(new Ammo.btVector3(0, 10, 0));
     }
     var meanDt = 0, meanDt2 = 0, frame = 1;
-
     function simulate(dt: number) {
         dt = dt || 1;
         dynamicsWorld.stepSimulation(dt, 2);
@@ -251,13 +245,22 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             data.objects[i] = object;
         }
 
-        handler.postMessage(data);
+        const mState = bodies[12].getMotionState();
+        const transform = new Ammo.btTransform();
+        mState.getWorldTransform(transform);
+        const matrix = mat4.create();
+        mat4.translate(matrix, matrix, vec3.fromValues(5, 0, 0));
+        const angle = Math.sin(((frame * 4) % 120) / 60 * Math.PI) * Math.PI * 0.25;
 
+        mat4.rotateZ(matrix, matrix, angle);
+        mat4.translate(matrix, matrix, vec3.fromValues(-5, 0, 0));
+        transform.setFromOpenGLMatrix([...matrix]);
+        mState.setWorldTransform(transform);
+        bodies[12].setMotionState(mState)
+        handler.postMessage(data);
         if (timeToRestart()) {
             // resetPositions();
             // constraint.enableAngularMotor(true, Math.PI * 0.5, Math.PI);
-            bodies[12].applyImpulse(new Ammo.btVector3(100, 500, 0), new Ammo.btVector3(5, 0, 0))
-            bodies[12].activate();
         }
         if (timeToJump()) jump();
     }
