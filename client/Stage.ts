@@ -1,4 +1,4 @@
-import { Box, Camera, Mesh, Program, Renderer, Transform, Vec3, Plane, Sphere } from "ogl";
+import { Box, Camera, Mesh, Program, Renderer, Transform, Vec3, Plane, Sphere, GLTF, GLTFLoader, AttributeData, Orbit } from "ogl";
 import Device, { BodyId } from "./device/Device.js";
 import { WorkerMessage } from "../worker/ammo.worker.js";
 import UI from "./UI.js";
@@ -7,7 +7,9 @@ export default class Stage {
     private readonly renderer: Renderer;
     private readonly scene: Transform;
     private readonly camera: Camera;
-    private readonly ui: UI
+    private readonly ui: UI;
+    private readonly control: Orbit;
+    private gltf?: GLTF;
     private fragment: string = "";
     private vertex: string = "";
     private started = false;
@@ -29,6 +31,7 @@ export default class Stage {
         renderer.setSize(width, height);
         this.scene = new Transform();
         this.ui = new UI(renderer);
+        this.control = new Orbit(camera);
     }
     setBorder(halfWidth: number, halfHeight: number, halfDepth: number) {
         this.halfWidth = halfWidth;
@@ -40,10 +43,26 @@ export default class Stage {
         this.vertex = await (await fetch("resources/glsl/simple.vert.sk")).text();
         this.fragment = await (await fetch("resources/glsl/simple.frag.sk")).text();
         await this.ui.load();
+
+        this.gltf = await GLTFLoader.load(this.renderer.gl, `resources/gltf/Demo.glb`);
+        console.log(this.gltf)
     }
+    onAddMesh?: (vertices: number[], indices: number[]) => void;
     start() {
         const scene = this.scene;
-        scene.scale.multiply(0.01)
+        scene.scale.multiply(0.01);
+        const gltf = this.gltf;
+        if (gltf) {
+            gltf.meshes.forEach(mesh => {
+                mesh.primitives.forEach(primitive => {
+                    primitive.setParent(gltf.scene[0])
+                    const attributeData = primitive.geometry.getPosition().data;
+                    const indices = primitive.geometry.attributes.index.data as AttributeData;
+                    attributeData && this.onAddMesh && this.onAddMesh([...attributeData], [...indices]);
+                })
+            });
+            gltf.scene[0].setParent(scene);
+        }
         {
             this.ui.init();
             this.ui.onclick = (tag) => {
@@ -66,7 +85,7 @@ export default class Stage {
             return;
         }
 
-
+        this.control.update();
         this.renderer.render({ scene: this.scene, camera: this.camera });
         this.ui.render();
         this.click = "";
@@ -78,11 +97,11 @@ export default class Stage {
         const scene = this.scene;
         this.ui.updateText(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
         for (let index = 0; index < message.objects.length; index++) {
-            if (scene.children[index]) {
+            const child = scene.children[index];
+            if (child) {
                 const phyObject = message.objects[index];
-                const object = scene.children[index];
-                object.position.fromArray(phyObject.slice(0, 3))
-                object.quaternion.fromArray(phyObject.slice(3, 7))
+                child.position.fromArray(phyObject.slice(0, 3))
+                child.quaternion.fromArray(phyObject.slice(3, 7))
             } else {
                 const id = message.objects[index][7];
                 const program = new Program(this.renderer.gl, {

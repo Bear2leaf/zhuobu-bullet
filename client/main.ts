@@ -21,6 +21,12 @@ async function start(device: Device) {
     const audio = new AudioManager(device);
     audio.initAudioContext();
     const stage = new Stage(device);
+    stage.onAddMesh = (vertices, indices) => {
+        device.sendmessage && device.sendmessage({
+            type: "addMesh",
+            data: {vertices: [...vertices], indices: [...indices]}
+        })
+    }
     device.onmessage = (message) => {
         // console.log("message from worker", message);
         if (message.type === "update") {

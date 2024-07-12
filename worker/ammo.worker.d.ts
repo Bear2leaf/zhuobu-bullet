@@ -14,6 +14,9 @@ declare const handler: {
 export type MainMessage = {
     type: "updateGravity"
     data: string
+} | {
+    type: "addMesh",
+    data: {vertices: number[], indices: number[]}
 };
 export type WorkerMessage = {
     type: "update"

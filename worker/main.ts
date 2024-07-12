@@ -26,7 +26,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
 
     var bodies: Ammo.btRigidBody[] = [];
-    for (let index = 0; index < 6; index++) {
+    for (let index = 1; index <= 6; index++) {
         const width = BodyId.WallRight === index ? halfWidth : (BodyId.WallLeft === index ? -halfWidth : 0);
         const height = BodyId.WallTop === index ? halfHeight : (BodyId.WallBottom === index ? -halfHeight : 0);
         const depth = BodyId.WallBack === index ? halfDepth : (BodyId.WallFront === index ? -halfDepth : 0);
@@ -65,7 +65,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         bodies.push(body);
     })();
 
-
     var transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
 
     function readBulletObject(i: number, object: number[]) {
@@ -82,9 +81,11 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         object[6] = rotation.w();
         object[7] = i;
     }
-
     var gravity = new Ammo.btVector3(0, 0, 0);
     var interval: number | null = null;
+    var vertex0 = new Ammo.btVector3;
+    var vertex1 = new Ammo.btVector3;
+    var vertex2 = new Ammo.btVector3;
     function messageHandler(message: MainMessage) {
         if (message.type === "updateGravity") {
             const g = message.data.split(",").map(x => parseFloat(x));
@@ -92,6 +93,36 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             gravity.setY(g[1])
             gravity.setZ(g[2])
             dynamicsWorld.setGravity(gravity);
+            return;
+        } else if (message.type === "addMesh") {
+            var startTransform = new Ammo.btTransform();
+            startTransform.setIdentity();
+            var mass = 0;
+            var localInertia = new Ammo.btVector3(0, 0, 0);
+            const mesh = new Ammo.btTriangleMesh();
+            const vertices = message.data.vertices;
+            const indices = message.data.indices;
+            const newVertices: number[] = [];
+            for (let index = 0; index < indices.length; index++) {
+                const i = indices[index];
+                newVertices.push(vertices[i * 3 + 0], vertices[i * 3 + 1], vertices[i * 3 + 2])
+            }
+            for (let i = 0; i < newVertices.length / 9; i++) {
+                vertex0.setValue(newVertices[i * 9 + 0], newVertices[i * 9 + 1], newVertices[i * 9 + 2]);
+                vertex1.setValue(newVertices[i * 9 + 3], newVertices[i * 9 + 4], newVertices[i * 9 + 5]);
+                vertex2.setValue(newVertices[i * 9 + 6], newVertices[i * 9 + 7], newVertices[i * 9 + 8]);
+                mesh.addTriangle(
+                    vertex0, vertex1, vertex2
+                )
+            }
+
+            var shape = new Ammo.btBvhTriangleMeshShape(mesh, true);
+
+            var myMotionState = new Ammo.btDefaultMotionState(startTransform);
+            var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
+            var body = new Ammo.btRigidBody(rbInfo);
+            dynamicsWorld.addRigidBody(body);
+            bodies.unshift(body);
             return;
         }
     }
@@ -104,7 +135,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             message = handler.messageQueue.pop();
         }
         dt = dt || 1;
-        dynamicsWorld.stepSimulation(dt, 2);
+        dynamicsWorld.stepSimulation(dt);
 
         var alpha;
         if (meanDt > 0) {
