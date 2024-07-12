@@ -1,6 +1,7 @@
 import { mat4, vec3 } from "gl-matrix";
 import Ammo, { config, Module, handler, MainMessage } from "./ammo.worker.js"
 import { WorkerMessage } from "./ammo.worker.js";
+import { BodyId } from "../client/device/Device.js";
 
 handler.onmessage = function (message) {
     this.messageQueue.push(message)
@@ -25,14 +26,18 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
 
     var bodies: Ammo.btRigidBody[] = [];
-
-    (function () {
+    for (let index = 0; index < 6; index++) {
+        const width = BodyId.WallRight === index ? halfWidth : (BodyId.WallLeft === index ? -halfWidth : 0);
+        const height = BodyId.WallTop === index ? halfHeight : (BodyId.WallBottom === index ? -halfHeight : 0);
+        const depth = BodyId.WallBack === index ? halfDepth : (BodyId.WallFront === index ? -halfDepth : 0);
+        const y = BodyId.WallLeft === index ? Math.PI / 2 : (BodyId.WallRight === index ? -Math.PI / 2 : 0);
+        const x = BodyId.WallTop === index ? Math.PI / 2 : (BodyId.WallBottom === index ? -Math.PI / 2 : (BodyId.WallBack === index ? Math.PI : 0));
         var mass = 0;
         var groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(0, halfHeight, 0));
+        groundTransform.setOrigin(new Ammo.btVector3(width, height, depth));
         const quat = new Ammo.btQuaternion(0, 0, 0, 0);
-        quat.setEulerZYX(0, 0, Math.PI / 2)
+        quat.setEulerZYX(0, y, x)
         groundTransform.setRotation(quat)
         var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
         var localInertia = new Ammo.btVector3(0, 0, 0);
@@ -42,89 +47,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
         dynamicsWorld.addRigidBody(body);
         bodies.push(body);
-    })();
-    (function () {
-        var mass = 0;
-        var groundTransform = new Ammo.btTransform();
-        groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(0, -halfHeight, 0));
-        const quat = new Ammo.btQuaternion(0, 0, 0, 0);
-        quat.setEulerZYX(0, 0, -Math.PI / 2)
-        groundTransform.setRotation(quat)
-        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
-        var localInertia = new Ammo.btVector3(0, 0, 0);
-        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
-        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
-        var body = new Ammo.btRigidBody(rbInfo);
-
-        dynamicsWorld.addRigidBody(body);
-        bodies.push(body);
-    })();
-    (function () {
-        var mass = 0;
-        var groundTransform = new Ammo.btTransform();
-        groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(-halfWidth, 0, 0));
-        const quat = new Ammo.btQuaternion(0, 0, 0, 0);
-        quat.setEulerZYX(0, Math.PI / 2, 0)
-        groundTransform.setRotation(quat)
-        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
-        var localInertia = new Ammo.btVector3(0, 0, 0);
-        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
-        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
-        var body = new Ammo.btRigidBody(rbInfo);
-
-        dynamicsWorld.addRigidBody(body);
-        bodies.push(body);
-    })();
-    (function () {
-        var mass = 0;
-        var groundTransform = new Ammo.btTransform();
-        groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(halfWidth, 0, 0));
-        const quat = new Ammo.btQuaternion(0, 0, 0, 0);
-        quat.setEulerZYX(0, -Math.PI / 2, 0)
-        groundTransform.setRotation(quat)
-        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
-        var localInertia = new Ammo.btVector3(0, 0, 0);
-        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
-        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
-        var body = new Ammo.btRigidBody(rbInfo);
-
-        dynamicsWorld.addRigidBody(body);
-        bodies.push(body);
-    })();
-    (function () {
-        var mass = 0;
-        var groundTransform = new Ammo.btTransform();
-        groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(0, 0, -halfDepth));
-        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
-        var localInertia = new Ammo.btVector3(0, 0, 0);
-        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
-        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
-        var body = new Ammo.btRigidBody(rbInfo);
-
-        dynamicsWorld.addRigidBody(body);
-        bodies.push(body);
-    })();
-    (function () {
-        var mass = 0;
-        var groundTransform = new Ammo.btTransform();
-        groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(0, 0, halfDepth));
-        const quat = new Ammo.btQuaternion(0, 0, 0, 0);
-        quat.setEulerZYX(0, 0, Math.PI)
-        groundTransform.setRotation(quat)
-        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
-        var localInertia = new Ammo.btVector3(0, 0, 0);
-        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
-        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
-        var body = new Ammo.btRigidBody(rbInfo);
-
-        dynamicsWorld.addRigidBody(body);
-        bodies.push(body);
-    })();
+    }
     (function () {
 
         var startTransform = new Ammo.btTransform();
@@ -214,7 +137,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         // mState.setWorldTransform(transform);
         // bodies[12].setMotionState(mState)
         handler.postMessage(result);
-        
+
     }
 
     frame = 1;
