@@ -1,19 +1,13 @@
+import { MainMessage, WorkerMessage } from "../../worker/ammo.worker.js"
 
-export type MainMessage = {
-  type: "init"
-  data: number
-} | {
-  type: "updateGravity",
-  data: string
-}
-export type WorkerMessage = {
-  type: "worker"
-  data: number[]
-} | {
-  type: "update",
-  objects: number[][], allFPS: number, currFPS: number
-} | {
-  type: "ready",
+export enum BodyId {
+  WallTop,
+  WallBottom,
+  WallLeft,
+  WallRight,
+  WallBack,
+  WallFront,
+  Ball,
 }
 export default interface Device {
   sendmessage?: (message: MainMessage) => void;

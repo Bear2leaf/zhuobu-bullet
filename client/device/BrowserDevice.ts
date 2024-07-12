@@ -1,4 +1,6 @@
-import Device, { MainMessage, WorkerMessage } from "./Device";
+import Device from "./Device";
+import { WorkerMessage } from "../../worker/ammo.worker";
+import { MainMessage } from "../../worker/ammo.worker";
 export default class BrowserDevice implements Device {
     private worker?: Worker;
     private isMouseDown: boolean;

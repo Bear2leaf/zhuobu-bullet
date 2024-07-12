@@ -48,7 +48,6 @@ async function start(device: Device) {
     await audio.load();
     device.sendmessage && device.sendmessage({
         type: "init",
-        data: 12
     })
     stage.onclick = (tag?: string) => {
         audio.play(tag);

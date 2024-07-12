@@ -1,4 +1,4 @@
-import type { MainMessage, WorkerMessage } from "../client/device/Device.js";
+import { BodyId } from "../client/device/Device.js";
 
 export default Ammo;
 declare const config: {
@@ -12,6 +12,20 @@ declare const handler: {
     onmessage: (message: MainMessage) => void;
     postMessage: (message: WorkerMessage) => void;
 }
+export type MainMessage = {
+    type: "init"
+} | {
+    type: "updateGravity"
+    data: string
+};
+export type WorkerMessage = {
+    type: "update"
+    objects: [number, number, number, number, number, number, number, BodyId][]; allFPS: number; currFPS: number
+} | {
+    type: "ready"
+}
+
+
 export { config, Module, handler }
 declare function Ammo<T>(target?: T): Promise<T & typeof Ammo>;
 declare module Ammo {
