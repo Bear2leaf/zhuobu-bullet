@@ -37,6 +37,10 @@ async function start(device: Device) {
     setTimeout(() => {
         device.sendmessage && device.sendmessage(12);
     }, 1000);
+    device.onaccelerometerchange = (x, y, z) => {
+
+        device.sendmessage && device.sendmessage(`${x * 10},${y * 10},${z * 10}`);
+    }
     stage.onclick = (tag?: string) => {
         audio.play(tag);
     }

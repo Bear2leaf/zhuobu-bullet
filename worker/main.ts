@@ -181,41 +181,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         object[6] = rotation.w();
     }
 
-    var nextTimeToRestart = 0;
-    var nextTimeToJump = 0;
-    function timeToRestart() { // restart if at least one is inactive - the scene is starting to get boring
-        if (nextTimeToRestart) {
-            if (Date.now() >= nextTimeToRestart) {
-                nextTimeToRestart = 0;
-                return true;
-            }
-            return false;
-        }
-        for (var i = 1; i <= NUM; i++) {
-            var body = bodies[i];
-            if (!body.isActive()) {
-                nextTimeToRestart = Date.now() + 1000; // add another second after first is inactive
-                break;
-            }
-        }
-        return false;
-    }
-    function timeToJump() { // restart if at least one is inactive - the scene is starting to get boring
-        if (nextTimeToJump) {
-            if (Date.now() >= nextTimeToJump) {
-                nextTimeToJump = 0;
-                return true;
-            }
-            return false;
-        }
-        nextTimeToJump = Date.now() + 200; // add another second after first is inactive
-
-        return false;
-    }
-    function jump() {
-        const idx = Math.min(Math.max(1, Math.floor(Math.random() * NUM)), 10);
-        bodies[idx].applyCentralImpulse(new Ammo.btVector3(0, 10, 0));
-    }
     var meanDt = 0, meanDt2 = 0, frame = 1;
     function simulate(dt: number) {
         dt = dt || 1;
@@ -258,15 +223,15 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         mState.setWorldTransform(transform);
         bodies[12].setMotionState(mState)
         handler.postMessage(data);
-        if (timeToRestart()) {
-            // resetPositions();
-            // constraint.enableAngularMotor(true, Math.PI * 0.5, Math.PI);
-        }
-        if (timeToJump()) jump();
     }
 
     var interval: number | null = null;
     handler.onmessage = function (data) {
+        if (typeof data === "string") {
+            const gravity = data.split(",").map(x => parseFloat(x));
+            dynamicsWorld.setGravity(new Ammo.btVector3(gravity[0], gravity[1], gravity[2]));
+            return;
+        }
         NUM = data;
         NUMRANGE.length = 0;
         while (NUMRANGE.length < NUM) NUMRANGE.push(NUMRANGE.length + 1);

@@ -38,6 +38,7 @@ export default class BrowserDevice implements Device {
         this.worker.onmessage = (e: MessageEvent) => this.onmessage && this.onmessage(e.data);
         this.sendmessage = this.worker!.postMessage.bind(this.worker)
     }
+    onaccelerometerchange?: ((x: number, y: number, z: number) => void) | undefined;
     onmessage?: (data: any) => void;
     sendmessage?: (data: any) => void;
     terminateWorker(): void {

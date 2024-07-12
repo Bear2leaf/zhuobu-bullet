@@ -3,6 +3,7 @@ export type MainMessage = any;
 export type WorkerMessage = any;
 export default interface Device {
   sendmessage?: (data: MainMessage) => void;
+  onaccelerometerchange?: (x: number, y: number, z: number) => void;
   onmessage?: (data: WorkerMessage) => void;
   createWorker(url: string): void;
   terminateWorker(): void;

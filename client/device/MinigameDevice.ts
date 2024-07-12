@@ -19,7 +19,15 @@ export default class MinigameDevice implements Device {
 
         GameGlobal.performance = {
             now: () => this.now()
-        }
+        };
+        wx.onAccelerometerChange((result) => {
+            if (this.onaccelerometerchange) {
+                const { x, y, z } = result;
+
+                this.onaccelerometerchange(x, y, z);
+            }
+        })
+        wx.startAccelerometer();
     }
     getCanvasGL(): HTMLCanvasElement {
         return this.canvasGL as unknown as HTMLCanvasElement;
@@ -62,6 +70,7 @@ export default class MinigameDevice implements Device {
         this.worker.onMessage((data) => this.onmessage && this.onmessage(data))
         this.sendmessage = this.worker!.postMessage.bind(this.worker)
     }
+    onaccelerometerchange?: ((x: number, y: number, z: number) => void) | undefined;
     onmessage?: (data: any) => void;
     sendmessage?: (data: any) => void;
     terminateWorker(): void {
