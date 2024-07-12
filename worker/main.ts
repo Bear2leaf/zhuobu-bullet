@@ -1,9 +1,14 @@
 import { mat4, vec3 } from "gl-matrix";
-import Ammo, { config, Module, handler } from "./ammo.worker.js"
+import Ammo, { config, Module, handler, MainMessage } from "./ammo.worker.js"
 import { WorkerMessage } from "./ammo.worker.js";
-import { BodyId } from "../client/device/Device.js";
 
+handler.onmessage = function (message) {
+    this.messageQueue.push(message)
+}
 
+const halfWidth = 10;
+const halfHeight = 20;
+const halfDepth = 1;
 
 Ammo.bind(Module)(config).then(function (Ammo) {
 
@@ -25,7 +30,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         var mass = 0;
         var groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(0, 20, 0));
+        groundTransform.setOrigin(new Ammo.btVector3(0, halfHeight, 0));
         const quat = new Ammo.btQuaternion(0, 0, 0, 0);
         quat.setEulerZYX(0, 0, Math.PI / 2)
         groundTransform.setRotation(quat)
@@ -42,7 +47,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         var mass = 0;
         var groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(0, -20, 0));
+        groundTransform.setOrigin(new Ammo.btVector3(0, -halfHeight, 0));
         const quat = new Ammo.btQuaternion(0, 0, 0, 0);
         quat.setEulerZYX(0, 0, -Math.PI / 2)
         groundTransform.setRotation(quat)
@@ -59,7 +64,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         var mass = 0;
         var groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(-10, 0, 0));
+        groundTransform.setOrigin(new Ammo.btVector3(-halfWidth, 0, 0));
         const quat = new Ammo.btQuaternion(0, 0, 0, 0);
         quat.setEulerZYX(0, Math.PI / 2, 0)
         groundTransform.setRotation(quat)
@@ -76,7 +81,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         var mass = 0;
         var groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(10, 0, 0));
+        groundTransform.setOrigin(new Ammo.btVector3(halfWidth, 0, 0));
         const quat = new Ammo.btQuaternion(0, 0, 0, 0);
         quat.setEulerZYX(0, -Math.PI / 2, 0)
         groundTransform.setRotation(quat)
@@ -93,7 +98,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         var mass = 0;
         var groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(0, 0, -1));
+        groundTransform.setOrigin(new Ammo.btVector3(0, 0, -halfDepth));
         var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
         var localInertia = new Ammo.btVector3(0, 0, 0);
         var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
@@ -107,7 +112,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         var mass = 0;
         var groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(0, 0, 1));
+        groundTransform.setOrigin(new Ammo.btVector3(0, 0, halfDepth));
         const quat = new Ammo.btQuaternion(0, 0, 0, 0);
         quat.setEulerZYX(0, 0, Math.PI)
         groundTransform.setRotation(quat)
@@ -138,54 +143,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     })();
 
 
-
-    function resetPositions() {
-        for (var x = 0; x <= bodies.length; x++) {
-            var body = bodies[x];
-            var origin = body.getWorldTransform().getOrigin();
-            origin.setX(10 * (Math.random() * 2 - 1));
-            origin.setY((4 + Math.random()));
-            body.activate();
-        }
-    }
-    function startUp(i: BodyId) {
-        // if (i === 12) {
-        //     (function () {
-        //         var mass = 0;
-        //         var paddleTransform = new Ammo.btTransform();
-        //         paddleTransform.setIdentity();
-        //         paddleTransform.setOrigin(new Ammo.btVector3(0, 0, 0));
-        //         var paddleShape = new Ammo.btBoxShape(new Ammo.btVector3(5, 1, 1));
-        //         var localInertia = new Ammo.btVector3(0, 0, 0);
-        //         paddleShape.calculateLocalInertia(mass, localInertia);
-        //         var myMotionState = new Ammo.btDefaultMotionState(paddleTransform);
-        //         var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, paddleShape, localInertia);
-        //         var body = new Ammo.btRigidBody(rbInfo);
-        //         body.setCollisionFlags(body.getCollisionFlags() | CF_KINEMATIC_OBJECT)
-        //         body.setActivationState(DISABLE_DEACTIVATION);
-        //         dynamicsWorld.addRigidBody(body);
-        //         bodies.push(body);
-        //     })();
-        // } else if (i === 11) {
-        //     (function () {
-        //         var mass = 0;
-        //         var paddleTransform = new Ammo.btTransform();
-        //         paddleTransform.setIdentity();
-        //         paddleTransform.setOrigin(new Ammo.btVector3(6, 0, 0));
-        //         var paddleShape = new Ammo.btBoxShape(new Ammo.btVector3(1, 1, 1));
-        //         var localInertia = new Ammo.btVector3(0, 0, 0);
-        //         var myMotionState = new Ammo.btDefaultMotionState(paddleTransform);
-        //         var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, paddleShape, localInertia);
-        //         var body = new Ammo.btRigidBody(rbInfo);
-        //         dynamicsWorld.addRigidBody(body);
-        //         bodies.push(body);
-        //     })();
-        // } else {
-        // }
-
-        resetPositions();
-    }
-
     var transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
 
     function readBulletObject(i: number, object: number[]) {
@@ -203,9 +160,26 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         object[7] = i;
     }
 
+    var gravity = new Ammo.btVector3(0, 0, 0);
+    var interval: number | null = null;
+    function messageHandler(message: MainMessage) {
+        if (message.type === "updateGravity") {
+            const g = message.data.split(",").map(x => parseFloat(x));
+            gravity.setX(g[0])
+            gravity.setY(g[1])
+            gravity.setZ(g[2])
+            dynamicsWorld.setGravity(gravity);
+            return;
+        }
+    }
     const matrix = mat4.create();
     var meanDt = 0, meanDt2 = 0, frame = 1;
     function simulate(dt: number) {
+        let message = handler.messageQueue.pop();
+        while (message) {
+            messageHandler(message);
+            message = handler.messageQueue.pop();
+        }
         dt = dt || 1;
         dynamicsWorld.stepSimulation(dt, 2);
 
@@ -220,22 +194,13 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         var alpha2 = 1 / frame++;
         meanDt2 = alpha2 * dt + (1 - alpha2) * meanDt2;
 
-        var message: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
+        var result: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
 
         // Read bullet data into JS objects
         for (var i = 0; i < bodies.length; i++) {
-            var object: (WorkerMessage & { type: "update" })["objects"]["0"] = [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-            ];
+            var object: (WorkerMessage & { type: "update" })["objects"]["0"] = new Array(8);
             readBulletObject(i, object);
-            message.objects[i] = object;
+            result.objects[i] = object;
         }
 
         // const mState = bodies[12].getMotionState();
@@ -248,35 +213,23 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         // transform.setFromOpenGLMatrix([...matrix]);
         // mState.setWorldTransform(transform);
         // bodies[12].setMotionState(mState)
-        handler.postMessage(message);
+        handler.postMessage(result);
+        
     }
-    var gravity = new Ammo.btVector3(0, 0, 0);
-    var interval: number | null = null;
-    handler.onmessage = function (message) {
-        if (message.type === "updateGravity") {
-            const g = message.data.split(",").map(x => parseFloat(x));
-            gravity.setX(g[0])
-            gravity.setY(g[1])
-            gravity.setZ(g[2])
-            dynamicsWorld.setGravity(gravity);
-            return;
-        } else if (message.type === "init") {
 
-            frame = 1;
-            meanDt = meanDt2 = 0;
+    frame = 1;
+    meanDt = meanDt2 = 0;
 
 
-            var last = Date.now();
-            function mainLoop() {
-                var now = Date.now();
-                // dynamicsWorld.setGravity(new Ammo.btVector3(Math.sin(now) * 10, Math.cos(now) * 10 ,0))
-                simulate(now - last);
-                last = now;
-            }
-
-            if (interval) clearInterval(interval);
-            interval = setInterval(mainLoop, 1000 / 60);
-            handler.postMessage({ type: "ready" });
-        }
+    var last = Date.now();
+    function mainLoop() {
+        var now = Date.now();
+        // dynamicsWorld.setGravity(new Ammo.btVector3(Math.sin(now) * 10, Math.cos(now) * 10 ,0))
+        simulate(now - last);
+        last = now;
     }
+
+    if (interval) clearInterval(interval);
+    interval = setInterval(mainLoop, 1000 / 60);
+    handler.postMessage({ type: "ready", halfDepth, halfHeight, halfWidth });
 });

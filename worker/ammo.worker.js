@@ -7,7 +7,8 @@ const config = {
 };
 const handler = {
     onmessage: null,
-    postMessage: null
+    postMessage: null,
+    messageQueue: []
 }
 if (isBrowser) {
     config.locateFile = () => "/wasm/ammo.wasm.wasm";

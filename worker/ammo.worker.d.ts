@@ -1,5 +1,3 @@
-import { BodyId } from "../client/device/Device.js";
-
 export default Ammo;
 declare const config: {
     wasmBinary: Uint8Array;
@@ -11,18 +9,20 @@ declare const Module: {
 declare const handler: {
     onmessage: (message: MainMessage) => void;
     postMessage: (message: WorkerMessage) => void;
+    messageQueue: MainMessage[]
 }
 export type MainMessage = {
-    type: "init"
-} | {
     type: "updateGravity"
     data: string
 };
 export type WorkerMessage = {
     type: "update"
-    objects: [number, number, number, number, number, number, number, BodyId][]; allFPS: number; currFPS: number
+    objects: number[][]; allFPS: number; currFPS: number
 } | {
-    type: "ready"
+    type: "ready",
+    halfWidth: number,
+    halfHeight: number,
+    halfDepth: number
 }
 
 

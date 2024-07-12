@@ -26,11 +26,10 @@ async function start(device: Device) {
         if (message.type === "update") {
             stage.onUpdate(message);
         } else if (message.type === "ready") {
-
             device.onaccelerometerchange = (x, y, z) => {
-
                 device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${x * 10},${y * 10},${z * 10}` });
             }
+            stage.setBorder(message.halfWidth, message.halfHeight, message.halfDepth)
             requestAnimationFrame((t) => {
                 last = startTime = t;
                 audio.initAudio();
@@ -39,16 +38,13 @@ async function start(device: Device) {
             });
         }
     };
-    device.createWorker("dist/worker/main.js");
     let startTime = 0;
     let delta = 0;
     let now = 0;
     let last = 0;
     await stage.load();
     await audio.load();
-    device.sendmessage && device.sendmessage({
-        type: "init",
-    })
+    device.createWorker("dist/worker/main.js");
     stage.onclick = (tag?: string) => {
         audio.play(tag);
     }

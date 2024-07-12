@@ -12,6 +12,9 @@ export default class Stage {
     private vertex: string = "";
     private started = false;
     onclick?: (tag?: string) => void;
+    private halfWidth: number = 0;
+    private halfHeight: number = 0;
+    private halfDepth: number = 0;
 
     constructor(device: Device) {
         const [width, height, dpr] = device.getWindowInfo();
@@ -26,6 +29,11 @@ export default class Stage {
         renderer.setSize(width, height);
         this.scene = new Transform();
         this.ui = new UI(renderer);
+    }
+    setBorder(halfWidth: number, halfHeight: number, halfDepth: number) {
+        this.halfWidth = halfWidth;
+        this.halfHeight = halfHeight;
+        this.halfDepth = halfDepth
     }
     async load() {
 
@@ -88,7 +96,7 @@ export default class Stage {
                     }
                 });
                 if (id === BodyId.WallTop) {
-                    const geometry = new Plane(gl, { width: 20, height: 2 });
+                    const geometry = new Plane(gl, { width: this.halfWidth * 2, height: this.halfDepth * 2 });
                     const mesh = new Mesh(gl, {
                         geometry,
                         program,
@@ -96,7 +104,7 @@ export default class Stage {
                     // mesh.rotation.x = Math.PI / 2
                     mesh.setParent(scene);
                 } else if (id === BodyId.WallBottom) {
-                    const geometry = new Plane(gl, { width: 20, height: 2 });
+                    const geometry = new Plane(gl, { width: this.halfWidth * 2, height: this.halfDepth * 2 });
                     const mesh = new Mesh(gl, {
                         geometry,
                         program,
@@ -104,7 +112,7 @@ export default class Stage {
                     // mesh.rotation.x = -Math.PI / 2
                     mesh.setParent(scene);
                 } else if (id === BodyId.WallLeft) {
-                    const geometry = new Plane(gl, { width: 2, height: 40 });
+                    const geometry = new Plane(gl, { width: this.halfDepth * 2, height: this.halfHeight * 2 });
                     const mesh = new Mesh(gl, {
                         geometry,
                         program,
@@ -112,7 +120,7 @@ export default class Stage {
                     // mesh.rotation.y = -Math.PI / 2
                     mesh.setParent(scene);
                 } else if (id === BodyId.WallRight) {
-                    const geometry = new Plane(gl, { width: 2, height: 40 });
+                    const geometry = new Plane(gl, { width: this.halfDepth * 2, height: this.halfHeight * 2 });
                     const mesh = new Mesh(gl, {
                         geometry,
                         program,
@@ -120,14 +128,14 @@ export default class Stage {
                     // mesh.rotation.y = Math.PI / 2
                     mesh.setParent(scene);
                 } else if (id === BodyId.WallBack) {
-                    const geometry = new Plane(gl, { width: 20, height: 40 });
+                    const geometry = new Plane(gl, { width: this.halfWidth * 2, height: this.halfHeight * 2 });
                     const mesh = new Mesh(gl, {
                         geometry,
                         program,
                     });
                     mesh.setParent(scene);
                 } else if (id === BodyId.WallFront) {
-                    const geometry = new Plane(gl, { width: 20, height: 40 });
+                    const geometry = new Plane(gl, { width: this.halfWidth * 2, height: this.halfHeight * 2 });
                     const mesh = new Mesh(gl, {
                         geometry,
                         program,
