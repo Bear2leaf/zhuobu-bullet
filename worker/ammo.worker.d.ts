@@ -16,8 +16,10 @@ export type MainMessage = {
     data: string
 } | {
     type: "addMesh",
-    data: {vertices: number[], indices: number[]}
-};
+    data: { vertices: number[], indices: number[] }
+} | {
+    type: "resetWorld",
+}
 export type WorkerMessage = {
     type: "update"
     objects: number[][]; allFPS: number; currFPS: number
@@ -30,6 +32,8 @@ export type WorkerMessage = {
     type: "addBody",
     data: number
 } | {
+    type: "requestResetLevel",
+} | {
     type: "requestLevel",
 }
 
@@ -38,6 +42,7 @@ export { config, Module, handler }
 declare function Ammo<T>(target?: T): Promise<T & typeof Ammo>;
 declare module Ammo {
     function destroy(obj: any): void;
+    function castObject<T extends btVector3>(pointer: unknown, ctor: new () => T): T;
     class btIDebugDraw {
         drawLine(from: btVector3, to: btVector3, color: btVector3): void;
         drawContactPoint(pointOnB: btVector3, normalOnB: btVector3, distance: number, lifeTime: number, color: btVector3): void;

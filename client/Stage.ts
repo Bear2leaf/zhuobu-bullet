@@ -93,13 +93,14 @@ export default class Stage {
     private readonly ui: UI;
     private readonly control: Orbit;
     private gltf?: GLTF;
+    private gltf0?: GLTF;
     private fragment: string = "";
     private vertex: string = "";
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private started = false;
     onclick?: (tag?: string) => void;
-    onorientationchange? :(quat: Quat) => void;
+    onorientationchange?: (quat: Quat) => void;
     private halfWidth: number = 0;
     private halfHeight: number = 0;
     private halfDepth: number = 0;
@@ -113,8 +114,7 @@ export default class Stage {
             aspect: width / height,
             fov: 45
         })
-        camera.position.z = 0.3;
-        camera.position.y = -0.4;
+        camera.position.z = 0.5;
         renderer.setSize(width, height);
         this.scene = new Transform();
         this.ui = new UI(renderer);
@@ -137,6 +137,7 @@ export default class Stage {
         await this.ui.load();
 
         this.gltf = await GLTFLoader.load(this.renderer.gl, `resources/gltf/Demo.glb`);
+        this.gltf0 = await GLTFLoader.load(this.renderer.gl, `resources/gltf/Level0.glb`);
     }
     onaddmesh?: (vertices: number[], indices: number[]) => void;
     start() {
@@ -168,8 +169,8 @@ export default class Stage {
         this.renderer.render({ scene: this.scene, camera: this.camera });
         this.ui.render();
         this.click = "";
-        
-        const m  =this.camera.viewMatrix.multiply(this.scene.worldMatrix);
+
+        const m = this.camera.viewMatrix.multiply(this.scene.worldMatrix);
         const quat = new Quat()
         m.getRotation(quat);
         this.onorientationchange && this.onorientationchange(quat)
@@ -227,10 +228,23 @@ export default class Stage {
             mesh.setParent(scene);
         }
     }
+    resetLevel() {
+        const keepLength = Object.keys(BodyId).length / 2;
+        const children = this.scene.children;
+        while (children.length > keepLength) {
+            const child = children.pop();
+            child?.setParent(null);
+        }
+    }
+    level = -1;
     requestLevel() {
-
+        let gltf;
+        if (this.level++ === -1) {
+            gltf = this.gltf
+        } else {
+            gltf = this.gltf0;
+        }
         const scene = this.scene;
-        const gltf = this.gltf;
         if (gltf) {
             gltf.meshes.forEach(mesh => {
                 mesh.primitives.forEach(primitive => {

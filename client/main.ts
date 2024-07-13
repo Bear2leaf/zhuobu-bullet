@@ -56,8 +56,18 @@ async function start(device: Device) {
                 last = startTime = t;
                 audio.initAudio();
                 stage.start();
+                device.sendmessage && device.sendmessage({
+                    type: "resetWorld"
+                })
+                setTimeout(() => {
+                    device.sendmessage && device.sendmessage({
+                        type: "resetWorld"
+                    })
+                }, 5000);
                 update(t);
             });
+        } else if (message.type === "requestResetLevel") {
+            stage.resetLevel();
         }
     };
     let startTime = 0;
