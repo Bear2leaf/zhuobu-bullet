@@ -13,6 +13,9 @@ export default class BrowserDevice implements Device {
         this.canvasGL.height = window.innerHeight
         this.windowInfo = [this.canvasGL.width, this.canvasGL.height, window.devicePixelRatio];
         this.isMouseDown = false;
+        setInterval(() => {
+            this.onaccelerometerchange && this.onaccelerometerchange(0, -10, 0);
+        }, 1000)
     }
     getCanvasGL(): HTMLCanvasElement {
         return this.canvasGL;

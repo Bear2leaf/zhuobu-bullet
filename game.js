@@ -42,6 +42,19 @@ const document = {
     },
 }
 
+class Blob {
+    buffer = null
+    constructor([arrayBuffer]) {
+        this.buffer = arrayBuffer
+    }
+}
+function URL() {
+    throw new Error("Not implemented");
+}
+
+URL.createObjectURL = function (blob) {
+    return wx.createBufferURL(blob.buffer);
+}
 class TextDecoder {
     decode(data) {
         return wx.decode({data, format: 'utf-8'});
@@ -79,6 +92,8 @@ wx.onWheel(wheelEventHandlerFactory('wheel'))
 const _window = {
     Image,
     TextDecoder,
+    URL,
+    Blob,
     document,
     devicePixelRatio: windowInfo.pixelRatio,
     fetch: async function (url) {

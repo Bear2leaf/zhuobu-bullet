@@ -1,7 +1,6 @@
 import { MainMessage, WorkerMessage } from "../../worker/ammo.worker.js"
 
 export enum BodyId {
-  Level,
   WallTop,
   WallBottom,
   WallLeft,

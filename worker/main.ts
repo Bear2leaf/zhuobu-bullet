@@ -13,6 +13,7 @@ const halfDepth = 1;
 
 Ammo.bind(Module)(config).then(function (Ammo) {
 
+    handler.postMessage({ type: "ready", halfDepth, halfHeight, halfWidth });
     const DISABLE_DEACTIVATION = 4;
     const CF_KINEMATIC_OBJECT = 2;
     // Bullet-interfacing code
@@ -26,18 +27,18 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
 
     var bodies: Ammo.btRigidBody[] = [];
-    for (let index = 1; index <= 6; index++) {
-        const width = BodyId.WallRight === index ? halfWidth : (BodyId.WallLeft === index ? -halfWidth : 0);
-        const height = BodyId.WallTop === index ? halfHeight : (BodyId.WallBottom === index ? -halfHeight : 0);
-        const depth = BodyId.WallBack === index ? halfDepth : (BodyId.WallFront === index ? -halfDepth : 0);
-        const y = BodyId.WallLeft === index ? Math.PI / 2 : (BodyId.WallRight === index ? -Math.PI / 2 : 0);
-        const x = BodyId.WallTop === index ? Math.PI / 2 : (BodyId.WallBottom === index ? -Math.PI / 2 : (BodyId.WallBack === index ? Math.PI : 0));
+    for (let index = 0; index < 6; index++) {
+        const originX = BodyId.WallRight === index ? halfWidth : (BodyId.WallLeft === index ? -halfWidth : 0);
+        const originY = BodyId.WallTop === index ? halfHeight : (BodyId.WallBottom === index ? -halfHeight : 0);
+        const originZ = BodyId.WallBack === index ? halfDepth : (BodyId.WallFront === index ? -halfDepth : 0);
+        const rotationY = BodyId.WallLeft === index ? Math.PI / 2 : (BodyId.WallRight === index ? -Math.PI / 2 : 0);
+        const rotationX = BodyId.WallTop === index ? Math.PI / 2 : (BodyId.WallBottom === index ? -Math.PI / 2 : (BodyId.WallBack === index ? Math.PI : 0));
         var mass = 0;
         var groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(width, height, depth));
+        groundTransform.setOrigin(new Ammo.btVector3(originX, originY, originZ));
         const quat = new Ammo.btQuaternion(0, 0, 0, 0);
-        quat.setEulerZYX(0, y, x)
+        quat.setEulerZYX(0, rotationY, rotationX)
         groundTransform.setRotation(quat)
         var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
         var localInertia = new Ammo.btVector3(0, 0, 0);
@@ -47,6 +48,10 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
         dynamicsWorld.addRigidBody(body);
         bodies.push(body);
+        handler.postMessage({
+            type: "addBody", 
+            data: index
+        })
     }
     (function () {
 
@@ -63,8 +68,15 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         body.setActivationState(DISABLE_DEACTIVATION);
         dynamicsWorld.addRigidBody(body);
         bodies.push(body);
+        handler.postMessage({
+            type: "addBody", 
+            data: BodyId.Ball
+        })
     })();
 
+    handler.postMessage({
+        type: "requestLevel", 
+    })
     var transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
 
     function readBulletObject(i: number, object: number[]) {
@@ -117,12 +129,11 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             }
 
             var shape = new Ammo.btBvhTriangleMeshShape(mesh, true);
-
             var myMotionState = new Ammo.btDefaultMotionState(startTransform);
             var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
             var body = new Ammo.btRigidBody(rbInfo);
             dynamicsWorld.addRigidBody(body);
-            bodies.unshift(body);
+            bodies.push(body);
             return;
         }
     }
@@ -152,9 +163,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
         // Read bullet data into JS objects
         for (var i = 0; i < bodies.length; i++) {
-            var object: (WorkerMessage & { type: "update" })["objects"]["0"] = new Array(8);
-            readBulletObject(i, object);
-            result.objects[i] = object;
+            result.objects[i] = result.objects[i] || []
+            readBulletObject(i, result.objects[i]);
         }
 
         // const mState = bodies[12].getMotionState();
@@ -185,5 +195,4 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
     if (interval) clearInterval(interval);
     interval = setInterval(mainLoop, 1000 / 60);
-    handler.postMessage({ type: "ready", halfDepth, halfHeight, halfWidth });
 });

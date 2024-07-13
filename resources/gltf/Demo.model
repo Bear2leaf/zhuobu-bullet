@@ -2,14 +2,11 @@
 
 :materials
 
-[name:_defaultMat;color:RGBA(0.939, 0.953, 1.000, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.35;valueB:0.25;]
+[name:_defaultMat;color:RGBA(0.939, 0.953, 1.000, 1.000);scale:(1.0, 1.0);texture:Stone/greybricks;shader:Default;mapping:0;valueA:0.35;valueB:0.25;]
+[name:stone;color:RGBA(0.571, 0.559, 0.736, 1.000);scale:(1.0, 1.0);shader:Default;mapping:0;valueA:0.5;valueB:0;]
 
 :models
 
-[name:;collection:Bricks;type:brick_1x2;position:(3.0000, -2.0000, 0.0000);rotation:(0.0000, 90.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:;locked:False;hidden:False;materials:_defaultMat;]
-[name:;collection:Bricks;type:brick_2x2;position:(-1.0000, -2.0000, 0.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:;locked:False;hidden:False;materials:_defaultMat;]
-[name:;collection:Bricks;type:brick_2x2;position:(1.0000, -2.0000, 0.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:;locked:False;hidden:False;materials:_defaultMat;]
-[name:;collection:Bricks;type:brick_2x2;position:(0.0000, -2.0000, 0.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:;locked:False;hidden:False;materials:_defaultMat;]
-[name:;collection:Bricks;type:brick_2x2;position:(-1.0000, -2.0000, -1.0000);rotation:(0.0000, 90.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:;locked:False;hidden:False;materials:_defaultMat;]
-[name:;collection:Bricks;type:brick_2x2;position:(0.0000, -2.0000, -1.0000);rotation:(0.0000, 90.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:;locked:False;hidden:False;materials:_defaultMat;]
-[name:;collection:Bricks;type:brick_2x2;position:(1.0000, -2.0000, -1.0000);rotation:(0.0000, 90.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:;locked:False;hidden:False;materials:_defaultMat;]
+[name:;collection:Bricks;type:brick_2x2;position:(61.0000, -4.0000, -65.0000);rotation:(0.0000, 90.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:;locked:False;hidden:False;materials:_defaultMat;]
+[name:;collection:Bricks;type:arch_1x4%;position:(5.0000, -5.0000, 1.0000);rotation:(0.0000, 180.0000, 180.0000);scale:(10.0000, 10.0000, 4.0000);group:;locked:False;hidden:False;materials:_defaultMat;]
+[name:;collection:Walls;type:wall;position:(10.0000, -5.0000, 1.0000);rotation:(0.0000, 90.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:;locked:False;hidden:False;materials:stone;]

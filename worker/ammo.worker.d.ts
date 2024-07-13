@@ -26,6 +26,11 @@ export type WorkerMessage = {
     halfWidth: number,
     halfHeight: number,
     halfDepth: number
+} | {
+    type: "addBody",
+    data: number
+} | {
+    type: "requestLevel",
 }
 
 
