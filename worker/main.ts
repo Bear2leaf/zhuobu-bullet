@@ -57,7 +57,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             data: index
         })
     }
-    (function () {
+    function createBall() {
 
         const startTransform = new Ammo.btTransform();
         startTransform.setIdentity();
@@ -76,7 +76,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             type: "addBody",
             data: BodyId.Ball
         })
-    })();
+    };
+    createBall();
     handler.postMessage({
         type: "requestResetLevel",
     })
@@ -103,8 +104,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             dynamicsWorld.removeRigidBody(body);
         }
         bodies.splice(0, bodies.length, ...remains);
-        bodies[BodyId.Ball].setActivationState(2);
-        bodies[BodyId.Ball].setMotionState(new Ammo.btDefaultMotionState());
+        dynamicsWorld.removeRigidBody(bodies.pop()!);
+        createBall();
     }
     function removeSpawnBody() {
 
