@@ -43,7 +43,6 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
             ${gltf.emissiveTexture ? `#define EMISSIVE_MAP` : ``}
             ${gltf.emissiveTexture ? `#define EMISSIVE_MAP` : ``}
         `;
-
     vertex = vertexPrefix + defines + vertex;
     fragment = fragmentPrefix + defines + fragment;
     const lutTexture = new Texture(gl);
@@ -83,7 +82,7 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
         transparent: gltf.alphaMode === 'BLEND',
         cullFace: gltf.doubleSided ? false : gl.BACK,
     });
-
+    (program as GLTFProgram).gltfMaterial = gltf;
     return program;
 }
 export default class Stage {
@@ -92,8 +91,7 @@ export default class Stage {
     private readonly camera: Camera;
     private readonly ui: UI;
     private readonly control: Orbit;
-    private gltf?: GLTF;
-    private gltf0?: GLTF;
+    private readonly gltfs: GLTF[] = [];
     private fragment: string = "";
     private vertex: string = "";
     private gltffragment: string = "";
@@ -136,10 +134,10 @@ export default class Stage {
         this.gltffragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
         await this.ui.load();
 
-        this.gltf = await GLTFLoader.load(this.renderer.gl, `resources/gltf/Demo.glb`);
-        this.gltf0 = await GLTFLoader.load(this.renderer.gl, `resources/gltf/Level0.glb`);
+        this.gltfs.push(await GLTFLoader.load(this.renderer.gl, `resources/gltf/Demo.glb`));
+        this.gltfs.push(await GLTFLoader.load(this.renderer.gl, `resources/gltf/Level0.glb`));
     }
-    onaddmesh?: (vertices: number[], indices: number[]) => void;
+    onaddmesh?: (total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     start() {
         const scene = this.scene;
         scene.scale.multiply(0.01);
@@ -147,18 +145,23 @@ export default class Stage {
             this.ui.init();
             this.ui.onclick = (tag) => {
                 this.onclick && this.onclick(tag);
-                this.click = "player";
             }
             this.ui.updateText("hello")
         }
         this.started = true;
     }
-    private click?: string;
     stop() {
         // Stop next frame
         this.started = false;
     }
 
+    removeBody(index: number) {
+        const child = this.scene.children[index];
+        child.setParent(null);
+    }
+
+    private readonly quat = new Quat()
+    private readonly matrix = new Mat4();
     // Game loop
     loop = (timeStamp: number) => {
         if (!this.started) {
@@ -168,12 +171,10 @@ export default class Stage {
         this.control.update();
         this.renderer.render({ scene: this.scene, camera: this.camera });
         this.ui.render();
-        this.click = "";
-
-        const m = this.camera.viewMatrix.multiply(this.scene.worldMatrix);
-        const quat = new Quat()
-        m.getRotation(quat);
-        this.onorientationchange && this.onorientationchange(quat)
+        this.quat.fill(0)
+        this.matrix.fromArray(this.camera.viewMatrix.multiply(this.scene.worldMatrix));
+        this.matrix.getRotation(this.quat);
+        this.onorientationchange && this.onorientationchange(this.quat)
     }
     updateBody(message: WorkerMessage & { type: "update" }) {
         const scene = this.scene;
@@ -236,26 +237,24 @@ export default class Stage {
             child?.setParent(null);
         }
     }
-    level = -1;
+    level = 0;
     requestLevel() {
-        let gltf;
-        if (this.level++ === -1) {
-            gltf = this.gltf
-        } else {
-            gltf = this.gltf0;
-        }
+        const gltf = this.gltfs[this.level];
         const scene = this.scene;
-        if (gltf) {
-            gltf.meshes.forEach(mesh => {
-                mesh.primitives.forEach(primitive => {
-                    primitive.setParent(scene)
-                    primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true)
-                    const attributeData = primitive.geometry.getPosition().data;
-                    const indices = primitive.geometry.attributes.index.data as AttributeData;
-                    attributeData && this.onaddmesh && this.onaddmesh([...attributeData], [...indices]);
-                })
-            });
-        }
+        const total = gltf.meshes.map(mesh => mesh.primitives.length).reduce((prev, cur) => {
+            prev += cur;
+            return prev;
+        }, 0)
+        gltf.meshes.forEach(mesh => {
+            mesh.primitives.forEach(primitive => {
+                primitive.setParent(scene)
+                primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true)
+                const attributeData = primitive.geometry.getPosition().data;
+                const indices = primitive.geometry.attributes.index.data as AttributeData;
+                attributeData && this.onaddmesh && this.onaddmesh(total, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
+            })
+        });
+        this.level = (this.level + 1) % this.gltfs.length;
     }
 
 }

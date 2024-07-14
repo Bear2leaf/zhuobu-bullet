@@ -13,42 +13,42 @@ const halfDepth = 1;
 
 
 Ammo.bind(Module)(config).then(function (Ammo) {
-
+    let total = 0;
     class UserData extends Ammo.btVector3 {
-        data = "hello"
+        propertities?: Record<string, boolean>
     }
     handler.postMessage({ type: "ready", halfDepth, halfHeight, halfWidth });
     const DISABLE_DEACTIVATION = 4;
     const CF_KINEMATIC_OBJECT = 2;
     // Bullet-interfacing code
 
-    var collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
-    var dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
-    var overlappingPairCache = new Ammo.btDbvtBroadphase();
-    var solver = new Ammo.btSequentialImpulseConstraintSolver();
-    var dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+    const collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
+    const dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
+    const overlappingPairCache = new Ammo.btDbvtBroadphase();
+    const solver = new Ammo.btSequentialImpulseConstraintSolver();
+    const dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
     dynamicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
 
 
-    var bodies: Ammo.btRigidBody[] = [];
+    const bodies: Ammo.btRigidBody[] = [];
     for (let index = 0; index < 6; index++) {
         const originX = BodyId.WallRight === index ? halfWidth : (BodyId.WallLeft === index ? -halfWidth : 0);
         const originY = BodyId.WallTop === index ? halfHeight : (BodyId.WallBottom === index ? -halfHeight : 0);
         const originZ = BodyId.WallBack === index ? halfDepth : (BodyId.WallFront === index ? -halfDepth : 0);
         const rotationY = BodyId.WallLeft === index ? Math.PI / 2 : (BodyId.WallRight === index ? -Math.PI / 2 : 0);
         const rotationX = BodyId.WallTop === index ? Math.PI / 2 : (BodyId.WallBottom === index ? -Math.PI / 2 : (BodyId.WallBack === index ? Math.PI : 0));
-        var mass = 0;
-        var groundTransform = new Ammo.btTransform();
+        const mass = 0;
+        const groundTransform = new Ammo.btTransform();
         groundTransform.setIdentity();
         groundTransform.setOrigin(new Ammo.btVector3(originX, originY, originZ));
         const quat = new Ammo.btQuaternion(0, 0, 0, 0);
         quat.setEulerZYX(0, rotationY, rotationX)
         groundTransform.setRotation(quat)
-        var groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
-        var localInertia = new Ammo.btVector3(0, 0, 0);
-        var myMotionState = new Ammo.btDefaultMotionState(groundTransform);
-        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
-        var body = new Ammo.btRigidBody(rbInfo);
+        const groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
+        const localInertia = new Ammo.btVector3(0, 0, 0);
+        const myMotionState = new Ammo.btDefaultMotionState(groundTransform);
+        const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
+        const body = new Ammo.btRigidBody(rbInfo);
 
         dynamicsWorld.addRigidBody(body);
         bodies.push(body);
@@ -59,16 +59,16 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     }
     (function () {
 
-        var startTransform = new Ammo.btTransform();
+        const startTransform = new Ammo.btTransform();
         startTransform.setIdentity();
-        var mass = 1;
-        var localInertia = new Ammo.btVector3(0, 0, 0);
-        var sphereShape = new Ammo.btSphereShape(1);
+        const mass = 1;
+        const localInertia = new Ammo.btVector3(0, 0, 0);
+        const sphereShape = new Ammo.btSphereShape(1);
         sphereShape.calculateLocalInertia(mass, localInertia);
 
-        var myMotionState = new Ammo.btDefaultMotionState(startTransform);
-        var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, sphereShape, localInertia);
-        var body = new Ammo.btRigidBody(rbInfo);
+        const myMotionState = new Ammo.btDefaultMotionState(startTransform);
+        const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, sphereShape, localInertia);
+        const body = new Ammo.btRigidBody(rbInfo);
         body.setActivationState(DISABLE_DEACTIVATION);
         dynamicsWorld.addRigidBody(body);
         bodies.push(body);
@@ -76,23 +76,20 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             type: "addBody",
             data: BodyId.Ball
         })
-        const v= new UserData;
-        v.data = "ball"
-        body.setUserPointer(v)
     })();
     handler.postMessage({
         type: "requestResetLevel",
     })
-    var transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
+    const transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
 
     function readBulletObject(i: number, object: number[]) {
-        var body = bodies[i];
+        const body = bodies[i];
         body.getMotionState().getWorldTransform(transform);
-        var origin = transform.getOrigin();
+        const origin = transform.getOrigin();
         object[0] = origin.x();
         object[1] = origin.y();
         object[2] = origin.z();
-        var rotation = transform.getRotation();
+        const rotation = transform.getRotation();
         object[3] = rotation.x();
         object[4] = rotation.y();
         object[5] = rotation.z();
@@ -106,12 +103,27 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             dynamicsWorld.removeRigidBody(body);
         }
         bodies.splice(0, bodies.length, ...remains);
+        bodies[BodyId.Ball].setMotionState(new Ammo.btDefaultMotionState());
     }
-    var gravity = new Ammo.btVector3(0, 0, 0);
-    var interval: number | null = null;
-    var vertex0 = new Ammo.btVector3;
-    var vertex1 = new Ammo.btVector3;
-    var vertex2 = new Ammo.btVector3;
+    function removeSpawnBody() {
+
+        const index = bodies.findIndex(body => {
+            const props = Ammo.castObject(body.getUserPointer(), UserData).propertities;
+            return props && props.spawn
+        });
+        const removeBody = bodies.splice(index, 1)[0];
+        handler.postMessage({
+            type: "removeBody",
+            data: index
+        })
+        dynamicsWorld.removeRigidBody(removeBody);
+
+    }
+    const gravity = new Ammo.btVector3(0, 0, 0);
+    let interval: number | null = null;
+    const vertex0 = new Ammo.btVector3;
+    const vertex1 = new Ammo.btVector3;
+    const vertex2 = new Ammo.btVector3;
     let paused = true;
     function messageHandler(message: MainMessage) {
         if (message.type === "updateGravity") {
@@ -123,10 +135,10 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             return;
         } else if (message.type === "addMesh") {
             paused = false;
-            var startTransform = new Ammo.btTransform();
+            const startTransform = new Ammo.btTransform();
             startTransform.setIdentity();
-            var mass = 0;
-            var localInertia = new Ammo.btVector3(0, 0, 0);
+            const mass = 0;
+            const localInertia = new Ammo.btVector3(0, 0, 0);
             const mesh = new Ammo.btTriangleMesh();
             const vertices = message.data.vertices;
             const indices = message.data.indices;
@@ -144,12 +156,17 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 )
             }
 
-            var shape = new Ammo.btBvhTriangleMeshShape(mesh, true);
-            var myMotionState = new Ammo.btDefaultMotionState(startTransform);
-            var rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
-            var body = new Ammo.btRigidBody(rbInfo);
+            const shape = new Ammo.btBvhTriangleMeshShape(mesh, true);
+            const myMotionState = new Ammo.btDefaultMotionState(startTransform);
+            const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
+            const body = new Ammo.btRigidBody(rbInfo);
+
+            const v = new UserData;
+            v.propertities = message.data.propertities;
+            body.setUserPointer(v)
             dynamicsWorld.addRigidBody(body);
             bodies.push(body);
+            total = message.data.total;
             return;
         } else if (message.type === "resetWorld") {
             paused = true;
@@ -160,15 +177,51 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             handler.postMessage({
                 type: "requestLevel",
             })
+        } else if (message.type === "release") {
+            const collisionNum = dispatcher.getNumManifolds();
+            for (let index = 0; index < collisionNum; index++) {
+                // UserData
+                const mainfold = dispatcher.getManifoldByIndexInternal(index);
+                const body0 = mainfold.getBody0();
+                const body1 = mainfold.getBody1();
+                const props0 = Ammo.castObject(body0.getUserPointer(), UserData).propertities;
+                const props1 = Ammo.castObject(body1.getUserPointer(), UserData).propertities;
+                if (props0) {
+                    if (props0.spawn) {
+                        removeSpawnBody();
+                    } else if (props0.destination) {
+                        resetWorld()
+                        handler.postMessage({
+                            type: "requestResetLevel",
+                        })
+                        handler.postMessage({
+                            type: "requestLevel",
+                        })
+                    }
+                }
+                if (props1) {
+                    if (props1.spawn) {
+                        removeSpawnBody();
+                    } else if (props1.destination) {
+                        resetWorld()
+                        handler.postMessage({
+                            type: "requestResetLevel",
+                        })
+                        handler.postMessage({
+                            type: "requestLevel",
+                        })
+                    }
+                }
+            }
         }
     }
-    const matrix = mat4.create();
-    var meanDt = 0, meanDt2 = 0, frame = 1;
+
+    let meanDt = 0, meanDt2 = 0, frame = 1;
     function simulate(dt: number) {
-        let message = handler.messageQueue.pop();
+        let message = handler.messageQueue.shift();
         while (message) {
             messageHandler(message);
-            message = handler.messageQueue.pop();
+            message = handler.messageQueue.shift();
         }
         if (paused) {
             return;
@@ -176,7 +229,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         dt = dt || 1;
         dynamicsWorld.stepSimulation(dt);
 
-        var alpha;
+        let alpha;
         if (meanDt > 0) {
             alpha = Math.min(0.1, dt / 1000);
         } else {
@@ -184,30 +237,27 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         }
         meanDt = alpha * dt + (1 - alpha) * meanDt;
 
-        var alpha2 = 1 / frame++;
+        const alpha2 = 1 / frame++;
         meanDt2 = alpha2 * dt + (1 - alpha2) * meanDt2;
 
-        var result: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
-        
+        const result: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
+
         // Read bullet data into JS objects
-        for (var i = 0; i < bodies.length; i++) {
+        for (let i = 0; i < bodies.length; i++) {
             result.objects[i] = result.objects[i] || []
             readBulletObject(i, result.objects[i]);
         }
-        // UserData
-        // const pointer = dynamicsWorld.getDispatcher().getManifoldByIndexInternal(0).getBody0().getUserPointer();
-        // console.log(Ammo.castObject(pointer, UserData).data);
+
         handler.postMessage(result);
 
     }
-
     frame = 1;
     meanDt = meanDt2 = 0;
 
 
-    var last = Date.now();
+    let last = Date.now();
     function mainLoop() {
-        var now = Date.now();
+        const now = Date.now();
         // dynamicsWorld.setGravity(new Ammo.btVector3(Math.sin(now) * 10, Math.cos(now) * 10 ,0))
         simulate(now - last);
         last = now;

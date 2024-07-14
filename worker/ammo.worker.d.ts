@@ -16,9 +16,11 @@ export type MainMessage = {
     data: string
 } | {
     type: "addMesh",
-    data: { vertices: number[], indices: number[] }
+    data: { total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean> }
 } | {
     type: "resetWorld",
+} | {
+    type: "release",
 }
 export type WorkerMessage = {
     type: "update"
@@ -35,6 +37,9 @@ export type WorkerMessage = {
     type: "requestResetLevel",
 } | {
     type: "requestLevel",
+} | {
+    type: "removeBody",
+    data: number
 }
 
 
