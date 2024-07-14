@@ -103,6 +103,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             dynamicsWorld.removeRigidBody(body);
         }
         bodies.splice(0, bodies.length, ...remains);
+        bodies[BodyId.Ball].setActivationState(2);
         bodies[BodyId.Ball].setMotionState(new Ammo.btDefaultMotionState());
     }
     function removeSpawnBody() {
@@ -189,33 +190,50 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 if (props0) {
                     if (props0.spawn) {
                         removeSpawnBody();
-                    } else if (props0.destination) {
-                        resetWorld()
-                        handler.postMessage({
-                            type: "requestResetLevel",
-                        })
-                        handler.postMessage({
-                            type: "requestLevel",
-                        })
                     }
                 }
                 if (props1) {
                     if (props1.spawn) {
                         removeSpawnBody();
-                    } else if (props1.destination) {
-                        resetWorld()
-                        handler.postMessage({
-                            type: "requestResetLevel",
-                        })
-                        handler.postMessage({
-                            type: "requestLevel",
-                        })
                     }
                 }
             }
         }
     }
+    function checkDestination() {
 
+        const collisionNum = dispatcher.getNumManifolds();
+        for (let index = 0; index < collisionNum; index++) {
+            // UserData
+            const mainfold = dispatcher.getManifoldByIndexInternal(index);
+            const body0 = mainfold.getBody0();
+            const body1 = mainfold.getBody1();
+            const props0 = Ammo.castObject(body0.getUserPointer(), UserData).propertities;
+            const props1 = Ammo.castObject(body1.getUserPointer(), UserData).propertities;
+            if (props0) {
+                if (props0.destination) {
+                    resetWorld()
+                    handler.postMessage({
+                        type: "requestResetLevel",
+                    })
+                    handler.postMessage({
+                        type: "requestLevel",
+                    })
+                }
+            }
+            if (props1) {
+                if (props1.destination) {
+                    resetWorld()
+                    handler.postMessage({
+                        type: "requestResetLevel",
+                    })
+                    handler.postMessage({
+                        type: "requestLevel",
+                    })
+                }
+            }
+        }
+    }
     let meanDt = 0, meanDt2 = 0, frame = 1;
     function simulate(dt: number) {
         let message = handler.messageQueue.shift();
@@ -249,7 +267,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         }
 
         handler.postMessage(result);
-
+        checkDestination()
     }
     frame = 1;
     meanDt = meanDt2 = 0;

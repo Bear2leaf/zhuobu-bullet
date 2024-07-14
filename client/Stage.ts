@@ -91,7 +91,7 @@ export default class Stage {
     private readonly camera: Camera;
     private readonly ui: UI;
     private readonly control: Orbit;
-    private readonly gltfs: GLTF[] = [];
+    private readonly gltfs: GLTF[] = new Array(3);
     private fragment: string = "";
     private vertex: string = "";
     private gltffragment: string = "";
@@ -133,9 +133,9 @@ export default class Stage {
         this.gltfvertex = await (await fetch("resources/glsl/gltf.vert.sk")).text();
         this.gltffragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
         await this.ui.load();
-
-        this.gltfs.push(await GLTFLoader.load(this.renderer.gl, `resources/gltf/Demo.glb`));
-        this.gltfs.push(await GLTFLoader.load(this.renderer.gl, `resources/gltf/Level0.glb`));
+        for (let index = 0; index < this.gltfs.length; index++) {
+            this.gltfs[index] = (await GLTFLoader.load(this.renderer.gl, `resources/gltf/Level${index}.glb`));
+        }
     }
     onaddmesh?: (total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     start() {
