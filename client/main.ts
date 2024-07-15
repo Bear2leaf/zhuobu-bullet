@@ -42,6 +42,7 @@ async function start(device: Device) {
         } else if (message.type === "addBody") {
             stage.addBody(message);
         } else if (message.type === "requestLevel") {
+            audio.play();
             stage.requestLevel();
         } else if (message.type === "ready") {
             device.onaccelerometerchange = (x, y, z) => {
@@ -72,10 +73,11 @@ async function start(device: Device) {
     await audio.load();
     device.createWorker("dist/worker/main.js");
     stage.onclick = (tag?: string) => {
-        audio.play(tag);
-        device.sendmessage && device.sendmessage({
-            type: "release"
-        })
+        if (tag === "release" ) {
+            device.sendmessage && device.sendmessage({
+                type: "release"
+            })
+        }
     }
     function update(t: number) {
         requestAnimationFrame(update);

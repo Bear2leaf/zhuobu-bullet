@@ -95,7 +95,7 @@ export default class Stage {
     }
     updateBody(message: WorkerMessage & { type: "update" }) {
         const scene = this.scene;
-        this.ui.updateText(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
+        this.ui.updateText(`fps: ${message.currFPS}, avg: ${message.allFPS}\nlevel: ${this.level.getIndex()}`);
         for (let index = 0; index < message.objects.length; index++) {
             const child = scene.children[index];
             const phyObject = message.objects[index];
@@ -115,7 +115,7 @@ export default class Stage {
                 fragment,
                 uniforms: {
                     uColor: {
-                        value: new Vec3(0.2, 0.8, 1.0)
+                        value: new Vec3(0.7, 0.2, 0.7)
                     }
                 }
             });
@@ -132,7 +132,7 @@ export default class Stage {
                 // Don't cull faces so that plane is double sided - default is gl.BACK
                 uniforms: {
                     uColor: {
-                        value: new Vec3(1, 1, 1)
+                        value: new Vec3(0.3, 0.3, 0.2)
                     }
                 }
             });

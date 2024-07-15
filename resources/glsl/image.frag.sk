@@ -1,0 +1,34 @@
+#version 300 es
+precision highp float;
+
+in vec2 vTexcoord;
+
+uniform vec2 uDimension;
+uniform sampler2D tMap;
+
+layout(location = 0) out vec4 o_color;
+
+float map(float value, float originalMin, float originalMax, float newMin, float newMax) {
+    return (value - originalMin) / (originalMax - originalMin) * (newMax - newMin) + newMin;
+} 
+// Helper function, because WET code is bad code
+// Takes in the coordinate on the current axis and the borders 
+float processAxis(float coord, float textureBorder, float windowBorder) {
+    if(coord < windowBorder)
+        return map(coord, 0.0f, windowBorder, 0.0f, textureBorder);
+    if(coord < 1.0f - windowBorder)
+        return map(coord, windowBorder, 1.0f - windowBorder, textureBorder, 1.0f - textureBorder);
+    return map(coord, 1.0f - windowBorder, 1.0f, 1.0f - textureBorder, 1.0f);
+}
+
+void main(void) {
+// Later before other operations
+    vec2 borders = vec2(16.0f) / 64.0f;
+    vec2 dimensions = uDimension;
+// Use borders.x for the x axis and borders.y for the y axis
+    vec2 newUV = vec2(processAxis(vTexcoord.x, borders.x, dimensions.x), processAxis(vTexcoord.y, borders.y, dimensions.y));
+    // Output the color
+    o_color = texture(tMap, newUV);
+    // o_color = texture(tMap, vTexcoord);
+    // o_color = vec4(1.0f);
+}

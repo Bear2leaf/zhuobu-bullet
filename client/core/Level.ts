@@ -86,9 +86,13 @@ export default class Level {
     private readonly gltfs: GLTF[] = new Array(3);
     private gltffragment: string = "";
     private gltfvertex: string = "";
-    private level = 0;
+    private next = 0;
+    private current = 0;
     onaddmesh?: (total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     constructor(private readonly gl: OGLRenderingContext) {
+    }
+    getIndex() {
+        return this.current + 1;
     }
     async load() {
 
@@ -99,7 +103,7 @@ export default class Level {
         }
     }
     request(scene: Transform) {
-        const gltf = this.gltfs[this.level];
+        const gltf = this.gltfs[this.next];
         const total = gltf.meshes.map(mesh => mesh.primitives.length).reduce((prev, cur) => {
             prev += cur;
             return prev;
@@ -113,6 +117,7 @@ export default class Level {
                 attributeData && this.onaddmesh && this.onaddmesh(total, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
             })
         });
-        this.level = (this.level + 1) % this.gltfs.length;
+        this.current = this.next;
+        this.next = (this.next + 1) % this.gltfs.length;
     }
 }
