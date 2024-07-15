@@ -34,8 +34,6 @@ export type WorkerMessage = {
     type: "addBody",
     data: number
 } | {
-    type: "requestResetLevel",
-} | {
     type: "requestLevel",
 } | {
     type: "removeBody",

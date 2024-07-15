@@ -1,8 +1,8 @@
 import Device from "./device/Device.js";
-import Stage from "./Stage.js";
+import Stage from "./core/Stage.js";
 import AudioManager from "./audio/AudioManager.js";
-import { mat4, quat, vec3 } from "gl-matrix";
 import { WorkerMessage } from "../worker/ammo.worker.js";
+import { Quat, Vec3 } from "ogl";
 
 export async function mainH5() {
     const BrowserDevice = (await import("./device/BrowserDevice.js")).default;
@@ -29,9 +29,9 @@ async function start(device: Device) {
             data: { total, vertices: [...vertices], indices: [...indices], propertities }
         })
     }
-    const gravity = vec3.create();
-    const rotation = quat.create();
-    const acc = vec3.create();
+    const gravity = new Vec3;
+    const rotation = new Quat;
+    const acc = new Vec3;
     const messageQueue: WorkerMessage[] = [];
     device.onmessage = (message) => messageQueue.push(message);
     let paused = true;
@@ -60,8 +60,6 @@ async function start(device: Device) {
                 type: "resetWorld",
             })
             paused = false;
-        } else if (message.type === "requestResetLevel") {
-            stage.resetLevel();
         } else if (message.type === "removeBody") {
             stage.removeBody(message.data);
         }
@@ -94,8 +92,8 @@ async function start(device: Device) {
         now += delta;
         stage.loop(delta);
         audio.process();
-        vec3.transformQuat(gravity, acc, quat.invert(rotation, rotation));
-        vec3.scale(gravity, vec3.normalize(gravity, gravity), 10);
+        gravity.copy(acc.applyQuaternion(rotation.inverse())).normalize().scale(10);
+        
         device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${gravity[0]},${gravity[1]},${gravity[2]}` })
     }
     requestAnimationFrame((t) => {

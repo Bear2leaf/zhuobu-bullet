@@ -12,7 +12,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "gl-matrix": "^3.4.3",
     "ogl": "^1.0.7"
   },
   "devDependencies": {

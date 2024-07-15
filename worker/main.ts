@@ -1,4 +1,3 @@
-import { mat4, vec3 } from "gl-matrix";
 import Ammo, { config, Module, handler, MainMessage } from "./ammo.worker.js"
 import { WorkerMessage } from "./ammo.worker.js";
 import { BodyId } from "../client/device/Device.js";
@@ -58,7 +57,15 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         })
     }
     function createBall() {
+        const old = bodies.splice(BodyId.Ball, 1)[0];
+        if (old) {
+            dynamicsWorld.removeRigidBody(old);
+            handler.postMessage({
+                type: "removeBody",
+                data: BodyId.Ball
+            })
 
+        }
         const startTransform = new Ammo.btTransform();
         startTransform.setIdentity();
         const mass = 1;
@@ -77,10 +84,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             data: BodyId.Ball
         })
     };
-    createBall();
-    handler.postMessage({
-        type: "requestResetLevel",
-    })
     const transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
 
     function readBulletObject(i: number, object: number[]) {
@@ -97,15 +100,20 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         object[6] = rotation.w();
         object[7] = i;
     }
-    const keepLength = Object.keys(BodyId).length / 2;
     function resetWorld() {
-        const remains = bodies.splice(0, keepLength);
-        for (const body of bodies) {
-            dynamicsWorld.removeRigidBody(body);
+        const keepLength = Object.keys(BodyId).length / 2;
+        while (bodies.length > keepLength) {
+            const removed = bodies.pop()!;
+            dynamicsWorld.removeRigidBody(removed);
+            handler.postMessage({
+                type: "removeBody",
+                data: bodies.length
+            })
         }
-        bodies.splice(0, bodies.length, ...remains);
-        dynamicsWorld.removeRigidBody(bodies.pop()!);
         createBall();
+        handler.postMessage({
+            type: "requestLevel",
+        })
     }
     function removeSpawnBody() {
 
@@ -173,13 +181,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         } else if (message.type === "resetWorld") {
             paused = true;
             resetWorld();
-            handler.postMessage({
-                type: "requestResetLevel",
-            })
-            handler.postMessage({
-                type: "requestLevel",
-            })
         } else if (message.type === "release") {
+
             const collisionNum = dispatcher.getNumManifolds();
             for (let index = 0; index < collisionNum; index++) {
                 // UserData
@@ -214,23 +217,11 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             if (props0) {
                 if (props0.destination) {
                     resetWorld()
-                    handler.postMessage({
-                        type: "requestResetLevel",
-                    })
-                    handler.postMessage({
-                        type: "requestLevel",
-                    })
                 }
             }
             if (props1) {
                 if (props1.destination) {
                     resetWorld()
-                    handler.postMessage({
-                        type: "requestResetLevel",
-                    })
-                    handler.postMessage({
-                        type: "requestLevel",
-                    })
                 }
             }
         }
