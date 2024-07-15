@@ -92,7 +92,7 @@ async function start(device: Device) {
         now += delta;
         stage.loop(delta);
         audio.process();
-        gravity.copy(acc.applyQuaternion(rotation.inverse())).normalize().scale(10);
+        gravity.copy(acc).applyQuaternion(rotation.inverse()).normalize().scale(10);
         
         device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${gravity[0]},${gravity[1]},${gravity[2]}` })
     }
