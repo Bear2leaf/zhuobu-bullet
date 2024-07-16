@@ -1,14 +1,5 @@
 import { MainMessage, WorkerMessage } from "../../worker/ammo.worker.js"
 
-export enum BodyId {
-  WallTop,
-  WallBottom,
-  WallLeft,
-  WallRight,
-  WallBack,
-  WallFront,
-  Ball,
-}
 export default interface Device {
   sendmessage?: (message: MainMessage) => void;
   onaccelerometerchange?: (x: number, y: number, z: number) => void;

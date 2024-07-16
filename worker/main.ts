@@ -1,22 +1,17 @@
 import Ammo, { config, Module, handler, MainMessage } from "./ammo.worker.js"
 import { WorkerMessage } from "./ammo.worker.js";
-import { BodyId } from "../client/device/Device.js";
 
 handler.onmessage = function (message) {
     this.messageQueue.push(message)
 }
 
-const halfWidth = 10;
-const halfHeight = 20;
-const halfDepth = 1;
 
 
 Ammo.bind(Module)(config).then(function (Ammo) {
-    let total = 0;
     class UserData extends Ammo.btVector3 {
         propertities?: Record<string, boolean>
     }
-    handler.postMessage({ type: "ready", halfDepth, halfHeight, halfWidth });
+    handler.postMessage({ type: "ready" });
     const DISABLE_DEACTIVATION = 4;
     const CF_KINEMATIC_OBJECT = 2;
     // Bullet-interfacing code
@@ -30,42 +25,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
 
     const bodies: Ammo.btRigidBody[] = [];
-    for (let index = 0; index < 6; index++) {
-        const originX = BodyId.WallRight === index ? halfWidth : (BodyId.WallLeft === index ? -halfWidth : 0);
-        const originY = BodyId.WallTop === index ? halfHeight : (BodyId.WallBottom === index ? -halfHeight : 0);
-        const originZ = BodyId.WallBack === index ? halfDepth : (BodyId.WallFront === index ? -halfDepth : 0);
-        const rotationY = BodyId.WallLeft === index ? Math.PI / 2 : (BodyId.WallRight === index ? -Math.PI / 2 : 0);
-        const rotationX = BodyId.WallTop === index ? Math.PI / 2 : (BodyId.WallBottom === index ? -Math.PI / 2 : (BodyId.WallBack === index ? Math.PI : 0));
-        const mass = 0;
-        const groundTransform = new Ammo.btTransform();
-        groundTransform.setIdentity();
-        groundTransform.setOrigin(new Ammo.btVector3(originX, originY, originZ));
-        const quat = new Ammo.btQuaternion(0, 0, 0, 0);
-        quat.setEulerZYX(0, rotationY, rotationX)
-        groundTransform.setRotation(quat)
-        const groundShape = new Ammo.btStaticPlaneShape(new Ammo.btVector3(0, 0, 1), 0);
-        const localInertia = new Ammo.btVector3(0, 0, 0);
-        const myMotionState = new Ammo.btDefaultMotionState(groundTransform);
-        const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, groundShape, localInertia);
-        const body = new Ammo.btRigidBody(rbInfo);
-
-        dynamicsWorld.addRigidBody(body);
-        bodies.push(body);
-        handler.postMessage({
-            type: "addBody",
-            data: index
-        })
-    }
     function createBall() {
-        const old = bodies.splice(BodyId.Ball, 1)[0];
-        if (old) {
-            dynamicsWorld.removeRigidBody(old);
-            handler.postMessage({
-                type: "removeBody",
-                data: BodyId.Ball
-            })
-
-        }
         const startTransform = new Ammo.btTransform();
         startTransform.setIdentity();
         const mass = 1;
@@ -77,11 +37,16 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, sphereShape, localInertia);
         const body = new Ammo.btRigidBody(rbInfo);
         body.setActivationState(DISABLE_DEACTIVATION);
+        const v = new UserData;
+        v.propertities = {
+            ball: true
+        };
+        body.setUserPointer(v)
         dynamicsWorld.addRigidBody(body);
         bodies.push(body);
         handler.postMessage({
             type: "addBody",
-            data: BodyId.Ball
+            data: 0
         })
     };
     const transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
@@ -101,8 +66,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         object[7] = i;
     }
     function resetWorld() {
-        const keepLength = Object.keys(BodyId).length / 2;
-        while (bodies.length > keepLength) {
+        while (bodies.length) {
             const removed = bodies.pop()!;
             dynamicsWorld.removeRigidBody(removed);
             handler.postMessage({
@@ -121,6 +85,9 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const props = Ammo.castObject(body.getUserPointer(), UserData).propertities;
             return props && props.spawn
         });
+        if (index === -1) {
+            return;
+        }
         const removeBody = bodies.splice(index, 1)[0];
         handler.postMessage({
             type: "removeBody",
@@ -176,7 +143,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             body.setUserPointer(v)
             dynamicsWorld.addRigidBody(body);
             bodies.push(body);
-            total = message.data.total;
             return;
         } else if (message.type === "resetWorld") {
             paused = true;
@@ -191,15 +157,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 const body1 = mainfold.getBody1();
                 const props0 = Ammo.castObject(body0.getUserPointer(), UserData).propertities;
                 const props1 = Ammo.castObject(body1.getUserPointer(), UserData).propertities;
-                if (props0) {
-                    if (props0.spawn) {
-                        removeSpawnBody();
-                    }
-                }
-                if (props1) {
-                    if (props1.spawn) {
-                        removeSpawnBody();
-                    }
+                if ((props0?.spawn && props1?.ball) || (props1?.spawn && props0?.ball)) {
+                    removeSpawnBody();
                 }
             }
         }
@@ -214,16 +173,12 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const body1 = mainfold.getBody1();
             const props0 = Ammo.castObject(body0.getUserPointer(), UserData).propertities;
             const props1 = Ammo.castObject(body1.getUserPointer(), UserData).propertities;
-            if (props0) {
-                if (props0.destination) {
-                    resetWorld()
-                }
+
+            if ((props0?.destination && props1?.ball) || (props1?.destination && props0?.ball)) {
+
+                resetWorld()
             }
-            if (props1) {
-                if (props1.destination) {
-                    resetWorld()
-                }
-            }
+
         }
     }
     let meanDt = 0, meanDt2 = 0, frame = 1;
@@ -237,7 +192,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             return;
         }
         dt = dt || 1;
-        dynamicsWorld.stepSimulation(dt);
+        dynamicsWorld.stepSimulation(dt, 2);
 
         let alpha;
         if (meanDt > 0) {

@@ -1,5 +1,5 @@
 import { Box, Camera, Mesh, Program, Renderer, Transform, Vec3, Plane, Sphere, GLTF, GLTFLoader, AttributeData, Orbit, GLTFProgram, Skin, Texture, Mat4, Quat, Euler } from "ogl";
-import Device, { BodyId } from "../device/Device.js";
+import Device from "../device/Device.js";
 import { WorkerMessage } from "../../worker/ammo.worker.js";
 import UI from "./UI.js";
 import Level from "./Level.js";
@@ -15,12 +15,8 @@ export default class Stage {
     private readonly matrix = new Mat4();
     private fragment: string = "";
     private vertex: string = "";
-    private started = false;
     onclick?: (tag?: string) => void;
     onorientationchange?: (quat: Quat) => void;
-    private halfWidth: number = 0;
-    private halfHeight: number = 0;
-    private halfDepth: number = 0;
 
     constructor(device: Device) {
         const [width, height, dpr] = device.getWindowInfo();
@@ -44,11 +40,6 @@ export default class Stage {
             enablePan: false
         });
     }
-    setBorder(halfWidth: number, halfHeight: number, halfDepth: number) {
-        this.halfWidth = halfWidth;
-        this.halfHeight = halfHeight;
-        this.halfDepth = halfDepth
-    }
     async load() {
 
         this.vertex = await (await fetch("resources/glsl/simple.vert.sk")).text();
@@ -67,11 +58,6 @@ export default class Stage {
             }
             this.ui.updateText("hello")
         }
-        this.started = true;
-    }
-    stop() {
-        // Stop next frame
-        this.started = false;
     }
 
     removeBody(index: number) {
@@ -81,10 +67,6 @@ export default class Stage {
 
     // Game loop
     loop = (timeStamp: number) => {
-        if (!this.started) {
-            return;
-        }
-
         this.control.update();
         this.renderer.render({ scene: this.scene, camera: this.camera });
         this.ui.render();
@@ -109,7 +91,7 @@ export default class Stage {
         const fragment = this.fragment;
         const id = message.data;
         const scene = this.scene;
-        if (id === BodyId.Ball) {
+        if (id === 0) {
             const program = new Program(this.renderer.gl, {
                 vertex,
                 fragment,
@@ -120,25 +102,6 @@ export default class Stage {
                 }
             });
             const geometry = new Sphere(gl, { radius: 1 });
-            const mesh = new Mesh(gl, {
-                geometry,
-                program,
-            });
-            mesh.setParent(scene);
-        } else {
-            const program = new Program(this.renderer.gl, {
-                vertex,
-                fragment,
-                // Don't cull faces so that plane is double sided - default is gl.BACK
-                uniforms: {
-                    uColor: {
-                        value: new Vec3(0.3, 0.3, 0.2)
-                    }
-                }
-            });
-            const width = ((BodyId.WallRight === id || BodyId.WallLeft === id) ? this.halfDepth : this.halfWidth) * 2;
-            const height = ((BodyId.WallTop === id || BodyId.WallBottom === id) ? this.halfDepth : this.halfHeight) * 2;
-            const geometry = new Plane(gl, { width, height, });
             const mesh = new Mesh(gl, {
                 geometry,
                 program,

@@ -56,7 +56,6 @@ async function start(device: Device) {
                 rotation[2] = quat.z;
                 rotation[3] = quat.w;
             }
-            stage.setBorder(message.halfWidth, message.halfHeight, message.halfDepth);
             device.sendmessage && device.sendmessage({
                 type: "resetWorld",
             })

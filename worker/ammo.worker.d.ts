@@ -27,9 +27,6 @@ export type WorkerMessage = {
     objects: number[][]; allFPS: number; currFPS: number
 } | {
     type: "ready",
-    halfWidth: number,
-    halfHeight: number,
-    halfDepth: number
 } | {
     type: "addBody",
     data: number
