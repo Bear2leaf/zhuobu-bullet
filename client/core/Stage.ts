@@ -22,7 +22,7 @@ export default class Stage {
         const [width, height, dpr] = device.getWindowInfo();
         const renderer = this.renderer = new Renderer({ dpr, canvas: device.getCanvasGL() });
         const gl = renderer.gl;
-        gl.clearColor(0.3, 0.3, 0.3, 1);
+        gl.clearColor(0.3, 0.3, 0.6, 1);
         const camera = this.camera = new Camera(gl, {
             aspect: width / height,
             fov: 45
