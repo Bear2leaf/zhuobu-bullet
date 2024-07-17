@@ -60,6 +60,9 @@ export default class Stage {
         }
     }
 
+    setInitLevel(level: number) {
+        this.level.setIndex(level);
+    }
     removeBody(index: number) {
         const child = this.scene.children[index];
         child.setParent(null);

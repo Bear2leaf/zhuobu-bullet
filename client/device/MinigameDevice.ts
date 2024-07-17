@@ -61,6 +61,9 @@ export default class MinigameDevice implements Device {
             })
         });
     }
+    getParam(name: string): string {
+        return "";
+    }
     createWebAudioContext(): AudioContext {
         return wx.createWebAudioContext() as unknown as AudioContext;
     }

@@ -5,6 +5,7 @@ export default interface Device {
   onaccelerometerchange?: (x: number, y: number, z: number) => void;
   onmessage?: (message: WorkerMessage) => void;
   createWorker(url: string): void;
+  getParam(name: string): string;
   terminateWorker(): void;
   getCanvasGL(): HTMLCanvasElement;
   getWindowInfo(): readonly [number, number, number];

@@ -82,17 +82,19 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
     return program;
 }
 export default class Level {
+    setIndex(level: number) {
+        this.current = level;
+    }
 
     private readonly gltfs: GLTF[] = new Array(4);
     private gltffragment: string = "";
     private gltfvertex: string = "";
-    private next = 0;
     private current = 0;
     onaddmesh?: (total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     constructor(private readonly gl: OGLRenderingContext) {
     }
     getIndex() {
-        return this.current + 1;
+        return (this.current + this.gltfs.length - 1) % this.gltfs.length;
     }
     async load() {
 
@@ -103,12 +105,11 @@ export default class Level {
         }
     }
     request(scene: Transform) {
-        const gltf = this.gltfs[this.next];
+        const gltf = this.gltfs[this.current];
         const total = gltf.meshes.map(mesh => mesh.primitives.length).reduce((prev, cur) => {
             prev += cur;
             return prev;
         }, 0)
-        console.log(gltf);
         gltf.meshes.forEach(mesh => {
             mesh.primitives.forEach(primitive => {
                 primitive.setParent(scene)
@@ -118,7 +119,6 @@ export default class Level {
                 attributeData && this.onaddmesh && this.onaddmesh(total, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
             })
         });
-        this.current = this.next;
-        this.next = (this.next + 1) % this.gltfs.length;
+        this.current = (this.current + 1) % this.gltfs.length;
     }
 }

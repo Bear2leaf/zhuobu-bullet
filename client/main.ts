@@ -70,6 +70,7 @@ async function start(device: Device) {
     let now = 0;
     let last = 0;
     await stage.load();
+    stage.setInitLevel(parseInt(device.getParam("level")) || 0);
     await audio.load();
     device.createWorker("dist/worker/main.js");
     stage.onclick = (tag?: string) => {
