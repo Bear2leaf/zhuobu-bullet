@@ -83,7 +83,7 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
 }
 export default class Level {
 
-    private readonly gltfs: GLTF[] = new Array(3);
+    private readonly gltfs: GLTF[] = new Array(4);
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private next = 0;

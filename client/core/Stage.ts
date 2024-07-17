@@ -64,6 +64,12 @@ export default class Stage {
         const child = this.scene.children[index];
         child.setParent(null);
     }
+    hideReleaseBtn() {
+        this.ui.getMesh("release").visible = false;
+    }
+    showReleaseBtn() {
+        this.ui.getMesh("release").visible = true;
+    }
 
     // Game loop
     loop = (timeStamp: number) => {

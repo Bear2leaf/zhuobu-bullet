@@ -44,6 +44,7 @@ async function start(device: Device) {
         } else if (message.type === "requestLevel") {
             audio.play();
             stage.requestLevel();
+            stage.showReleaseBtn()
         } else if (message.type === "ready") {
             device.onaccelerometerchange = (x, y, z) => {
                 acc[0] = x;
@@ -72,7 +73,8 @@ async function start(device: Device) {
     await audio.load();
     device.createWorker("dist/worker/main.js");
     stage.onclick = (tag?: string) => {
-        if (tag === "release" ) {
+        if (tag === "release") {
+            stage.hideReleaseBtn()
             device.sendmessage && device.sendmessage({
                 type: "release"
             })
@@ -92,9 +94,9 @@ async function start(device: Device) {
         last = t;
         now += delta;
         stage.loop(delta);
-        audio.process();
+        audio.process(delta, now);
         gravity.copy(acc).applyQuaternion(rotation.inverse()).normalize().scale(10);
-        
+
         device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${gravity[0]},${gravity[1]},${gravity[2]}` })
     }
     requestAnimationFrame((t) => {
