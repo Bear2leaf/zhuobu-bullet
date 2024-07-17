@@ -2,7 +2,6 @@ import { MainMessage, WorkerMessage } from "../../worker/ammo.worker.js"
 
 export default interface Device {
   sendmessage?: (message: MainMessage) => void;
-  onaccelerometerchange?: (x: number, y: number, z: number) => void;
   onmessage?: (message: WorkerMessage) => void;
   createWorker(url: string): void;
   getParam(name: string): string;

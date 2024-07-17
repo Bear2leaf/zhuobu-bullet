@@ -19,7 +19,6 @@ export async function mainMinigame() {
 
 
 async function start(device: Device) {
-
     const audio = new AudioManager(device);
     audio.initAudioContext();
     const stage = new Stage(device);
@@ -31,7 +30,7 @@ async function start(device: Device) {
     }
     const gravity = new Vec3;
     const rotation = new Quat;
-    const acc = new Vec3;
+    const acc = new Vec3(0, -10, 0);
     const messageQueue: WorkerMessage[] = [];
     device.onmessage = (message) => messageQueue.push(message);
     let paused = true;
@@ -46,11 +45,6 @@ async function start(device: Device) {
             stage.requestLevel();
             stage.showReleaseBtn()
         } else if (message.type === "ready") {
-            device.onaccelerometerchange = (x, y, z) => {
-                acc[0] = x;
-                acc[1] = y;
-                acc[2] = z;
-            }
             stage.onorientationchange = (quat) => {
                 rotation[0] = quat.x;
                 rotation[1] = quat.y;
@@ -65,7 +59,6 @@ async function start(device: Device) {
             stage.removeBody(message.data);
         }
     };
-    let startTime = 0;
     let delta = 0;
     let now = 0;
     let last = 0;
@@ -79,6 +72,8 @@ async function start(device: Device) {
             device.sendmessage && device.sendmessage({
                 type: "release"
             })
+        } else if (tag === "switch") {
+            acc.y = -acc.y;
         }
     }
     function update(t: number) {
@@ -101,7 +96,7 @@ async function start(device: Device) {
         device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${gravity[0]},${gravity[1]},${gravity[2]}` })
     }
     requestAnimationFrame((t) => {
-        last = startTime = t;
+        last = t;
         audio.initAudio();
         stage.start();
         update(t);

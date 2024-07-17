@@ -37,7 +37,7 @@ export default class Stage {
         this.ui = new UI(renderer);
         this.control = new Orbit(camera, {
             enableZoom: false,
-            enablePan: false
+            enablePan: false,
         });
     }
     async load() {
@@ -56,7 +56,6 @@ export default class Stage {
             this.ui.onclick = (tag) => {
                 this.onclick && this.onclick(tag);
             }
-            this.ui.updateText("hello")
         }
     }
 

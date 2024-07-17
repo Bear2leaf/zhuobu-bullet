@@ -3,7 +3,6 @@ import { WorkerMessage } from "../../worker/ammo.worker";
 import { MainMessage } from "../../worker/ammo.worker";
 export default class BrowserDevice implements Device {
     private worker?: Worker;
-    private isMouseDown: boolean;
     private readonly windowInfo: [number, number, number];
     private readonly canvasGL: HTMLCanvasElement
     constructor() {
@@ -12,10 +11,6 @@ export default class BrowserDevice implements Device {
         this.canvasGL.width = window.innerWidth
         this.canvasGL.height = window.innerHeight
         this.windowInfo = [this.canvasGL.width, this.canvasGL.height, window.devicePixelRatio];
-        this.isMouseDown = false;
-        setInterval(() => {
-            this.onaccelerometerchange && this.onaccelerometerchange(0, -10, 0);
-        }, 1000)
     }
     getParam(name: string): string {
         const query = window.location.search.substring(1);
