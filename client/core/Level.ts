@@ -1,6 +1,6 @@
 import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform } from "ogl";
 
-function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: string, isWebgl2: boolean = true) {
+function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: string, isWebgl2: boolean = true, light?: GLTF["lights"]["directional"][0]) {
 
     const gl = node.gl;
     const gltf = (node.program as GLTFProgram).gltfMaterial || {};
@@ -66,11 +66,11 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
             tLUT: { value: lutTexture },
             tEnvDiffuse: { value: envDiffuseTexture },
             tEnvSpecular: { value: envSpecularTexture },
-            uEnvDiffuse: { value: 0.5 },
-            uEnvSpecular: { value: 0.5 },
+            uEnvDiffuse: { value: 1 },
+            uEnvSpecular: { value: 1 },
 
-            uLightDirection: { value: new Vec3(0, 1, 1) },
-            uLightColor: { value: new Vec3(2.5) },
+            uLightDirection: light?.direction || { value: new Vec3(0, 1, 1) },
+            uLightColor: { value: new Vec3(1) },
 
             uAlpha: { value: 1 },
             uAlphaCutoff: { value: gltf.alphaCutoff },
@@ -108,10 +108,11 @@ export default class Level {
             prev += cur;
             return prev;
         }, 0)
+        console.log(gltf);
         gltf.meshes.forEach(mesh => {
             mesh.primitives.forEach(primitive => {
                 primitive.setParent(scene)
-                primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true)
+                primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, gltf.lights.directional[0])
                 const attributeData = primitive.geometry.getPosition().data;
                 const indices = primitive.geometry.attributes.index.data as AttributeData;
                 attributeData && this.onaddmesh && this.onaddmesh(total, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
