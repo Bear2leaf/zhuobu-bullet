@@ -44,2093 +44,1298 @@ export default class Stage {
     }
     onaddmesh?: (total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
 
-    private rx = 0;
+    private rx = 2;
     private ry = 0;
     private rz = 0;
     private readonly table: Record<string, (tag: "right" | "left" | "up" | "down") => void> = {
-        "000": (tag) => {
+        "000": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
 
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "010": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "012": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-10": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-1-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "00-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-10-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "01-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "02-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-12-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-22-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "03-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "03-2": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "03-3": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "031": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "032": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "033": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "10-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "01-2": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "01-3": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-11": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-12": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "002": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "001": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-101": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "101": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-100": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-200": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-2-10": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-21-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-210": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "0-22": (tag) => {
+        "001": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rx = (this.rx + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-2-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
                     break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "0-13": (tag) => {
+        "002": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
+                    this.rx = (this.rx + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-1-20": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "-1-30": (tag) => {
+        "003": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
+                    this.rx = (this.rx + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-110": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx = 0;
-                    this.ry = 1;
-                    this.rz = 1;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "-111": (tag) => {
+        "010": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
+                    this.rz = (this.rz + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "00-3": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "-220": (tag) => {
+        "011": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
+
                 case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rz = (this.rz + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "120": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
                     break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "12-2": (tag) => {
+        "012": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
+
                 case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rz = (this.rz + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "320": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "011": (tag) => {
+        "013": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
+
                 case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
+                    this.rz = (this.rz + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "020": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
                     break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "-300": (tag) => {
+        "020": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-3-10": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "-3-20": (tag) => {
+        "021": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-3-21": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
                     break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "1-21": (tag) => {
+        "022": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-121": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "-230": (tag) => {
+        "023": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-1-3": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "02-3": (tag) => {
+        "030": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "13-3": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "13-1": (tag) => {
+        "031": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
+
                 case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-310": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
                     break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "0-3-1": (tag) => {
+        "032": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
+
                 case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-3-2": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "0-3-3": (tag) => {
+        "033": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-31": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
                     break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "0-32": (tag) => {
+        "100": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
+                    this.rx = (this.rx + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-33": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "130": (tag) => {
+        "101": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rx = (this.rx + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "131": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
                     break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "0-30": (tag) => {
+        "102": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
+                    this.rx = (this.rx + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "20-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
                     break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "00-2": (tag) => {
+        "103": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
+                    this.rx = (this.rx + 1) % 4;
                     break;
+
                 default:
-                    throw new Error("unsupported")
-            }
-        },
-        "11-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
                     break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
             }
         },
-        "110": (tag) => {
+        "110": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.rz++;
-                    this.rz = this.rz % 4;
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
                     this.ry = 0;
-                    this.rz = -1;
+                    this.rz = 3;
                     break;
                 case "down":
-                    this.ry++;
-                    this.ry = this.ry % 4;
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 1;
                     break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "1-10": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "1-30": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-1-10": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-1-11": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "02-2": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "030": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                case "down":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "220": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "230": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "100": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "200": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "300": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "013": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rz--;
-                    this.rz = this.rz < -3 ? 0 : this.rz;
-                    break;
-                case "down":
-                    this.rz++;
-                    this.rz = this.rz % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-120": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-130": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-20": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "1-20": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "2-20": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "3-10": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "3-20": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "3-30": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "0-21": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "121": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "12-1": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                case "down":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
-        "-10-2": (tag) => {
-            switch (tag) {
-                case "right":
-                    this.ry++;
-                    this.ry = this.ry % 4;
-                    break;
-                case "left":
-                    this.ry--;
-                    this.ry = this.ry < -3 ? 0 : this.ry;
-                    break;
-                case "up":
-                    this.rx--;
-                    this.rx = this.rx < -3 ? 0 : this.rx;
-                    break;
-                case "down":
-                    this.rx++;
-                    this.rx = this.rx % 4;
-                    break;
-                default:
-                    throw new Error("unsupported")
-            }
-        },
 
-    };
+                default:
+                    break;
+            }
+        },
+        "111": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 0;
+                    break;
+                case "down":
+                    this.rx = 2;
+                    this.ry = 0;
+                    this.rz = 0;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "112": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 1;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 3;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "113": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 2;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 0;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "120": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "121": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "122": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "123": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "130": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 1;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 3;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "131": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 2;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 0;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "132": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 3;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 1;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "133": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 0;
+                    break;
+                case "down":
+                    this.rx = 2;
+                    this.ry = 0;
+                    this.rz = 0;
+                    break;
+                default:
+                    break;
+            }
+        },
+        "200": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "201": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "202": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "203": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "210": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rz = (this.rz + 1) % 4;
+                    break;
+                case "down":
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "211": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rz = (this.rz + 1) % 4;
+                    break;
+                case "down":
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "212": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rz = (this.rz + 1) % 4;
+                    break;
+                case "down":
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "213": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rz = (this.rz + 1) % 4;
+                    break;
+                case "down":
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "220": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "221": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "222": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "223": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "230": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
+                    break;
+                case "down":
+                    this.rz = (this.rz + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "231": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
+                    break;
+                case "down":
+                    this.rz = (this.rz + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "232": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
+                    break;
+                case "down":
+                    this.rz = (this.rz + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "233": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
+                    break;
+                case "down":
+                    this.rz = (this.rz + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "300": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "301": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "302": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "303": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "310": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 3;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 1;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "311": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 2;
+                    this.ry = 0;
+                    this.rz = 2;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 2;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "312": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "313": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 2;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 0;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "320": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "321": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "322": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "323": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+                case "down":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "330": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 1;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 3;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "331": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 2;
+                    this.ry = 0;
+                    this.rz = 0;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 0;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "332": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
+                    break;
+                case "down":
+                    this.rx = (this.rx + 1) % 4;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+        "333": (tag: "right" | "left" | "up" | "down") => {
+            switch (tag) {
+                case "right":
+                    this.ry = (this.ry + 1) % 4;
+                    break;
+                case "left":
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
+                    break;
+                case "up":
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 0;
+                    break;
+                case "down":
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 2;
+                    break;
+
+                default:
+                    break;
+            }
+        },
+    }
+
     rollCamera(tag: "right" | "left" | "up" | "down") {
         const key = `${this.rx}${this.ry}${this.rz}`;
-        console.log(key)
         this.table[key](tag);
+        console.log(key, tag, this.rx, this.ry, this.rz)
         this.sceneRotation.set(this.rx * Math.PI / 2, this.ry * Math.PI / 2, this.rz * Math.PI / 2);
         this.t = 0;
     }
     start() {
         const scene = this.scene;
         scene.scale.multiply(0.01);
+        this.sceneRotation.set(this.rx * Math.PI / 2, this.ry * Math.PI / 2, this.rz * Math.PI / 2);
         {
             this.ui.init();
             this.ui.onclick = (tag) => {
