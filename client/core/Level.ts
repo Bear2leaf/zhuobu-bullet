@@ -1,4 +1,4 @@
-import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform } from "ogl";
+import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform, Box, Raycast, Vec2, Renderer, Camera } from "ogl";
 
 function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: string, isWebgl2: boolean = true, light?: GLTF["lights"]["directional"][0]) {
 
@@ -82,14 +82,13 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
     return program;
 }
 export default class Level {
-    setIndex(level: number) {
-        this.current = level;
-    }
 
+    private readonly mouse = new Vec2();
     private readonly gltfs: GLTF[] = new Array(4);
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
+    onclick?: (tag?: string) => void;
     onaddmesh?: (total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     constructor(private readonly gl: OGLRenderingContext) {
     }
@@ -103,6 +102,9 @@ export default class Level {
         for (let index = 0; index < this.gltfs.length; index++) {
             this.gltfs[index] = (await GLTFLoader.load(this.gl, `resources/gltf/Level${index}.glb`));
         }
+    }
+    setIndex(level: number) {
+        this.current = level;
     }
     request(scene: Transform) {
         const gltf = this.gltfs[this.current];

@@ -17,6 +17,55 @@ export async function mainMinigame() {
     return device;
 }
 
+function initStageTouchEvents(stage: Stage) {
+
+    let xDown: number | null = null;
+    let yDown: number | null = null;
+
+    function getTouches(evt: TouchEvent) {
+        return evt.touches
+    }
+
+    function handleTouchStart(evt: TouchEvent) {
+        const firstTouch = getTouches(evt)[0];
+        xDown = firstTouch.clientX;
+        yDown = firstTouch.clientY;
+    };
+
+    function handleTouchMove(evt: TouchEvent) {
+        if (!xDown || !yDown) {
+            return;
+        }
+
+        const xUp = evt.touches[0].clientX;
+        const yUp = evt.touches[0].clientY;
+
+        const xDiff = xUp - xDown;
+        const yDiff = yDown - yUp
+        if (Math.abs(xDiff) > Math.abs(yDiff)) {/*most significant*/
+            if (xDiff > 0) {
+                /* right swipe */
+                stage.rollCamera("right")
+            } else {
+                /* left swipe */
+                stage.rollCamera("left")
+            }
+        } else {
+            if (yDiff > 0) {
+                /* up swipe */
+                stage.rollCamera("up")
+            } else {
+                /* down swipe */
+                stage.rollCamera("down")
+            }
+        }
+        /* reset values */
+        xDown = null;
+        yDown = null;
+    };
+    document.addEventListener("touchstart", handleTouchStart);
+    document.addEventListener("touchmove", handleTouchMove);
+}
 
 async function start(device: Device) {
     const audio = new AudioManager(device);
@@ -72,8 +121,6 @@ async function start(device: Device) {
             device.sendmessage && device.sendmessage({
                 type: "release"
             })
-        } else if (tag === "switch") {
-            acc.y = -acc.y;
         }
     }
     function update(t: number) {
@@ -99,6 +146,7 @@ async function start(device: Device) {
         last = t;
         audio.initAudio();
         stage.start();
+        initStageTouchEvents(stage);
         update(t);
     });
 }

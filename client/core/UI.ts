@@ -42,13 +42,6 @@ export default class UI {
 
         const releaseBg = new Mesh(gl);
         releaseBg.setParent(release);
-        const gravitySwitch = new Mesh(gl);
-        gravitySwitch.name = "switch"
-        gravitySwitch.position.y = -8 * dpr;
-        gravitySwitch.setParent(this.scene);
-
-        const gravitySwitchBg = new Mesh(gl);
-        gravitySwitchBg.setParent(gravitySwitch);
 
         const mouse = this.mouse;
         // Create a raycast object
@@ -62,7 +55,7 @@ export default class UI {
 
             // raycast.intersectBounds will test against the bounds of each mesh, and
             // return an array of intersected meshes in order of closest to farthest
-            const hits = raycast.intersectBounds([info, releaseBg, gravitySwitchBg]);
+            const hits = raycast.intersectBounds([info, releaseBg]);
 
             // Can intersect with geometry if the bounds aren't enough, or if you need
             // to find out the uv or normal value at the hit point.
@@ -79,35 +72,11 @@ export default class UI {
             // Update our feedback using this array
             hits.forEach(hit => {
                 this.onclick && this.onclick(hit.name || hit.parent?.name);
-                if (hit.parent?.name === "switch") {
-                    this.onSwitchClick();
-                }
             })
         }
 
         document.addEventListener("click", touch)
         document.addEventListener("touchstart", (e) => touch({ x: e.touches[0].pageX, y: e.touches[0].pageY }))
-    }
-    private invertGravity = false;
-    onSwitchClick() {
-        this.invertGravity = !this.invertGravity;
-        const font = this.fontData;
-        const context = this.renderer.gl;
-        if (font === undefined) {
-            throw new Error("font is undefined");
-        }
-        const text = new Text({
-            font,
-            text: `SWITCH${this.invertGravity ? "-" : "+"}`,
-            align: "center",
-        });
-        this.getMesh("switch").geometry = new Geometry(context, {
-            position: { size: 3, data: text.buffers.position },
-            uv: { size: 2, data: text.buffers.uv },
-            // id provides a per-character index, for effects that may require it
-            id: { size: 1, data: text.buffers.id },
-            index: { data: text.buffers.index },
-        });
     }
     getMesh(name: string) {
         const mesh = this.scene.children.find(t => t.name === name && t instanceof Mesh) as Mesh;
@@ -156,15 +125,6 @@ export default class UI {
             depthWrite: false,
             uniforms: { tMap: { value: this.releaseBgTexture }, uDimension: { value: [0, 0] } },
         });
-        this.getMesh("switch").program = program;
-        this.getBgMesh("switch").program = new Program(gl, {
-            vertex: this.bgVertex,
-            fragment: this.bgFragment,
-            transparent: true,
-            cullFace: false,
-            depthWrite: false,
-            uniforms: { tMap: { value: this.releaseBgTexture }, uDimension: { value: [0, 0] } },
-        });
     }
     init() {
         const gl = this.renderer.gl;
@@ -203,28 +163,6 @@ export default class UI {
         });
         this.getBgMesh("release").program.uniforms.uDimension.value = dimension.reverse().map(x => x / 10);
         this.getBgMesh("release").position.y += offset / 2;
-        const gravitySwitchText = new Text({
-            font,
-            text: "SWITCH+",
-            align: "center",
-        });
-        const gravitySwitch = this.getMesh("switch");
-        gravitySwitch.geometry = new Geometry(gl, {
-            position: { size: 3, data: gravitySwitchText.buffers.position },
-            uv: { size: 2, data: gravitySwitchText.buffers.uv },
-            // id provides a per-character index, for effects that may require it
-            id: { size: 1, data: gravitySwitchText.buffers.id },
-            index: { data: gravitySwitchText.buffers.index },
-        });
-        gravitySwitch.geometry.computeBoundingBox();
-        const offset0 = gravitySwitch.geometry.bounds.max.y + gravitySwitch.geometry.bounds.min.y;
-        const dimension0 = [Math.abs(gravitySwitch.geometry.bounds.max.x - gravitySwitch.geometry.bounds.min.x) + 1, gravitySwitch.geometry.bounds.max.y - gravitySwitch.geometry.bounds.min.y + 1];
-        this.getBgMesh("switch").geometry = new Plane(gl, {
-            width: dimension0[0],
-            height: dimension0[1],
-        });
-        this.getBgMesh("switch").program.uniforms.uDimension.value = dimension0.reverse().map(x => x / 10);
-        this.getBgMesh("switch").position.y += offset0 / 2;
     }
     updateText(data: string) {
         const font = this.fontData;
