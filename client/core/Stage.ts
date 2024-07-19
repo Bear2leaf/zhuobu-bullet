@@ -45,8 +45,8 @@ export default class Stage {
     onaddmesh?: (total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
 
     private rx = 2;
-    private ry = 0;
-    private rz = 0;
+    private ry = 3;
+    private rz = 1;
     private readonly table: Record<string, (tag: "right" | "left" | "up" | "down") => void> = {
         "000": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
@@ -1126,10 +1126,14 @@ export default class Stage {
                     this.ry = (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 1;
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 3;
                     break;
 
                 default:
@@ -1290,10 +1294,14 @@ export default class Stage {
                     this.ry = (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = 0;
+                    this.ry = 2;
+                    this.rz = 3;
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = 0;
+                    this.ry = 0;
+                    this.rz = 1;
                     break;
 
                 default:
