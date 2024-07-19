@@ -51,16 +51,16 @@ export default class Stage {
         "000": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -70,16 +70,16 @@ export default class Stage {
         "001": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -89,16 +89,16 @@ export default class Stage {
         "002": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -108,16 +108,16 @@ export default class Stage {
         "003": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -127,16 +127,16 @@ export default class Stage {
         "010": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
 
                 default:
@@ -146,17 +146,17 @@ export default class Stage {
         "011": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
 
                 case "up":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
 
                 default:
@@ -166,17 +166,17 @@ export default class Stage {
         "012": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
 
                 case "up":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
 
                 default:
@@ -186,17 +186,17 @@ export default class Stage {
         "013": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
 
                 case "up":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
 
                 default:
@@ -206,16 +206,16 @@ export default class Stage {
         "020": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -225,16 +225,16 @@ export default class Stage {
         "021": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -244,16 +244,16 @@ export default class Stage {
         "022": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -263,16 +263,16 @@ export default class Stage {
         "023": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -282,16 +282,16 @@ export default class Stage {
         "030": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
 
                 default:
@@ -301,17 +301,17 @@ export default class Stage {
         "031": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
 
                 case "up":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
 
                 default:
@@ -321,17 +321,17 @@ export default class Stage {
         "032": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
 
                 case "up":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
 
                 default:
@@ -341,16 +341,16 @@ export default class Stage {
         "033": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 default:
                     break;
@@ -359,16 +359,16 @@ export default class Stage {
         "100": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -378,16 +378,16 @@ export default class Stage {
         "101": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -397,16 +397,16 @@ export default class Stage {
         "102": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -416,16 +416,16 @@ export default class Stage {
         "103": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -435,10 +435,10 @@ export default class Stage {
         "110": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -458,10 +458,10 @@ export default class Stage {
         "111": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -481,10 +481,10 @@ export default class Stage {
         "112": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -504,10 +504,10 @@ export default class Stage {
         "113": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -527,16 +527,16 @@ export default class Stage {
         "120": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -546,16 +546,16 @@ export default class Stage {
         "121": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -565,16 +565,16 @@ export default class Stage {
         "122": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -584,16 +584,16 @@ export default class Stage {
         "123": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -603,10 +603,10 @@ export default class Stage {
         "130": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -626,10 +626,10 @@ export default class Stage {
         "131": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -649,10 +649,10 @@ export default class Stage {
         "132": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -672,10 +672,10 @@ export default class Stage {
         "133": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -694,16 +694,16 @@ export default class Stage {
         "200": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -713,16 +713,16 @@ export default class Stage {
         "201": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -732,16 +732,16 @@ export default class Stage {
         "202": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -751,16 +751,16 @@ export default class Stage {
         "203": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -770,16 +770,16 @@ export default class Stage {
         "210": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
 
                 default:
@@ -789,16 +789,16 @@ export default class Stage {
         "211": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
 
                 default:
@@ -808,16 +808,16 @@ export default class Stage {
         "212": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
 
                 default:
@@ -827,16 +827,16 @@ export default class Stage {
         "213": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
                 case "down":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
 
                 default:
@@ -846,16 +846,16 @@ export default class Stage {
         "220": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -865,16 +865,16 @@ export default class Stage {
         "221": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -884,16 +884,16 @@ export default class Stage {
         "222": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -903,16 +903,16 @@ export default class Stage {
         "223": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -922,16 +922,16 @@ export default class Stage {
         "230": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
 
                 default:
@@ -941,16 +941,16 @@ export default class Stage {
         "231": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
 
                 default:
@@ -960,16 +960,16 @@ export default class Stage {
         "232": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
 
                 default:
@@ -979,16 +979,16 @@ export default class Stage {
         "233": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rz = (this.rz - 1);
+                    this.rz = this.rz === 0 ? 3 : (this.rz - 1);
                     break;
                 case "down":
-                    this.rz = (this.rz + 1);
+                    this.rz = (this.rz + 1) % 4;
                     break;
 
                 default:
@@ -998,16 +998,16 @@ export default class Stage {
         "300": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -1017,16 +1017,16 @@ export default class Stage {
         "301": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -1036,16 +1036,16 @@ export default class Stage {
         "302": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -1055,16 +1055,16 @@ export default class Stage {
         "303": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
                 case "down":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
 
                 default:
@@ -1074,10 +1074,10 @@ export default class Stage {
         "310": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -1097,10 +1097,10 @@ export default class Stage {
         "311": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 2;
@@ -1120,10 +1120,10 @@ export default class Stage {
         "312": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -1143,10 +1143,10 @@ export default class Stage {
         "313": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -1166,16 +1166,16 @@ export default class Stage {
         "320": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -1185,16 +1185,16 @@ export default class Stage {
         "321": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -1204,16 +1204,16 @@ export default class Stage {
         "322": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -1223,16 +1223,16 @@ export default class Stage {
         "323": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
-                    this.rx = (this.rx + 1);
+                    this.rx = (this.rx + 1) % 4;
                     break;
                 case "down":
-                    this.rx = (this.rx - 1);
+                    this.rx = this.rx === 0 ? 3 : (this.rx - 1);
                     break;
 
                 default:
@@ -1242,10 +1242,10 @@ export default class Stage {
         "330": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -1265,10 +1265,10 @@ export default class Stage {
         "331": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 2;
@@ -1288,10 +1288,10 @@ export default class Stage {
         "332": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -1311,10 +1311,10 @@ export default class Stage {
         "333": (tag: "right" | "left" | "up" | "down") => {
             switch (tag) {
                 case "right":
-                    this.ry = (this.ry + 1);
+                    this.ry = (this.ry + 1) % 4;
                     break;
                 case "left":
-                    this.ry = (this.ry - 1);
+                    this.ry = this.ry === 0 ? 3 : (this.ry - 1);
                     break;
                 case "up":
                     this.rx = 0;
@@ -1334,7 +1334,7 @@ export default class Stage {
     }
 
     rollCamera(tag: "right" | "left" | "up" | "down") {
-        const key = `${this.rx < 0 ? 3 : (this.rx % 4)}${this.ry < 0 ? 3 : (this.ry % 4)}${this.rz < 0 ? 3 : (this.rz % 4)}`;
+        const key = `${this.rx}${this.ry}${this.rz}`;
         this.table[key](tag);
         console.log(key, tag, this.rx, this.ry, this.rz)
         this.sceneRotation.set(this.rx * Math.PI / 2, this.ry * Math.PI / 2, this.rz * Math.PI / 2);
