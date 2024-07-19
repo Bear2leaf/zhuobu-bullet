@@ -1369,15 +1369,17 @@ export default class Stage {
         this.ui.getMesh("release").visible = true;
     }
     private readonly sceneRotation = new Vec3();
-    private readonly tempRotation = new Vec3();
+    private readonly sceneEuler = new Euler();
+    private readonly sceneQuat = new Quat();
+    private readonly tempQuat = new Quat();
     private t = 0;
     // Game loop
     loop = (timeStamp: number) => {
         this.t += timeStamp;
-        this.tempRotation.lerp(this.sceneRotation, Math.min(1, this.t));
-        this.scene.rotation.x = this.tempRotation.x;
-        this.scene.rotation.y = this.tempRotation.y;
-        this.scene.rotation.z = this.tempRotation.z;
+        this.sceneEuler.set(this.sceneRotation.x, this.sceneRotation.y, this.sceneRotation.z);
+        this.sceneQuat.fromEuler(this.sceneEuler);
+        this.tempQuat.slerp(this.sceneQuat, Math.min(1, this.t));
+        this.scene.quaternion.copy(this.tempQuat);
         this.renderer.render({ scene: this.scene, camera: this.camera });
         this.ui.render();
         this.quat.fill(0)
