@@ -133,13 +133,28 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 )
             }
 
-            const shape = new Ammo.btBvhTriangleMeshShape(mesh, true);
+            let shape
+            const v = new UserData;
+            v.propertities = message.data.propertities;
+            if (v.propertities?.dynamic) {
+                shape = new Ammo.btConvexHullShape();
+                for (let i = 0; i < newVertices.length / 3; i++) {
+                    vertex0.setValue(newVertices[i * 3 + 0], newVertices[i * 3 + 1], newVertices[i * 3 + 2]);
+                    shape.addPoint(vertex0);
+                }
+                shape.calculateLocalInertia(mass, localInertia);
+            } else {
+                shape = new Ammo.btBvhTriangleMeshShape(mesh, true);
+            }
             const myMotionState = new Ammo.btDefaultMotionState(startTransform);
             const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
             const body = new Ammo.btRigidBody(rbInfo);
 
-            const v = new UserData;
-            v.propertities = message.data.propertities;
+            if (v.propertities?.dynamic) {
+                body.setCollisionFlags(body.getCollisionFlags() | 2)
+            } else {
+
+            }
             body.setUserPointer(v)
             dynamicsWorld.addRigidBody(body);
             bodies.push(body);
@@ -190,6 +205,20 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         }
         if (paused) {
             return;
+        }
+
+
+        {
+
+            for (const body of bodies) {
+                const props = Ammo.castObject(body.getUserPointer(), UserData).propertities;
+                if (props && props.dynamic) {
+                    const state = body.getMotionState();
+                    transform.setOrigin(new Ammo.btVector3(0, 5 * Math.sin(frame / 100), 0))
+                    state.setWorldTransform(transform)
+                    body.setMotionState(state);
+                }
+            }
         }
         dt = dt || 1;
         dynamicsWorld.stepSimulation(dt, 2);

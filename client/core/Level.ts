@@ -84,7 +84,7 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
 export default class Level {
 
     private readonly mouse = new Vec2();
-    private readonly gltfs: GLTF[] = new Array(4);
+    private readonly gltfs: GLTF[] = new Array(6);
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
