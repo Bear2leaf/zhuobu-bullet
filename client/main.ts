@@ -22,23 +22,19 @@ function initStageTouchEvents(stage: Stage) {
     let xDown: number | null = null;
     let yDown: number | null = null;
 
-    function getTouches(evt: TouchEvent) {
-        return evt.touches
-    }
 
-    function handleTouchStart(evt: TouchEvent) {
-        const firstTouch = getTouches(evt)[0];
-        xDown = firstTouch.clientX;
-        yDown = firstTouch.clientY;
+    function handleTouchStart(x: number, y: number) {
+        xDown = x;
+        yDown = y;
     };
 
-    function handleTouchMove(evt: TouchEvent) {
+    function handleTouchMove(x: number, y: number) {
         if (!xDown || !yDown) {
             return;
         }
 
-        const xUp = evt.touches[0].clientX;
-        const yUp = evt.touches[0].clientY;
+        const xUp = x;
+        const yUp = y;
 
         const xDiff = xUp - xDown;
         const yDiff = yDown - yUp
@@ -63,8 +59,28 @@ function initStageTouchEvents(stage: Stage) {
         xDown = null;
         yDown = null;
     };
-    document.addEventListener("touchstart", handleTouchStart);
-    document.addEventListener("touchmove", handleTouchMove);
+    document.addEventListener("touchstart", (ev) => handleTouchStart(ev.touches[0].clientX, ev.touches[0].clientY));
+    document.addEventListener("touchmove", (ev) => handleTouchMove(ev.touches[0].clientX, ev.touches[0].clientY));
+    document.addEventListener("keydown", (ev) => {
+        console.log(ev.key)
+        switch (ev.key) {
+            case "ArrowUp":
+                stage.rollCamera("up");
+                break;
+            case "ArrowDown":
+                stage.rollCamera("down");
+                break;
+            case "ArrowLeft":
+                stage.rollCamera("left");
+                break;
+            case "ArrowRight":
+                stage.rollCamera("right");
+                break;
+
+            default:
+                break;
+        }
+    })
 }
 
 async function start(device: Device) {
