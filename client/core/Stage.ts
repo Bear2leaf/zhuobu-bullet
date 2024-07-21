@@ -36,8 +36,8 @@ export default class Stage {
         camera.position.z = 0.5;
         renderer.setSize(width, height);
         this.level = new Level(renderer.gl);
-        this.level.onaddmesh = (total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
-            this.onaddmesh && this.onaddmesh(total, vertices, indices, propertities);
+        this.level.onaddmesh = (transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
+            this.onaddmesh && this.onaddmesh(transform, vertices, indices, propertities);
         }
         this.scene = new Transform();
         this.ui = new UI(renderer);
@@ -49,7 +49,7 @@ export default class Stage {
         await this.ui.load();
         await this.level.load();
     }
-    onaddmesh?: (total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
+    onaddmesh?: (transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
 
     rollCamera(tag: "right" | "left" | "up" | "down") {
         const rotation = this.rotation;

@@ -116,7 +116,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             startTransform.setIdentity();
             const mass = 0;
             const localInertia = new Ammo.btVector3(0, 0, 0);
-            const mesh = new Ammo.btTriangleMesh();
+            const transform = message.data.transform;
             const vertices = message.data.vertices;
             const indices = message.data.indices;
             const newVertices: number[] = [];
@@ -124,32 +124,19 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 const i = indices[index];
                 newVertices.push(vertices[i * 3 + 0], vertices[i * 3 + 1], vertices[i * 3 + 2])
             }
-            for (let i = 0; i < newVertices.length / 9; i++) {
-                vertex0.setValue(newVertices[i * 9 + 0], newVertices[i * 9 + 1], newVertices[i * 9 + 2]);
-                vertex1.setValue(newVertices[i * 9 + 3], newVertices[i * 9 + 4], newVertices[i * 9 + 5]);
-                vertex2.setValue(newVertices[i * 9 + 6], newVertices[i * 9 + 7], newVertices[i * 9 + 8]);
-                mesh.addTriangle(
-                    vertex0, vertex1, vertex2
-                )
+            startTransform.setFromOpenGLMatrix(transform);
+            const shape = new Ammo.btConvexHullShape();
+            for (let i = 0; i < newVertices.length / 3; i++) {
+                vertex0.setValue(newVertices[i * 3 + 0], newVertices[i * 3 + 1], newVertices[i * 3 + 2]);
+                shape.addPoint(vertex0);
             }
-
-            let shape
+            shape.calculateLocalInertia(mass, localInertia);
             const v = new UserData;
             v.propertities = message.data.propertities;
-            if (v.propertities?.dynamic) {
-                shape = new Ammo.btConvexHullShape();
-                for (let i = 0; i < newVertices.length / 3; i++) {
-                    vertex0.setValue(newVertices[i * 3 + 0], newVertices[i * 3 + 1], newVertices[i * 3 + 2]);
-                    shape.addPoint(vertex0);
-                }
-                shape.calculateLocalInertia(mass, localInertia);
-            } else {
-                shape = new Ammo.btBvhTriangleMeshShape(mesh, true);
-            }
             const myMotionState = new Ammo.btDefaultMotionState(startTransform);
             const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
             const body = new Ammo.btRigidBody(rbInfo);
-
+            
             if (v.propertities?.dynamic) {
                 body.setCollisionFlags(body.getCollisionFlags() | 2)
             } else {
@@ -207,21 +194,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             return;
         }
 
-
-        {
-
-            for (const body of bodies) {
-                const props = Ammo.castObject(body.getUserPointer(), UserData).propertities;
-                if (props && props.dynamic) {
-                    const state = body.getMotionState();
-                    transform.setOrigin(new Ammo.btVector3(0, 5 * Math.sin(frame / 100), 0))
-                    state.setWorldTransform(transform)
-                    body.setMotionState(state);
-                }
-            }
-        }
         dt = dt || 1;
-        dynamicsWorld.stepSimulation(dt, 2);
+        dynamicsWorld.stepSimulation(dt, CF_KINEMATIC_OBJECT);
 
         let alpha;
         if (meanDt > 0) {

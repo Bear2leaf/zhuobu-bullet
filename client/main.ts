@@ -71,10 +71,10 @@ async function start(device: Device) {
     const audio = new AudioManager(device);
     audio.initAudioContext();
     const stage = new Stage(device);
-    stage.onaddmesh = (total, vertices, indices, propertities) => {
+    stage.onaddmesh = (transform, vertices, indices, propertities) => {
         device.sendmessage && device.sendmessage({
             type: "addMesh",
-            data: { total, vertices: [...vertices], indices: [...indices], propertities }
+            data: { vertices: [...vertices], indices: [...indices], propertities, transform }
         })
     }
     const gravity = new Vec3;

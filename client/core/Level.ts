@@ -1,4 +1,4 @@
-import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform, Box, Raycast, Vec2, Renderer, Camera } from "ogl";
+import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform, Box, Raycast, Vec2, Renderer, Camera, Mat4 } from "ogl";
 
 function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: string, isWebgl2: boolean = true, light?: GLTF["lights"]["directional"][0]) {
 
@@ -88,8 +88,9 @@ export default class Level {
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
+    private readonly identity = new Mat4().identity();
     onclick?: (tag?: string) => void;
-    onaddmesh?: (total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
+    onaddmesh?: (transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     constructor(private readonly gl: OGLRenderingContext) {
     }
     getIndex() {
@@ -108,17 +109,14 @@ export default class Level {
     }
     request(scene: Transform) {
         const gltf = this.gltfs[this.current];
-        const total = gltf.meshes.map(mesh => mesh.primitives.length).reduce((prev, cur) => {
-            prev += cur;
-            return prev;
-        }, 0)
         gltf.meshes.forEach(mesh => {
             mesh.primitives.forEach(primitive => {
-                primitive.setParent(scene)
                 primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, gltf.lights.directional[0])
                 const attributeData = primitive.geometry.getPosition().data;
                 const indices = primitive.geometry.attributes.index.data as AttributeData;
-                attributeData && this.onaddmesh && this.onaddmesh(total, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
+                const transform = primitive.parent?.worldMatrix || this.identity;
+                primitive.parent?.setParent(scene)
+                attributeData && this.onaddmesh && this.onaddmesh(transform, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
             })
         });
         this.current = (this.current + 1) % this.gltfs.length;

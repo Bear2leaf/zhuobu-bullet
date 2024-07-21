@@ -16,7 +16,7 @@ export type MainMessage = {
     data: string
 } | {
     type: "addMesh",
-    data: { total: number, vertices: number[], indices: number[], propertities?: Record<string, boolean> }
+    data: { vertices: number[], indices: number[], propertities?: Record<string, boolean>, transform: number[] }
 } | {
     type: "resetWorld",
 } | {
