@@ -66,7 +66,7 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
             tLUT: { value: lutTexture },
             tEnvDiffuse: { value: envDiffuseTexture },
             tEnvSpecular: { value: envSpecularTexture },
-            uEnvDiffuse: { value: 1 },
+            uEnvDiffuse: { value: 0.75 },
             uEnvSpecular: { value: 1 },
 
             uLightDirection: light?.direction || { value: new Vec3(0, 1, 1) },
@@ -107,6 +107,7 @@ export default class Level {
     setIndex(level: number) {
         this.current = level;
     }
+    private readonly originTransformMap = new Map<string, Mat4>();
     request(scene: Transform) {
         const gltf = this.gltfs[this.current];
         gltf.meshes.forEach(mesh => {
@@ -115,6 +116,16 @@ export default class Level {
                 const attributeData = primitive.geometry.getPosition().data;
                 const indices = primitive.geometry.attributes.index.data as AttributeData;
                 const transform = primitive.parent?.worldMatrix || this.identity;
+                const name = primitive.name;
+                if (!name) {
+                    throw new Error("name is undefined");
+                }
+                const originTransform = this.originTransformMap.get(name);
+                if (!originTransform) {
+                    this.originTransformMap.set(name, new Mat4().copy(transform));
+                } else {
+                    primitive.parent?.worldMatrix.copy(originTransform);
+                }
                 primitive.parent?.setParent(scene)
                 attributeData && this.onaddmesh && this.onaddmesh(transform, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
             })

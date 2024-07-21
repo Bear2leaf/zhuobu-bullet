@@ -101,7 +101,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     const vertex0 = new Ammo.btVector3;
     const vertex1 = new Ammo.btVector3;
     const vertex2 = new Ammo.btVector3;
-    let paused = true;
     function messageHandler(message: MainMessage) {
         if (message.type === "updateGravity") {
             const g = message.data.split(",").map(x => parseFloat(x));
@@ -111,9 +110,9 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             dynamicsWorld.setGravity(gravity);
             return;
         } else if (message.type === "addMesh") {
-            paused = false;
             const startTransform = new Ammo.btTransform();
             startTransform.setIdentity();
+
             const mass = 0;
             const localInertia = new Ammo.btVector3(0, 0, 0);
             const transform = message.data.transform;
@@ -125,41 +124,47 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 newVertices.push(vertices[i * 3 + 0], vertices[i * 3 + 1], vertices[i * 3 + 2])
             }
             startTransform.setFromOpenGLMatrix(transform);
-            const shape = new Ammo.btConvexHullShape();
-            for (let i = 0; i < newVertices.length / 3; i++) {
-                vertex0.setValue(newVertices[i * 3 + 0], newVertices[i * 3 + 1], newVertices[i * 3 + 2]);
-                shape.addPoint(vertex0);
-            }
-            shape.calculateLocalInertia(mass, localInertia);
+            let shape
+            const myMotionState = new Ammo.btDefaultMotionState(startTransform);
+
             const v = new UserData;
             v.propertities = message.data.propertities;
-            const myMotionState = new Ammo.btDefaultMotionState(startTransform);
-            const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
-            const body = new Ammo.btRigidBody(rbInfo);
-            
             if (v.propertities?.dynamic) {
-                body.setCollisionFlags(body.getCollisionFlags() | 2)
+                shape = new Ammo.btConvexHullShape();
+                for (let i = 0; i < newVertices.length / 3; i++) {
+                    vertex0.setValue(newVertices[i * 3 + 0], newVertices[i * 3 + 1], newVertices[i * 3 + 2]);
+                    shape.addPoint(vertex0);
+                }
             } else {
 
+                const mesh = new Ammo.btTriangleMesh();
+
+                for (let i = 0; i < newVertices.length / 9; i++) {
+                    vertex0.setValue(newVertices[i * 9 + 0], newVertices[i * 9 + 1], newVertices[i * 9 + 2]);
+                    vertex1.setValue(newVertices[i * 9 + 3], newVertices[i * 9 + 4], newVertices[i * 9 + 5]);
+                    vertex2.setValue(newVertices[i * 9 + 6], newVertices[i * 9 + 7], newVertices[i * 9 + 8]);
+                    mesh.addTriangle(vertex0, vertex1, vertex2)
+                }
+                shape = new Ammo.btBvhTriangleMeshShape(mesh, true);
+            }
+            shape.calculateLocalInertia(mass, localInertia);
+            const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
+            const body = new Ammo.btRigidBody(rbInfo);
+            if (v.propertities?.dynamic) {
+                body.setCollisionFlags(body.getCollisionFlags() | 2)
             }
             body.setUserPointer(v)
             dynamicsWorld.addRigidBody(body);
             bodies.push(body);
             return;
         } else if (message.type === "resetWorld") {
-            paused = true;
             resetWorld();
         } else if (message.type === "release") {
 
-            const collisionNum = dispatcher.getNumManifolds();
-            for (let index = 0; index < collisionNum; index++) {
+            for (let index = 0; index < bodies.length; index++) {
                 // UserData
-                const mainfold = dispatcher.getManifoldByIndexInternal(index);
-                const body0 = mainfold.getBody0();
-                const body1 = mainfold.getBody1();
-                const props0 = Ammo.castObject(body0.getUserPointer(), UserData).propertities;
-                const props1 = Ammo.castObject(body1.getUserPointer(), UserData).propertities;
-                if ((props0?.spawn && props1?.ball) || (props1?.spawn && props0?.ball)) {
+                const props0 = Ammo.castObject(bodies[index].getUserPointer(), UserData).propertities;
+                if (props0?.spawn) {
                     removeSpawnBody();
                 }
             }
@@ -177,7 +182,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const props1 = Ammo.castObject(body1.getUserPointer(), UserData).propertities;
 
             if ((props0?.destination && props1?.ball) || (props1?.destination && props0?.ball)) {
-
                 resetWorld()
             }
 
@@ -189,9 +193,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         while (message) {
             messageHandler(message);
             message = handler.messageQueue.shift();
-        }
-        if (paused) {
-            return;
         }
 
         dt = dt || 1;

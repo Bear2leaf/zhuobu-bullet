@@ -62,7 +62,6 @@ function initStageTouchEvents(stage: Stage) {
     document.addEventListener("touchstart", (ev) => handleTouchStart(ev.touches[0].clientX, ev.touches[0].clientY));
     document.addEventListener("touchmove", (ev) => handleTouchMove(ev.touches[0].clientX, ev.touches[0].clientY));
     document.addEventListener("keydown", (ev) => {
-        console.log(ev.key)
         switch (ev.key) {
             case "ArrowUp":
                 stage.rollCamera("up");
