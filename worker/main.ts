@@ -194,6 +194,20 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         dt = dt || 1;
         dynamicsWorld.stepSimulation(dt, CF_KINEMATIC_OBJECT);
 
+
+        {
+
+            for (const body of bodies) {
+                const props = Ammo.castObject(body.getUserPointer(), UserData).propertities;
+                if (props && props.dynamic) {
+                    const state = body.getMotionState();
+                    transform.setOrigin(new Ammo.btVector3(5 * Math.sin(frame / 100), -5, 0))
+                    state.setWorldTransform(transform)
+                    body.setMotionState(state);
+                }
+            }
+        }
+
         let alpha;
         if (meanDt > 0) {
             alpha = Math.min(0.1, dt / 1000);
