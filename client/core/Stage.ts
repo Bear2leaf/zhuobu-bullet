@@ -75,8 +75,7 @@ export default class Stage {
     setInitLevel(level: number) {
         this.level.setIndex(level);
     }
-    removeBody(name: string) {
-        console.log(name)
+    removeBody(name: string | undefined) {
         const scene = this.scene;
         let child: Transform | undefined;
         if (name === "Ball") {

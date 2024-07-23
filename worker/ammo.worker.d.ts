@@ -34,7 +34,7 @@ export type WorkerMessage = {
     type: "requestLevel",
 } | {
     type: "removeBody",
-    data: string
+    data: string | undefined
 }
 
 

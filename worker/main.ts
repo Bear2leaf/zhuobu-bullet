@@ -54,7 +54,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     const transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
 
     const dataHelper = new UserData;
-    function readBulletObject(i: number, object: [number, number, number, number, number, number, number,string]) {
+    function readBulletObject(i: number, object: [number, number, number, number, number, number, number, string]) {
         const body = bodies[i];
         body.getMotionState().getWorldTransform(transform);
         const origin = transform.getOrigin();
@@ -84,24 +84,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         handler.postMessage({
             type: "requestLevel",
         })
-    }
-    function removeSpawnBody() {
-
-        const index = bodies.findIndex(body => {
-            const props = Ammo.castObject(body.getUserPointer(), UserData).propertities;
-            return props && props.spawn
-        });
-        if (index === -1) {
-            return;
-        }
-        const removeBody = bodies.splice(index, 1)[0];
-        const name = Ammo.castObject(removeBody.getUserPointer(), UserData).name!;
-        handler.postMessage({
-            type: "removeBody",
-            data: name
-        })
-        dynamicsWorld.removeRigidBody(removeBody);
-
     }
     const gravity = new Ammo.btVector3(0, 0, 0);
     let interval: number | null = null;
@@ -168,14 +150,20 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         } else if (message.type === "resetWorld") {
             resetWorld();
         } else if (message.type === "release") {
-
-            for (let index = 0; index < bodies.length; index++) {
-                // UserData
-                const props0 = Ammo.castObject(bodies[index].getUserPointer(), UserData).propertities;
-                if (props0?.spawn) {
-                    removeSpawnBody();
-                }
-            }
+            const removeBodies = bodies.filter(body => {
+                const data = Ammo.castObject(body.getUserPointer(), UserData);
+                const spawn = data.propertities?.spawn;
+                return spawn;
+            })
+            removeBodies.forEach(body => {
+                const data = Ammo.castObject(body.getUserPointer(), UserData);
+                bodies.splice(bodies.indexOf(body), 1);
+                dynamicsWorld.removeRigidBody(body);
+                handler.postMessage({
+                    type: "removeBody",
+                    data: data.name
+                })
+            })
         }
     }
     function checkDestination() {
