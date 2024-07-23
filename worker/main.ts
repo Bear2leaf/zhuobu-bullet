@@ -10,6 +10,7 @@ handler.onmessage = function (message) {
 Ammo.bind(Module)(config).then(function (Ammo) {
     class UserData extends Ammo.btVector3 {
         propertities?: Record<string, boolean>
+        name?: string
     }
     handler.postMessage({ type: "ready" });
     const DISABLE_DEACTIVATION = 4;
@@ -41,6 +42,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         v.propertities = {
             ball: true
         };
+        v.name = "Ball"
         body.setUserPointer(v)
         dynamicsWorld.addRigidBody(body);
         bodies.push(body);
@@ -51,7 +53,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     };
     const transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
 
-    function readBulletObject(i: number, object: number[]) {
+    const dataHelper = new UserData;
+    function readBulletObject(i: number, object: [number, number, number, number, number, number, number,string]) {
         const body = bodies[i];
         body.getMotionState().getWorldTransform(transform);
         const origin = transform.getOrigin();
@@ -63,15 +66,18 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         object[4] = rotation.y();
         object[5] = rotation.z();
         object[6] = rotation.w();
-        object[7] = i;
+        const data = Ammo.castObject(body.getUserPointer(), UserData);
+
+        object[7] = data.name!;
     }
     function resetWorld() {
         while (bodies.length) {
             const removed = bodies.pop()!;
             dynamicsWorld.removeRigidBody(removed);
+            const data = Ammo.castObject(removed.getUserPointer(), UserData);
             handler.postMessage({
                 type: "removeBody",
-                data: bodies.length
+                data: data.name!
             })
         }
         createBall();
@@ -89,9 +95,10 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             return;
         }
         const removeBody = bodies.splice(index, 1)[0];
+        const name = Ammo.castObject(removeBody.getUserPointer(), UserData).name!;
         handler.postMessage({
             type: "removeBody",
-            data: index
+            data: name
         })
         dynamicsWorld.removeRigidBody(removeBody);
 
@@ -129,6 +136,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
             const v = new UserData;
             v.propertities = message.data.propertities;
+            v.name = message.data.name;
             if (v.propertities?.dynamic) {
                 shape = new Ammo.btConvexHullShape();
                 for (let i = 0; i < newVertices.length / 3; i++) {

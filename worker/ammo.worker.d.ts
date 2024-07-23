@@ -16,7 +16,7 @@ export type MainMessage = {
     data: string
 } | {
     type: "addMesh",
-    data: { vertices: number[], indices: number[], propertities?: Record<string, boolean>, transform: number[] }
+    data: { vertices: number[], indices: number[], propertities?: Record<string, boolean>, name: string | undefined, transform: number[] }
 } | {
     type: "resetWorld",
 } | {
@@ -24,7 +24,7 @@ export type MainMessage = {
 }
 export type WorkerMessage = {
     type: "update"
-    objects: number[][]; allFPS: number; currFPS: number
+    objects: [number, number, number, number, number, number, number, string][]; allFPS: number; currFPS: number
 } | {
     type: "ready",
 } | {
@@ -34,7 +34,7 @@ export type WorkerMessage = {
     type: "requestLevel",
 } | {
     type: "removeBody",
-    data: number
+    data: string
 }
 
 

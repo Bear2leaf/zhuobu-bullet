@@ -1,4 +1,4 @@
-import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform, Box, Raycast, Vec2, Renderer, Camera, Mat4 } from "ogl";
+import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform, Box, Raycast, Vec2, Renderer, Camera, Mat4, GLTFMesh } from "ogl";
 
 function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: string, isWebgl2: boolean = true, light?: GLTF["lights"]["directional"][0]) {
 
@@ -66,10 +66,10 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
             tLUT: { value: lutTexture },
             tEnvDiffuse: { value: envDiffuseTexture },
             tEnvSpecular: { value: envSpecularTexture },
-            uEnvDiffuse: { value: 0.75 },
+            uEnvDiffuse: { value: 1 },
             uEnvSpecular: { value: 1 },
 
-            uLightDirection: light?.direction || { value: new Vec3(0, 1, 1) },
+            uLightDirection: light?.direction,
             uLightColor: { value: new Vec3(1) },
 
             uAlpha: { value: 1 },
@@ -84,52 +84,45 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
 export default class Level {
 
     private readonly mouse = new Vec2();
-    private readonly gltfs: GLTF[] = new Array(6);
+    private readonly collections: Transform[] = [];
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
-    private readonly identity = new Mat4().identity();
+    private readonly light = new Vec3();
     onclick?: (tag?: string) => void;
-    onaddmesh?: (transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
+    onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     constructor(private readonly gl: OGLRenderingContext) {
     }
     getIndex() {
-        return (this.current + this.gltfs.length - 1) % this.gltfs.length;
+        return (this.current + this.collections.length - 1) % this.collections.length;
     }
     async load() {
 
         this.gltfvertex = await (await fetch("resources/glsl/gltf.vert.sk")).text();
         this.gltffragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
-        for (let index = 0; index < this.gltfs.length; index++) {
-            this.gltfs[index] = (await GLTFLoader.load(this.gl, `resources/gltf/Level${index}.glb`));
+        const gltf = (await GLTFLoader.load(this.gl, `resources/gltf/Demo.glb`));
+        this.light.copy(gltf.lights.directional[0].direction?.value || this.light);
+        gltf.scene[0].children.find(child => child.name === "MISC")?.setParent(null);
+        for (let index = 0; index < gltf.scene[0].children.length; index++) {
+            this.collections.push(gltf.scene[0].children[index]);
         }
     }
     setIndex(level: number) {
         this.current = level;
     }
-    private readonly originTransformMap = new Map<string, Mat4>();
     request(scene: Transform) {
-        const gltf = this.gltfs[this.current];
-        gltf.meshes.forEach(mesh => {
-            mesh.primitives.forEach(primitive => {
-                primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, gltf.lights.directional[0])
-                const attributeData = primitive.geometry.getPosition().data;
-                const indices = primitive.geometry.attributes.index.data as AttributeData;
-                const transform = primitive.parent?.worldMatrix || this.identity;
-                const name = primitive.name;
-                if (!name) {
-                    throw new Error("name is undefined");
-                }
-                const originTransform = this.originTransformMap.get(name);
-                if (!originTransform) {
-                    this.originTransformMap.set(name, new Mat4().copy(transform));
-                } else {
-                    primitive.parent?.worldMatrix.copy(originTransform);
-                }
-                primitive.parent?.setParent(scene)
-                attributeData && this.onaddmesh && this.onaddmesh(transform, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
-            })
+        this.collections.forEach(collection => collection.visible = false);
+        const collection = this.collections[this.current];
+        collection.children.forEach((child) => {
+            const primitive = child.children[0] as Mesh;
+            primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, { direction: { value: this.light } })
+            const attributeData = primitive.geometry.getPosition().data;
+            const indices = primitive.geometry.attributes.index.data as AttributeData;
+            attributeData && this.onaddmesh && this.onaddmesh(child.name, child.matrix, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
+            child.visible = true;
         });
-        this.current = (this.current + 1) % this.gltfs.length;
+        collection.visible = true;
+        collection.parent?.setParent(scene)
+        this.current = (this.current + 1) % this.collections.length;
     }
 }

@@ -36,8 +36,8 @@ export default class Stage {
         camera.position.z = 0.5;
         renderer.setSize(width, height);
         this.level = new Level(renderer.gl);
-        this.level.onaddmesh = (transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
-            this.onaddmesh && this.onaddmesh(transform, vertices, indices, propertities);
+        this.level.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
+            this.onaddmesh && this.onaddmesh(name, transform, vertices, indices, propertities);
         }
         this.scene = new Transform();
         this.ui = new UI(renderer);
@@ -49,7 +49,7 @@ export default class Stage {
         await this.ui.load();
         await this.level.load();
     }
-    onaddmesh?: (transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
+    onaddmesh?: (name:string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
 
     rollCamera(tag: "right" | "left" | "up" | "down") {
         const rotation = this.rotation;
@@ -75,9 +75,19 @@ export default class Stage {
     setInitLevel(level: number) {
         this.level.setIndex(level);
     }
-    removeBody(index: number) {
-        const child = this.scene.children[index];
-        child.setParent(null);
+    removeBody(name: string) {
+        console.log(name)
+        const scene = this.scene;
+        let child: Transform | undefined;
+        if (name === "Ball") {
+            child = scene.children.find(child => child.visible && (child instanceof Mesh))
+        } else {
+            child = scene.children.find(child => child.visible && !(child instanceof Mesh))?.children[this.level.getIndex()].children.find(child => child.name === name);
+        }
+        if (!child) {
+            throw new Error("child is undefined");
+        }
+        child.visible = false;
     }
     hideReleaseBtn() {
         this.ui.getMesh("release").visible = false;
@@ -103,10 +113,19 @@ export default class Stage {
         const scene = this.scene;
         this.ui.updateText(`fps: ${message.currFPS}, avg: ${message.allFPS}\nlevel: ${this.level.getIndex()}`);
         for (let index = 0; index < message.objects.length; index++) {
-            const child = scene.children[index];
+            let child: Transform | undefined;
+            const name = message.objects[index][7];
+            if (index === 0) {
+                child = scene.children.find(child => child.visible && child instanceof Mesh)
+            } else {
+                child = scene.children.find(child => child.visible && !(child instanceof Mesh))?.children[this.level.getIndex()].children.find(child => child.name === name);
+            }
+            if (!child) {
+                throw new Error("child is undefined");
+            }
             const phyObject = message.objects[index];
-            child.position.fromArray(phyObject.slice(0, 3))
-            child.quaternion.fromArray(phyObject.slice(3, 7))
+            child.position.fromArray(phyObject.slice(0, 3) as number[])
+            child.quaternion.fromArray(phyObject.slice(3, 7) as number[])
         }
     }
     addBody(message: WorkerMessage & { type: "addBody" }) {
@@ -115,22 +134,31 @@ export default class Stage {
         const fragment = this.fragment;
         const id = message.data;
         const scene = this.scene;
-        if (id === 0) {
-            const program = new Program(this.renderer.gl, {
-                vertex,
-                fragment,
-                uniforms: {
-                    uColor: {
-                        value: new Vec3(0.7, 0.2, 0.7)
+        if (scene.children.length === 0) {
+
+            if (id === 0) {
+                const program = new Program(this.renderer.gl, {
+                    vertex,
+                    fragment,
+                    uniforms: {
+                        uColor: {
+                            value: new Vec3(0.7, 0.2, 0.7)
+                        }
                     }
-                }
-            });
-            const geometry = new Sphere(gl, { radius: 1 });
-            const mesh = new Mesh(gl, {
-                geometry,
-                program,
-            });
-            mesh.setParent(scene);
+                });
+                const geometry = new Sphere(gl, { radius: 1 });
+                const mesh = new Mesh(gl, {
+                    geometry,
+                    program,
+                });
+                mesh.setParent(scene);
+            }
+        } else {
+            const child = this.scene.children.find(child => child instanceof Mesh);
+            if (!child) {
+                throw new Error("child is undefined");
+            }
+            child.visible = true;
         }
     }
     requestLevel() {
