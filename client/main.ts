@@ -17,7 +17,14 @@ export async function mainMinigame() {
     return device;
 }
 
-function initStageTouchEvents(stage: Stage) {
+function release(stage: Stage, device: Device) {
+
+    stage.hideReleaseBtn();
+    device.sendmessage && device.sendmessage({
+        type: "release"
+    })
+}
+function initStageTouchEvents(stage: Stage, device: Device) {
 
     let xDown: number | null = null;
     let yDown: number | null = null;
@@ -75,7 +82,8 @@ function initStageTouchEvents(stage: Stage) {
             case "ArrowRight":
                 stage.rollCamera("right");
                 break;
-
+            case " ":
+                release(stage, device);
             default:
                 break;
         }
@@ -105,6 +113,7 @@ async function start(device: Device) {
         } else if (message.type === "addBody") {
             stage.addBody(message);
         } else if (message.type === "requestLevel") {
+            stage.showReleaseBtn();
             audio.play();
             stage.requestLevel();
         } else if (message.type === "ready") {
@@ -130,10 +139,8 @@ async function start(device: Device) {
     await audio.load();
     device.createWorker("dist/worker/main.js");
     stage.onclick = (tag?: string) => {
-        if (tag === "release" ) {
-            device.sendmessage && device.sendmessage({
-                type: "release"
-            })
+        if (tag === "release") {
+            release(stage, device);
         }
     }
     function update(t: number) {
@@ -152,14 +159,14 @@ async function start(device: Device) {
         stage.loop(delta);
         audio.process();
         gravity.copy(acc).applyQuaternion(rotation.inverse()).normalize().scale(10);
-        
+
         device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${gravity[0]},${gravity[1]},${gravity[2]}` })
     }
     requestAnimationFrame((t) => {
         last = t;
         audio.initAudio();
         stage.start();
-        initStageTouchEvents(stage);
+        initStageTouchEvents(stage, device);
         update(t);
     });
 }

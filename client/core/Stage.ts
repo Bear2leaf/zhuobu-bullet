@@ -49,7 +49,7 @@ export default class Stage {
         await this.ui.load();
         await this.level.load();
     }
-    onaddmesh?: (name:string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
+    onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
 
     rollCamera(tag: "right" | "left" | "up" | "down") {
         const rotation = this.rotation;
