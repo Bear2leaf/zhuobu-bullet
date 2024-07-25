@@ -90,7 +90,9 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     const vertex0 = new Ammo.btVector3;
     const vertex1 = new Ammo.btVector3;
     const vertex2 = new Ammo.btVector3;
+    let fromLastMessageFrames = 0;
     function messageHandler(message: MainMessage) {
+        fromLastMessageFrames = 0;
         if (message.type === "updateGravity") {
             const g = message.data.split(",").map(x => parseFloat(x));
             gravity.setX(g[0])
@@ -190,7 +192,9 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             messageHandler(message);
             message = handler.messageQueue.shift();
         }
-
+        if (fromLastMessageFrames > 300) {
+            return;
+        }
         dt = dt || 1;
         dynamicsWorld.stepSimulation(dt, CF_KINEMATIC_OBJECT);
 
@@ -216,6 +220,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         }
         meanDt = alpha * dt + (1 - alpha) * meanDt;
 
+        fromLastMessageFrames++;
         const alpha2 = 1 / frame++;
         meanDt2 = alpha2 * dt + (1 - alpha2) * meanDt2;
 
