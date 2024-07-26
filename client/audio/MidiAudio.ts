@@ -41,7 +41,7 @@ export default class MidiAudio implements AudioClip {
 
     }
     init() {
-        this.playOnce();
+        // this.playOnce();
     }
 
     update(): void {
