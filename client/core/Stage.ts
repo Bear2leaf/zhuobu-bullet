@@ -39,6 +39,9 @@ export default class Stage {
         this.level.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
             this.onaddmesh && this.onaddmesh(name, transform, vertices, indices, propertities);
         }
+        this.level.onaddball = (transform) => {
+            this.onaddball && this.onaddball(transform);
+        }
         this.scene = new Transform();
         this.ui = new UI(renderer);
     }
@@ -50,6 +53,7 @@ export default class Stage {
         await this.level.load();
     }
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
+    onaddball?: (transform: number[]) => void;
 
     rollCamera(tag: "right" | "left" | "up" | "down") {
         const rotation = this.rotation;

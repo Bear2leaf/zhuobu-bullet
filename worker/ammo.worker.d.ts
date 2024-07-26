@@ -18,6 +18,9 @@ export type MainMessage = {
     type: "addMesh",
     data: { vertices: number[], indices: number[], propertities?: Record<string, boolean>, name: string | undefined, transform: number[] }
 } | {
+    type: "addBall",
+    data: { transform: number[] }
+} | {
     type: "resetWorld",
 } | {
     type: "release",

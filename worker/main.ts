@@ -53,7 +53,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     };
     const transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
 
-    const dataHelper = new UserData;
     function readBulletObject(i: number, object: [number, number, number, number, number, number, number, string]) {
         const body = bodies[i];
         body.getMotionState().getWorldTransform(transform);
@@ -100,6 +99,11 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             gravity.setZ(g[2])
             dynamicsWorld.setGravity(gravity);
             return;
+        } else if (message.type === "addBall") {
+            const state = bodies[0].getMotionState();
+            transform.setFromOpenGLMatrix(message.data.transform)
+            state.setWorldTransform(transform);
+            bodies[0].setMotionState(state);
         } else if (message.type === "addMesh") {
             const startTransform = new Ammo.btTransform();
             startTransform.setIdentity();

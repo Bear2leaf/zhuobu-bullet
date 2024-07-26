@@ -91,6 +91,7 @@ export default class Level {
     private readonly light = new Vec3();
     onclick?: (tag?: string) => void;
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
+    onaddball?: (transform: number[]) => void;
     constructor(private readonly gl: OGLRenderingContext) {
     }
     getIndex() {
@@ -100,7 +101,7 @@ export default class Level {
 
         this.gltfvertex = await (await fetch("resources/glsl/gltf.vert.sk")).text();
         this.gltffragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
-        const gltf = (await GLTFLoader.load(this.gl, `resources/gltf/Demo.glb`));
+        const gltf = (await GLTFLoader.load(this.gl, `resources/gltf/Level.glb`));
         this.light.copy(gltf.lights.directional[0].direction?.value || this.light);
         gltf.scene[0].children.find(child => child.name === "MISC")?.setParent(null);
         for (let index = 0; index < gltf.scene[0].children.length; index++) {
@@ -114,6 +115,10 @@ export default class Level {
         this.collections.forEach(collection => collection.visible = false);
         const collection = this.collections[this.current];
         collection.children.forEach((child) => {
+            if (this.onaddball && child.extras && (child.extras as Record<string, boolean>).spawnPoint) {
+                this.onaddball(child.matrix.toArray())
+                return;
+            }
             const primitive = child.children[0] as Mesh;
             primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, { direction: { value: this.light } })
             const attributeData = primitive.geometry.getPosition().data;

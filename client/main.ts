@@ -100,6 +100,12 @@ async function start(device: Device) {
             data: { vertices: [...vertices], indices: [...indices], propertities, name, transform }
         })
     }
+    stage.onaddball = (transform) => {
+        device.sendmessage && device.sendmessage({
+            type: "addBall",
+            data: { transform }
+        })
+    }
     const gravity = new Vec3;
     const rotation = new Quat;
     const acc = new Vec3(0, -10, 0);
