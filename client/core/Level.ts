@@ -1,4 +1,4 @@
-import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform, Box, Raycast, Vec2, Renderer, Camera, Mat4, GLTFMesh } from "ogl";
+import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform, Box, Raycast, Vec2, Renderer, Camera, Mat4, GLTFMesh, Euler, Quat } from "ogl";
 
 function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: string, isWebgl2: boolean = true, light?: GLTF["lights"]["directional"][0]) {
 
@@ -66,8 +66,8 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
             tLUT: { value: lutTexture },
             tEnvDiffuse: { value: envDiffuseTexture },
             tEnvSpecular: { value: envSpecularTexture },
-            uEnvDiffuse: { value: 1 },
-            uEnvSpecular: { value: 1 },
+            uEnvDiffuse: { value: 0.75 },
+            uEnvSpecular: { value: 0.75 },
 
             uLightDirection: light?.direction,
             uLightColor: { value: new Vec3(1) },
@@ -88,8 +88,7 @@ export default class Level {
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
-    private readonly light = new Vec3();
-    onclick?: (tag?: string) => void;
+    private readonly light = { value: new Vec3() };
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
     constructor(private readonly gl: OGLRenderingContext) {
@@ -102,7 +101,9 @@ export default class Level {
         this.gltfvertex = await (await fetch("resources/glsl/gltf.vert.sk")).text();
         this.gltffragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
         const gltf = (await GLTFLoader.load(this.gl, `resources/gltf/Level.glb`));
-        this.light.copy(gltf.lights.directional[0].direction?.value || this.light);
+        if (gltf.lights.directional[0].direction) {
+            this.light.value = gltf.lights.directional[0].direction.value;
+        }
         gltf.scene[0].children.find(child => child.name === "MISC")?.setParent(null);
         for (let index = 0; index < gltf.scene[0].children.length; index++) {
             this.collections.push(gltf.scene[0].children[index]);
@@ -120,7 +121,7 @@ export default class Level {
                 return;
             }
             const primitive = child.children[0] as Mesh;
-            primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, { direction: { value: this.light } })
+            primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, { direction: this.light })
             const attributeData = primitive.geometry.getPosition().data;
             const indices = primitive.geometry.attributes.index.data as AttributeData;
             attributeData && this.onaddmesh && this.onaddmesh(child.name, child.matrix, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);

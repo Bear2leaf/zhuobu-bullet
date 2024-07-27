@@ -15,12 +15,14 @@ export default class Stage {
     private readonly matrix = new Mat4();
     private readonly rotation: Vec3 = new Vec3;
     private readonly sceneRotation = new Vec3();
+    private readonly sceneScale = new Vec3(0.01, 0.01, 0.01);
     private readonly sceneEuler = new Euler();
     private readonly sceneQuat = new Quat();
     private readonly tempQuat = new Quat();
     private fragment: string = "";
     private vertex: string = "";
     private t = 0;
+    private scaleT = 0;
     onclick?: (tag?: string) => void;
     onorientationchange?: (quat: Quat) => void;
 
@@ -63,15 +65,10 @@ export default class Stage {
         this.t = 0;
     }
     start() {
-        const scene = this.scene;
-        scene.scale.multiply(0.01);
         {
             this.ui.init();
             this.ui.onclick = (tag) => {
                 this.onclick && this.onclick(tag);
-            }
-            this.level.onclick = (tag) => {
-                this.onclick && this.onclick(tag)
             }
         }
     }
@@ -93,18 +90,20 @@ export default class Stage {
         child.visible = false;
     }
     hideReleaseBtn() {
-        this.ui.getMesh("release").visible = false;
+        this.ui.getButton("release").hide();
     }
     showReleaseBtn() {
-        this.ui.getMesh("release").visible = true;
+        this.ui.getButton("release").show();
     }
     // Game loop
     loop = (timeStamp: number) => {
         this.t += timeStamp;
+        this.scaleT += timeStamp;
         this.sceneEuler.set(this.sceneRotation.x, this.sceneRotation.y, this.sceneRotation.z);
         this.sceneQuat.fromEuler(this.sceneEuler);
         this.tempQuat.slerp(this.sceneQuat, Math.min(1, this.t));
         this.scene.quaternion.copy(this.tempQuat);
+        this.scene.scale.lerp(this.sceneScale, Math.min(1, this.scaleT))
         this.renderer.render({ scene: this.scene, camera: this.camera });
         this.ui.render();
         this.quat.fill(0)
@@ -114,7 +113,8 @@ export default class Stage {
     }
     updateBody(message: WorkerMessage & { type: "update" }) {
         const scene = this.scene;
-        this.ui.updateText(`fps: ${message.currFPS}, avg: ${message.allFPS}\nlevel: ${this.level.getIndex()}`);
+        this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
+        this.ui.updateLevel(`level: ${this.level.getIndex()}`);
         for (let index = 0; index < message.objects.length; index++) {
             let child: Transform | undefined;
             const name = message.objects[index][7];
