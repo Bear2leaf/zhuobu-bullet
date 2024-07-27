@@ -147,6 +147,8 @@ async function start(device: Device) {
     stage.onclick = (tag?: string) => {
         if (tag === "release") {
             release(stage, device);
+        } else if (tag === "zoom") {
+            stage.updateZoom();
         }
     }
     function update(t: number) {
@@ -162,10 +164,9 @@ async function start(device: Device) {
         delta = (t - last) / 1000;
         last = t;
         now += delta;
-        stage.loop(delta);
+        stage.loop(delta, now);
         audio.process();
         gravity.copy(acc).applyQuaternion(rotation.inverse()).normalize().scale(10);
-
         device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${gravity[0]},${gravity[1]},${gravity[2]}` })
     }
     requestAnimationFrame((t) => {

@@ -23,6 +23,7 @@ export default class UI {
         const releaseY = -9 * gl.renderer.dpr;
 
         this.buttons.push(new Button(gl, "release", new Vec3(0, releaseY, 0), true));
+        this.buttons.push(new Button(gl, "zoom", new Vec3(0, releaseY + 2, 0), true));
         this.buttons.push(new Button(gl, "info", new Vec3(0, 0, 0)));
         this.buttons.push(new Button(gl, "level", new Vec3(0, -2, 0)));
 
@@ -65,8 +66,10 @@ export default class UI {
         for (const button of this.buttons) {
             button.init();
             button.setParent(this.scene);
+            if (button.getMesh().name === "zoom") {
+                button.updateText("ZOOM")
+            }
         }
-        
     }
     updateInfo(data: string) {
         this.buttons.find(button => button.getMesh().name === "info")?.updateText(data);

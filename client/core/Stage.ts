@@ -5,6 +5,9 @@ import UI from "./UI.js";
 import Level from "./Level.js";
 import { table } from "./rotation.js";
 
+function lerp(x0: number, x1: number, t: number) {
+    return x0 + (x1 - x0) * t;
+}
 export default class Stage {
     private readonly renderer: Renderer;
     private readonly scene: Transform;
@@ -19,10 +22,12 @@ export default class Stage {
     private readonly sceneEuler = new Euler();
     private readonly sceneQuat = new Quat();
     private readonly tempQuat = new Quat();
+    private readonly tempPosition = new Vec3();
     private fragment: string = "";
     private vertex: string = "";
     private t = 0;
     private scaleT = 0;
+    private scale = 0;
     onclick?: (tag?: string) => void;
     onorientationchange?: (quat: Quat) => void;
 
@@ -64,6 +69,13 @@ export default class Stage {
         this.sceneRotation.set(rotation.x * Math.PI / 2, rotation.y * Math.PI / 2, rotation.z * Math.PI / 2);
         this.t = 0;
     }
+    updateZoom() {
+        this.scale = (this.scale + 1) % 2;
+        this.sceneScale.set(this.scale + 1, this.scale + 1, this.scale + 1);
+        this.sceneScale.multiply(0.01);
+        this.scene.children[0].worldMatrix.getTranslation(this.tempPosition)
+        this.scaleT = 0;
+    }
     start() {
         {
             this.ui.init();
@@ -96,14 +108,20 @@ export default class Stage {
         this.ui.getButton("release").show();
     }
     // Game loop
-    loop = (timeStamp: number) => {
+    loop = (timeStamp: number, now: number) => {
         this.t += timeStamp;
         this.scaleT += timeStamp;
+        const scaleT = Math.min(1, this.scaleT);
         this.sceneEuler.set(this.sceneRotation.x, this.sceneRotation.y, this.sceneRotation.z);
         this.sceneQuat.fromEuler(this.sceneEuler);
         this.tempQuat.slerp(this.sceneQuat, Math.min(1, this.t));
         this.scene.quaternion.copy(this.tempQuat);
-        this.scene.scale.lerp(this.sceneScale, Math.min(1, this.scaleT))
+        this.scene.scale.lerp(this.sceneScale, scaleT)
+        if (this.scale) {
+            this.camera.lookAt(this.tempPosition.lerp(this.scene.children[0].position, scaleT).clone().applyMatrix4(this.scene.matrix));
+        } else {
+            this.camera.lookAt(this.tempPosition.lerp(new Vec3(), scaleT));
+        }
         this.renderer.render({ scene: this.scene, camera: this.camera });
         this.ui.render();
         this.quat.fill(0)
