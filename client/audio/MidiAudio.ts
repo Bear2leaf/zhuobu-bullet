@@ -4,6 +4,7 @@ import AudioClip from "./AudioClip.js";
 export default class MidiAudio implements AudioClip {
     private context?: AudioContext;
     private instance?: MidiInstance;
+    private gain?: GainNode;
     private readonly midiName = "Project_6";
     private readonly soundfontNames =
         [
@@ -40,7 +41,14 @@ export default class MidiAudio implements AudioClip {
         await this.getInstance().loadBuffer(midiData);
 
     }
+    connect(gain: GainNode): void {
+        if (this.gain === undefined) {
+            throw new Error("gain is undefined");
+        }
+        this.gain?.connect(gain);
+    }
     init() {
+        this.gain = this.context?.createGain();
         // this.playOnce();
     }
 

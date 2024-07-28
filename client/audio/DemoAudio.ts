@@ -149,7 +149,6 @@ export default class DemoAudio implements AudioClip {
 
         const masterVolume = this.getContext().createGain();
         this.masterVolume = masterVolume;
-        masterVolume.connect(this.getContext().destination);
         masterVolume.gain.value = 0.2
 
         const delay = this.getContext().createDelay(0.001); // weapp maxDelayTime is required.
@@ -179,6 +178,12 @@ export default class DemoAudio implements AudioClip {
         // feedbackControl.addEventListener('input', function () {
         //     feedback.gain.value = this.value;
         // })
+    }
+    connect(gain: GainNode): void {
+        if (this.masterVolume === undefined) {
+            throw new Error("masterVolume is undefined");
+        }
+        this.masterVolume?.connect(gain);
     }
     playOnce(): void {
         this.playCurrentNote();

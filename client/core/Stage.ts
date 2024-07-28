@@ -3,11 +3,8 @@ import Device from "../device/Device.js";
 import { WorkerMessage } from "../../worker/ammo.worker.js";
 import UI from "./UI.js";
 import Level from "./Level.js";
-import { table } from "./rotation.js";
+import { table } from "../misc/rotation.js";
 
-function lerp(x0: number, x1: number, t: number) {
-    return x0 + (x1 - x0) * t;
-}
 export default class Stage {
     private readonly renderer: Renderer;
     private readonly scene: Transform;
@@ -132,7 +129,6 @@ export default class Stage {
     updateBody(message: WorkerMessage & { type: "update" }) {
         const scene = this.scene;
         this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
-        this.ui.updateLevel(`level: ${this.level.getIndex()}`);
         for (let index = 0; index < message.objects.length; index++) {
             let child: Transform | undefined;
             const name = message.objects[index][7];
@@ -182,8 +178,11 @@ export default class Stage {
             child.visible = true;
         }
     }
+    reverse = false;
     requestLevel() {
-        this.level.request(this.scene);
+        this.level.request(this.scene, this.reverse);
+        this.reverse = false;
+        this.ui.updateLevel(`level: ${this.level.getIndex()}`);
     }
 
 }

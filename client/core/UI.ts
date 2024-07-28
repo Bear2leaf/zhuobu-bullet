@@ -23,9 +23,12 @@ export default class UI {
         const releaseY = -9 * gl.renderer.dpr;
 
         this.buttons.push(new Button(gl, "release", new Vec3(0, releaseY, 0), true));
-        this.buttons.push(new Button(gl, "zoom", new Vec3(0, releaseY + 2, 0), true));
+        this.buttons.push(new Button(gl, "zoom", new Vec3(-3, -4, 0), true));
+        this.buttons.push(new Button(gl, "audio", new Vec3(3, -4, 0), true));
         this.buttons.push(new Button(gl, "info", new Vec3(0, 0, 0)));
         this.buttons.push(new Button(gl, "level", new Vec3(0, -2, 0)));
+        this.buttons.push(new Button(gl, "prev", new Vec3(-3, -2, 0), true));
+        this.buttons.push(new Button(gl, "next", new Vec3(3, -2, 0), true));
 
         const mouse = this.mouse;
         // Create a raycast object
@@ -66,10 +69,11 @@ export default class UI {
         for (const button of this.buttons) {
             button.init();
             button.setParent(this.scene);
-            if (button.getMesh().name === "zoom") {
-                button.updateText("ZOOM")
-            }
         }
+        this.buttons.find(button => button.getMesh().name === "prev")?.updateText("<");
+        this.buttons.find(button => button.getMesh().name === "next")?.updateText(">");
+        this.buttons.find(button => button.getMesh().name === "zoom")?.updateText("ZOOM");
+        this.buttons.find(button => button.getMesh().name === "audio")?.updateText("AUDIO");
     }
     updateInfo(data: string) {
         this.buttons.find(button => button.getMesh().name === "info")?.updateText(data);

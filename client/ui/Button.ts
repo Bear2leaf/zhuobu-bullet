@@ -11,7 +11,7 @@ export default class Button {
     private vertex: string = "";
     private bgFragment: string = "";
     private bgVertex: string = "";
-    constructor(private readonly gl: OGLRenderingContext, name: string, position: Vec3, background = false) {
+    constructor(private readonly gl: OGLRenderingContext, name: string, private readonly position: Vec3, background = false) {
 
         this.texture = new Texture(gl);
         this.releaseBgTexture = new Texture(gl, {
@@ -81,30 +81,31 @@ export default class Button {
             depthWrite: false,
             uniforms: { tMap: { value: this.releaseBgTexture }, uDimension: { value: [0, 0] } },
         });
-        const releaseText = this.text = new Text({
+        const text = this.text = new Text({
             font,
             text: "RELEASE",
             align: "center",
         });
-        const release = this.getMesh();
-        release.geometry = new Geometry(gl, {
-            position: { size: 3, data: releaseText.buffers.position },
-            uv: { size: 2, data: releaseText.buffers.uv },
+        const mesh = this.getMesh();
+        mesh.geometry = new Geometry(gl, {
+            position: { size: 3, data: text.buffers.position },
+            uv: { size: 2, data: text.buffers.uv },
             // id provides a per-character index, for effects that may require it
-            id: { size: 1, data: releaseText.buffers.id },
-            index: { data: releaseText.buffers.index },
+            id: { size: 1, data: text.buffers.id },
+            index: { data: text.buffers.index },
         });
-        release.geometry.computeBoundingBox();
-        const offset = release.geometry.bounds.max.y + release.geometry.bounds.min.y;
-        const dimension = [Math.abs(release.geometry.bounds.max.x - release.geometry.bounds.min.x) + 1, release.geometry.bounds.max.y - release.geometry.bounds.min.y + 1];
+        mesh.geometry.computeBoundingBox();
+        const offset = mesh.geometry.bounds.max.y + mesh.geometry.bounds.min.y;
+        const dimension = [Math.abs(mesh.geometry.bounds.max.x - mesh.geometry.bounds.min.x) + 1, mesh.geometry.bounds.max.y - mesh.geometry.bounds.min.y + 1];
         this.getBgMesh().geometry = new Plane(gl, {
             width: dimension[0],
             height: dimension[1],
         });
         this.getBgMesh().program.uniforms.uDimension.value = dimension.reverse().map(x => x / 10);
-        this.getBgMesh().position.y += offset / 2;
+        this.getBgMesh().position.y = + offset / 2;
     }
     updateText(data: string) {
+        const gl = this.gl;
         const font = this.fontData;
         if (font === undefined) {
             throw new Error("font is undefined");
@@ -114,13 +115,23 @@ export default class Button {
             throw new Error("text is undefined");
         }
         text.update({ text: data });
-        this.getMesh().geometry = new Geometry(this.gl, {
+        const geometry = new Geometry(gl, {
             position: { size: 3, data: text.buffers.position },
             uv: { size: 2, data: text.buffers.uv },
             // id provides a per-character index, for effects that may require it
             id: { size: 1, data: text.buffers.id },
             index: { data: text.buffers.index },
         });
+        geometry.computeBoundingBox();
+        const offset = geometry.bounds.max.y + geometry.bounds.min.y;
+        const dimension = [Math.abs(geometry.bounds.max.x - geometry.bounds.min.x) + 1, geometry.bounds.max.y - geometry.bounds.min.y + 1];
+        this.getMesh().geometry = geometry;
+        this.getBgMesh().geometry = new Plane(gl, {
+            width: dimension[0],
+            height: dimension[1],
+        });
+        this.getBgMesh().program.uniforms.uDimension.value = dimension.reverse().map(x => x / 10);
+        this.getBgMesh().position.y = + offset / 2;
 
     }
 }

@@ -112,8 +112,18 @@ export default class Level {
     setIndex(level: number) {
         this.current = level;
     }
-    request(scene: Transform) {
+    request(scene: Transform, reverse = false) {
         this.collections.forEach(collection => collection.visible = false);
+        if (reverse) {
+            this.current--;
+            if (this.current < 0) {
+                this.current = this.collections.length - 1;
+            }
+            this.current--;
+            if (this.current < 0) {
+                this.current = this.collections.length - 1;
+            }
+        }
         const collection = this.collections[this.current];
         collection.children.forEach((child) => {
             if (this.onaddball && child.extras && (child.extras as Record<string, boolean>).spawnPoint) {

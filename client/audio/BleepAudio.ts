@@ -3,6 +3,7 @@ export default class BleepAudio implements AudioClip {
     private context?: AudioContext;
     private buffer?: ArrayBuffer;
     private source?: AudioBufferSourceNode;
+    private gain?: GainNode;
     setContext(context: AudioContext) {
         this.context = context;
     }
@@ -21,7 +22,14 @@ export default class BleepAudio implements AudioClip {
         }
         return this.buffer.slice(0);
     }
+    connect(gain: GainNode): void {
+        if (this.gain === undefined) {
+            throw new Error("gain is undefined");
+        }
+        this.gain?.connect(gain);
+    }
     init() {
+        this.gain = this.context?.createGain();
         // this.playOnce();
     }
 
@@ -30,11 +38,15 @@ export default class BleepAudio implements AudioClip {
     }
 
     playOnce() {
+        const gain = this.gain;
+        if (gain === undefined) {
+            throw new Error("gain is undefined");
+        }
         const source = this.getContext().createBufferSource();
         this.getContext().decodeAudioData(this.getBuffer(), buffer => {
             source.buffer = buffer;
             this.source = source;
-            source.connect(this.getContext().destination);
+            source.connect(gain);
             source.start();
         }, console.error);
     }

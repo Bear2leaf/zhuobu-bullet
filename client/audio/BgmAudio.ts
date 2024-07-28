@@ -3,6 +3,7 @@ export default class BgmAudio implements AudioClip {
     private context?: AudioContext;
     private buffer?: ArrayBuffer;
     private source?: AudioBufferSourceNode;
+    private gain?: GainNode;
     setContext(context: AudioContext) {
         this.context = context;
     }
@@ -11,6 +12,12 @@ export default class BgmAudio implements AudioClip {
             throw new Error("audiocontext not exist")
         }
         return this.context;
+    }
+    connect(gain: GainNode): void {
+        if (this.gain === undefined) {
+            throw new Error("gain is undefined");
+        }
+        this.gain?.connect(gain);
     }
     setBuffer(buffer: ArrayBuffer) {
         this.buffer = buffer;
@@ -22,6 +29,7 @@ export default class BgmAudio implements AudioClip {
         return this.buffer.slice(0);
     }
     init() {
+        this.gain = this.context?.createGain();
         this.playOnce();
     }
 
@@ -30,12 +38,16 @@ export default class BgmAudio implements AudioClip {
     }
 
     playOnce() {
+        const gain = this.gain;
+        if (gain === undefined) {
+            throw new Error("gain is undefined");
+        }
         const source = this.getContext().createBufferSource();
         this.getContext().decodeAudioData(this.getBuffer(), buffer => {
             source.buffer = buffer;
             source.loop = true;
             this.source = source;
-            source.connect(this.getContext().destination);
+            source.connect(gain);
             source.start();
         }, console.error);
     }

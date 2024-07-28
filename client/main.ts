@@ -149,6 +149,17 @@ async function start(device: Device) {
             release(stage, device);
         } else if (tag === "zoom") {
             stage.updateZoom();
+        } else if (tag === "next") {
+            device.sendmessage && device.sendmessage({
+                type: "resetWorld",
+            })
+        } else if (tag === "prev") {
+            stage.reverse = true;
+            device.sendmessage && device.sendmessage({
+                type: "resetWorld",
+            })
+        } else if (tag === "audio") {
+            audio.toggle();
         }
     }
     function update(t: number) {
