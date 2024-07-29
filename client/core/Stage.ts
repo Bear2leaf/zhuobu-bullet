@@ -4,6 +4,9 @@ import { WorkerMessage } from "../../worker/ammo.worker.js";
 import UI from "./UI.js";
 import Level from "./Level.js";
 import { table } from "../misc/rotation.js";
+function lerp(x0: number, x1: number, t: number) {
+    return x0 + (x1 - x0) * t;
+}
 
 export default class Stage {
     private readonly renderer: Renderer;
@@ -113,11 +116,14 @@ export default class Stage {
         this.sceneQuat.fromEuler(this.sceneEuler);
         this.tempQuat.slerp(this.sceneQuat, Math.min(1, this.t));
         this.scene.quaternion.copy(this.tempQuat);
-        this.scene.scale.lerp(this.sceneScale, scaleT)
+        this.scene.scale.lerp(this.sceneScale, scaleT);
         if (this.scale) {
-            this.camera.lookAt(this.tempPosition.lerp(this.scene.children[0].position, scaleT).clone().applyMatrix4(this.scene.matrix));
+            this.camera.position = (this.tempPosition.lerp(this.scene.children[0].position, scaleT).clone().applyMatrix4(this.scene.matrix));
+            this.camera.position.z = 0.5;
         } else {
-            this.camera.lookAt(this.tempPosition.lerp(new Vec3(), scaleT));
+            this.camera.position =(this.tempPosition.lerp(new Vec3(), scaleT));
+            this.camera.position.z = 0.5;
+
         }
         this.renderer.render({ scene: this.scene, camera: this.camera });
         this.ui.render();
