@@ -189,6 +189,8 @@ export default class Stage {
         this.level.request(this.scene, this.reverse);
         this.reverse = false;
         this.ui.updateLevel(`level: ${this.level.getIndex()}`);
+        this.rotation.fill(0)
+        this.sceneRotation.fill(0);
     }
 
 }

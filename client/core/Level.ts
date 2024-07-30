@@ -100,7 +100,7 @@ export default class Level {
 
         this.gltfvertex = await (await fetch("resources/glsl/gltf.vert.sk")).text();
         this.gltffragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
-        const gltf = (await GLTFLoader.load(this.gl, `resources/gltf/Level.glb`));
+        const gltf = (await GLTFLoader.load(this.gl, `resources/gltf/Playground.glb`));
         if (gltf.lights.directional[0].direction) {
             this.light.value = gltf.lights.directional[0].direction.value;
         }
