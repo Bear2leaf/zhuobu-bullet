@@ -19,7 +19,7 @@ export async function mainMinigame() {
 
 function release(stage: Stage, device: Device) {
 
-    stage.hideReleaseBtn();
+    stage.updateButton("release", false);
     device.sendmessage && device.sendmessage({
         type: "release"
     })
@@ -119,7 +119,6 @@ async function start(device: Device) {
         } else if (message.type === "addBody") {
             stage.addBody(message);
         } else if (message.type === "requestLevel") {
-            stage.showReleaseBtn();
             audio.play();
             stage.requestLevel();
         } else if (message.type === "ready") {
@@ -161,6 +160,8 @@ async function start(device: Device) {
         } else if (tag === "audio") {
             audio.toggle();
             stage.updateSwitch("audio",  audio.isOn())
+        } else if (tag === "information") {
+            stage.updateButton("help");
         }
     }
     function update(t: number) {

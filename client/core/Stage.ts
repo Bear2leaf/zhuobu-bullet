@@ -102,11 +102,12 @@ export default class Stage {
         }
         child.visible = false;
     }
-    hideReleaseBtn() {
-        this.ui.getButton("release").hide();
-    }
-    showReleaseBtn() {
-        this.ui.getButton("release").show();
+    updateButton(name: string, visible?: boolean) {
+        if (visible === undefined) {
+            this.ui.getButton(name).getMesh().visible = !this.ui.getButton(name).getMesh().visible;
+        } else {
+            this.ui.getButton(name).getMesh().visible = visible;
+        }
     }
     updateSwitch(name: string, value: boolean) {
         if (value) {
@@ -214,9 +215,9 @@ export default class Stage {
 
 
         if (showBtn) {
-            this.showReleaseBtn();
+            this.updateButton("release", true);
         } else {
-            this.hideReleaseBtn();
+            this.updateButton("release", false);
         }
     }
 

@@ -31,12 +31,14 @@ export default class UI {
         const releaseY = -9 * gl.renderer.dpr;
 
         this.buttons.push(new Button(gl, "release", new Vec3(0, releaseY, 0), true));
+        this.buttons.push(new Button(gl, "help", new Vec3(0, -7, 0), true));
         this.switches.push(new Switch(gl, "zoom", new Vec3(3, -5, 0)));
         this.switches.push(new Switch(gl, "audio", new Vec3(-3, -5, 0)));
         this.buttons.push(new Button(gl, "info", new Vec3(0, 0, 0)));
         this.buttons.push(new Button(gl, "level", new Vec3(0, -2, 0)));
         this.sprites.push(new Sprite(gl, "prev", new Vec3(-3, -2.6, 0)));
         this.sprites.push(new Sprite(gl, "next", new Vec3(3, -2.6, 0)));
+        this.sprites.push(new Sprite(gl, "information", new Vec3(0, -5, 0)));
 
         const mouse = this.mouse;
         // Create a raycast object
@@ -153,6 +155,10 @@ export default class UI {
             button.setParent(this.scene);
             if (button.getMesh().name === "release") {
                 button.updateText("打开")
+            } else if (button.getMesh().name === "help") {
+                button.getMesh().scale.multiply(0.5);
+                button.updateText("操作说明：\n1.重力朝向下方\n2.引导小球抵达目的地\n3.划动手指旋转屏幕\n4.点击箭头切换关卡\n5.点击缩放聚焦小球\n6.点击打开释放小球")
+                button.getMesh().visible = false;
             }
         }
         for (const sprite of this.sprites) {

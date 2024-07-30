@@ -49,12 +49,6 @@ export default class Button implements ButtonStatus {
         bgImageDown.onload = () => (this.bgTextureDown.image = bgImageDown);
         bgImageDown.src = `resources/image/input_outline_square.png`;
     }
-    hide() {
-        this.getMesh().visible = false;
-    }
-    show() {
-        this.getMesh().visible = true;
-    }
     getMesh() {
         return this.mesh;
     }
