@@ -121,7 +121,7 @@ export default class Stage {
             this.camera.position = (this.tempPosition.lerp(this.scene.children[0].position, scaleT).clone().applyMatrix4(this.scene.matrix));
             this.camera.position.z = 0.5;
         } else {
-            this.camera.position =(this.tempPosition.lerp(new Vec3(), scaleT));
+            this.camera.position = (this.tempPosition.lerp(new Vec3(), scaleT));
             this.camera.position.z = 0.5;
 
         }
@@ -191,6 +191,19 @@ export default class Stage {
         this.ui.updateLevel(`level: ${this.level.getIndex()}`);
         this.rotation.fill(0)
         this.sceneRotation.fill(0);
+        let showBtn = false;
+        const root = this.scene.children.find(node => !(node instanceof Mesh));
+        if (root) {
+            const child = root.children.find(child => child.visible)
+            showBtn = !!child?.children.find(c => c.extras && (c.extras as any).spawn);
+        }
+
+
+        if (showBtn) {
+            this.showReleaseBtn();
+        } else {
+            this.hideReleaseBtn();
+        }
     }
 
 }
