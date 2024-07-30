@@ -23,7 +23,7 @@ float processAxis(float coord, float textureBorder, float windowBorder) {
 
 void main(void) {
 // Later before other operations
-    vec2 borders = vec2(16.0f) / 64.0f;
+    vec2 borders = vec2(32.0f) / 128.0f;
     vec2 dimensions = uDimension;
 // Use borders.x for the x axis and borders.y for the y axis
     vec2 newUV = vec2(processAxis(vTexcoord.x, borders.x, dimensions.x), processAxis(vTexcoord.y, borders.y, dimensions.y));

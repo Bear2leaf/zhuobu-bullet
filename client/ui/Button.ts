@@ -1,9 +1,11 @@
 import { Geometry, Mesh, OGLRenderingContext, Plane, Program, Text, Texture, Transform, Vec3 } from "ogl";
+import ButtonStatus from "./ButtonStatus.js";
 
-export default class Button {
-    private readonly font: string = "FiraSans-Bold";
+export default class Button implements ButtonStatus {
+    private readonly font: string = "NotoSansSC-Bold";
     private readonly texture: Texture;
-    private readonly releaseBgTexture: Texture;
+    private readonly bgTexture: Texture;
+    private readonly bgTextureDown: Texture;
     private readonly mesh: Mesh;
     private text?: Text;
     private fontData?: object;
@@ -14,17 +16,21 @@ export default class Button {
     constructor(private readonly gl: OGLRenderingContext, name: string, private readonly position: Vec3, background = false) {
 
         this.texture = new Texture(gl);
-        this.releaseBgTexture = new Texture(gl, {
+        this.bgTexture = new Texture(gl, {
             magFilter: gl.NEAREST,
             minFilter: gl.NEAREST,
         });
-        const release = new Mesh(gl);
-        release.name = name
-        release.position.copy(position);
+        this.bgTextureDown = new Texture(gl, {
+            magFilter: gl.NEAREST,
+            minFilter: gl.NEAREST,
+        });
+        const mesh = new Mesh(gl);
+        mesh.name = name
+        mesh.position.copy(position);
         const releaseBg = new Mesh(gl);
-        releaseBg.setParent(release);
+        releaseBg.setParent(mesh);
         releaseBg.visible = background;
-        this.mesh = release;
+        this.mesh = mesh;
     }
     async load() {
 
@@ -37,8 +43,11 @@ export default class Button {
         image.onload = () => (this.texture.image = image);
         image.src = `resources/font/${this.font}.png`;
         const bgImage = new Image();
-        bgImage.onload = () => (this.releaseBgTexture.image = bgImage);
-        bgImage.src = `resources/image/button_square_line.png`;
+        bgImage.onload = () => (this.bgTexture.image = bgImage);
+        bgImage.src = `resources/image/input_square.png`;
+        const bgImageDown = new Image();
+        bgImageDown.onload = () => (this.bgTextureDown.image = bgImageDown);
+        bgImageDown.src = `resources/image/input_outline_square.png`;
     }
     hide() {
         this.getMesh().visible = false;
@@ -60,6 +69,15 @@ export default class Button {
     setParent(scene: Transform) {
         this.getMesh().setParent(scene);
     }
+    isDown(): boolean {
+        return this.getBgMesh().program.uniforms.tMap.value === this.bgTextureDown;
+    }
+    down() {
+        this.getBgMesh().program.uniforms.tMap.value = this.bgTextureDown;
+    }
+    release() {
+        this.getBgMesh().program.uniforms.tMap.value = this.bgTexture;
+    }
     init() {
         const gl = this.gl;
         const font = this.fontData;
@@ -79,14 +97,14 @@ export default class Button {
             transparent: true,
             cullFace: false,
             depthWrite: false,
-            uniforms: { tMap: { value: this.releaseBgTexture }, uDimension: { value: [0, 0] } },
+            uniforms: { tMap: { value: this.bgTexture }, uDimension: { value: [0, 0] } },
         });
         this.text = new Text({
             font,
             text: "",
             align: "center",
         });
-        this.generateText("RELEASE");
+        this.generateText("");
     }
     updateText(data: string) {
         const font = this.fontData;

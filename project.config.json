@@ -6,6 +6,10 @@
       {
         "value": "worker",
         "type": "folder"
+      },
+      {
+        "value": "resources/font/NotoSansSC-Regular.ttf",
+        "type": "file"
       }
     ],
     "include": []

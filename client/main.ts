@@ -160,6 +160,7 @@ async function start(device: Device) {
             })
         } else if (tag === "audio") {
             audio.toggle();
+            stage.updateSwitch("audio",  audio.isOn())
         }
     }
     function update(t: number) {

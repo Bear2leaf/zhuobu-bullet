@@ -19,6 +19,9 @@ export default class AudioManager {
         this.bgmAudio.setBuffer((await (await fetch("/resources/audio/happy_adveture.mp3")).arrayBuffer()));
         // await this.midiAudio.load(device);
     }
+    isOn(): boolean {
+        return !!this.gain.gain.value;
+    }
     initAudioContext() {
         const context = this.context;
         [

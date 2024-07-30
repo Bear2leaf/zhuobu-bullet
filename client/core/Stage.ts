@@ -75,6 +75,7 @@ export default class Stage {
         this.sceneScale.multiply(0.01);
         this.scene.children[0].worldMatrix.getTranslation(this.tempPosition)
         this.scaleT = 0;
+        this.updateSwitch("zoom", !this.scale)
     }
     start() {
         {
@@ -107,6 +108,19 @@ export default class Stage {
     showReleaseBtn() {
         this.ui.getButton("release").show();
     }
+    updateSwitch(name: string, value: boolean) {
+        if (value) {
+            this.ui.getSwitch(name).on();
+        } else {
+            this.ui.getSwitch(name).off();
+        }
+    }
+    down(name: string) {
+        this.ui.down(name)
+    }
+    release(name: string) {
+        this.ui.release(name)
+    }
     // Game loop
     loop = (timeStamp: number, now: number) => {
         this.t += timeStamp;
@@ -134,7 +148,7 @@ export default class Stage {
     }
     updateBody(message: WorkerMessage & { type: "update" }) {
         const scene = this.scene;
-        this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
+        // this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
         for (let index = 0; index < message.objects.length; index++) {
             let child: Transform | undefined;
             const name = message.objects[index][7];
@@ -188,7 +202,7 @@ export default class Stage {
     requestLevel() {
         this.level.request(this.scene, this.reverse);
         this.reverse = false;
-        this.ui.updateLevel(`level: ${this.level.getIndex()}`);
+        this.ui.updateLevel(`关卡: ${this.level.getIndex()}`);
         this.rotation.fill(0)
         this.sceneRotation.fill(0);
         let showBtn = false;
