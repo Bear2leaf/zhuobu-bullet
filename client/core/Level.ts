@@ -88,6 +88,7 @@ export default class Level {
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
+    mazeMode = false;
     private readonly light = { value: new Vec3() };
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
@@ -126,8 +127,10 @@ export default class Level {
         }
         const collection = this.collections[this.current];
         collection.children.forEach((child) => {
-            if (this.onaddball && child.extras && (child.extras as Record<string, boolean>).spawnPoint) {
+            const extras = child.extras && (child.extras as Record<string, boolean>);
+            if (this.onaddball && extras?.spawnPoint) {
                 this.onaddball(child.matrix.toArray())
+                this.mazeMode = extras.mazeMode;
                 return;
             }
             const primitive = child.children[0] as Mesh;

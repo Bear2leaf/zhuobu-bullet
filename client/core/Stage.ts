@@ -61,12 +61,20 @@ export default class Stage {
     }
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
-
     rollCamera(tag: "right" | "left" | "up" | "down") {
         const rotation = this.rotation;
-        const key = `${rotation.x}${rotation.y}${rotation.z}`;
-        table[key](tag, rotation);
-        this.sceneRotation.set(rotation.x * Math.PI / 2, rotation.y * Math.PI / 2, rotation.z * Math.PI / 2);
+        if (!this.level.mazeMode) {
+            const key = `${rotation.x}${rotation.y}${rotation.z}`;
+            table[key](tag, rotation);
+            this.sceneRotation.set(rotation.x * Math.PI / 2, rotation.y * Math.PI / 2, rotation.z * Math.PI / 2);
+        } else {
+            if (tag === "left" || tag === "down") {
+                rotation.z -= 1;
+            } else {
+                rotation.z += 1;
+            }
+            this.sceneRotation.z = rotation.z * Math.PI / 2;
+        }
         this.t = 0;
     }
     updateZoom() {
@@ -203,7 +211,7 @@ export default class Stage {
     requestLevel() {
         this.level.request(this.scene, this.reverse);
         this.reverse = false;
-        this.ui.updateLevel(`关卡: ${this.level.getIndex()}`);
+        this.ui.updateLevel(`关卡: ${this.level.getIndex() + 1}`);
         this.rotation.fill(0)
         this.sceneRotation.fill(0);
         let showBtn = false;

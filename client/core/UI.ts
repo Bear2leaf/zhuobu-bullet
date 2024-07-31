@@ -69,6 +69,7 @@ export default class UI {
             })
         }
         const start = (e: { x: number, y: number }) => {
+            this.getButton("help").getMesh().visible = false;
             mouse.set(2.0 * (e.x / renderer.width) - 1.0, 2.0 * (1.0 - e.y / renderer.height) - 1.0);
 
             // Update the ray's origin and direction using the camera and mouse
@@ -154,10 +155,10 @@ export default class UI {
             button.init();
             button.setParent(this.scene);
             if (button.getMesh().name === "release") {
-                button.updateText("打开")
+                button.updateText("释放")
             } else if (button.getMesh().name === "help") {
                 button.getMesh().scale.multiply(0.5);
-                button.updateText("操作说明：\n1.重力朝向下方\n2.引导小球抵达目的地\n3.划动手指旋转屏幕\n4.点击箭头切换关卡\n5.点击缩放聚焦小球\n6.点击打开释放小球")
+                button.updateText("操作说明：\n1.重力朝向下方\n2.点击按钮释放小球\n3.划动屏幕旋转关卡\n4.点击箭头切换关卡\n5.点击缩放聚焦小球\n6.引导小球抵达绿色终点")
                 button.getMesh().visible = false;
             }
         }
