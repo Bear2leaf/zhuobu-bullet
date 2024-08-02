@@ -85,11 +85,12 @@ export default class Level {
 
     private readonly mouse = new Vec2();
     private readonly collections: Transform[] = [];
+    private readonly light = { value: new Vec3() };
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
+    readonly cameras: Camera[] = [];
     mazeMode = false;
-    private readonly light = { value: new Vec3() };
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
     constructor(private readonly gl: OGLRenderingContext) {
@@ -108,6 +109,11 @@ export default class Level {
         gltf.scene[0].children.find(child => child.name === "MISC")?.setParent(null);
         for (let index = 0; index < gltf.scene[0].children.length; index++) {
             this.collections.push(gltf.scene[0].children[index]);
+        }
+        const cameras = (gltf as GLTF & {cameras: Camera[]}).cameras;
+        for (let index = 0; index < cameras.length; index++) {
+            const element = cameras[index];
+            this.cameras.push(element);
         }
     }
     setIndex(level: number) {

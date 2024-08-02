@@ -178,9 +178,6 @@ async function start(device: Device) {
             messageHandler(message);
             message = messageQueue.shift();
         }
-        if (paused) {
-            return;
-        }
         delta = (t - last) / 1000;
         last = t;
         now += delta;
@@ -188,6 +185,9 @@ async function start(device: Device) {
         audio.process();
         gravity.copy(acc).applyQuaternion(rotation.inverse()).normalize().scale(10);
         device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${gravity[0]},${gravity[1]},${gravity[2]}` })
+        if (paused) {
+            return;
+        }
     }
     requestAnimationFrame((t) => {
         last = t;

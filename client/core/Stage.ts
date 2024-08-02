@@ -4,10 +4,6 @@ import { WorkerMessage } from "../../worker/ammo.worker.js";
 import UI from "./UI.js";
 import Level from "./Level.js";
 import { table } from "../misc/rotation.js";
-function lerp(x0: number, x1: number, t: number) {
-    return x0 + (x1 - x0) * t;
-}
-
 export default class Stage {
     private readonly renderer: Renderer;
     private readonly scene: Transform;
@@ -140,18 +136,21 @@ export default class Stage {
         this.tempQuat.slerp(this.sceneQuat, Math.min(1, this.t));
         this.scene.quaternion.copy(this.tempQuat);
         this.scene.scale.lerp(this.sceneScale, scaleT);
+        const camera = this.camera;
+        const z = this.level.cameras[this.level.getIndex()].position.clone().multiply(0.01).z;
         if (this.scale) {
-            this.camera.position = (this.tempPosition.lerp(this.scene.children[0].position, scaleT).clone().applyMatrix4(this.scene.matrix));
-            this.camera.position.z = 0.5;
+            camera.position = (this.tempPosition.lerp(this.scene.children[0].position, scaleT).clone().applyMatrix4(this.scene.matrix));
+            camera.position.z = z;
         } else {
-            this.camera.position = (this.tempPosition.lerp(new Vec3(), scaleT));
-            this.camera.position.z = 0.5;
+            camera.position.copy(this.tempPosition.lerp(this.level.cameras[this.level.getIndex()].position.clone().multiply(0.01), scaleT))
+            camera.position.z = z;
 
         }
-        this.renderer.render({ scene: this.scene, camera: this.camera });
+        
+        this.renderer.render({ scene: this.scene, camera: camera });
         this.ui.render();
         this.quat.fill(0)
-        this.matrix.fromArray(this.camera.viewMatrix.multiply(this.scene.worldMatrix));
+        this.matrix.fromArray(camera.viewMatrix.multiply(this.scene.worldMatrix));
         this.matrix.getRotation(this.quat);
         this.onorientationchange && this.onorientationchange(this.quat)
     }
@@ -219,6 +218,7 @@ export default class Stage {
             const child = root.children.find(child => child.visible)
         }
         this.updateSwitch("pause", true);
+        console.log(this.camera);
     }
 
 }
