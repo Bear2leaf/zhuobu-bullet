@@ -24,6 +24,8 @@ export type MainMessage = {
     type: "resetWorld",
 } | {
     type: "release",
+} | {
+    type: "pause",
 }
 export type WorkerMessage = {
     type: "update"

@@ -24,7 +24,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     const dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
     dynamicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
 
-
+    let pause = true;
     const bodies: Ammo.btRigidBody[] = [];
     function createBall() {
         const startTransform = new Ammo.btTransform();
@@ -83,6 +83,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         handler.postMessage({
             type: "requestLevel",
         })
+        pause = true;
     }
     const gravity = new Ammo.btVector3(0, 0, 0);
     let interval: number | null = null;
@@ -156,20 +157,9 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         } else if (message.type === "resetWorld") {
             resetWorld();
         } else if (message.type === "release") {
-            const removeBodies = bodies.filter(body => {
-                const data = Ammo.castObject(body.getUserPointer(), UserData);
-                const spawn = data.propertities?.spawn;
-                return spawn;
-            })
-            removeBodies.forEach(body => {
-                const data = Ammo.castObject(body.getUserPointer(), UserData);
-                bodies.splice(bodies.indexOf(body), 1);
-                dynamicsWorld.removeRigidBody(body);
-                handler.postMessage({
-                    type: "removeBody",
-                    data: data.name
-                })
-            })
+            pause = false;
+        } else if (message.type === "pause") {
+            pause = true;
         }
     }
     function checkDestination() {
@@ -197,6 +187,18 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             message = handler.messageQueue.shift();
         }
         if (fromLastMessageFrames > 300) {
+            return;
+        }
+        if (pause) {
+            const result: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
+    
+            // Read bullet data into JS objects
+            for (let i = 0; i < bodies.length; i++) {
+                result.objects[i] = result.objects[i] || []
+                readBulletObject(i, result.objects[i]);
+            }
+    
+            handler.postMessage(result);
             return;
         }
         dt = dt || 1;

@@ -68,7 +68,7 @@ export default class Stage {
             table[key](tag, rotation);
             this.sceneRotation.set(rotation.x * Math.PI / 2, rotation.y * Math.PI / 2, rotation.z * Math.PI / 2);
         } else {
-            if (tag === "left" || tag === "down") {
+            if (tag === "left" || tag === "up") {
                 rotation.z -= 1;
             } else {
                 rotation.z += 1;
@@ -214,19 +214,11 @@ export default class Stage {
         this.ui.updateLevel(`关卡: ${this.level.getIndex() + 1}`);
         this.rotation.fill(0)
         this.sceneRotation.fill(0);
-        let showBtn = false;
         const root = this.scene.children.find(node => !(node instanceof Mesh));
         if (root) {
             const child = root.children.find(child => child.visible)
-            showBtn = !!child?.children.find(c => c.extras && (c.extras as any).spawn);
         }
-
-
-        if (showBtn) {
-            this.updateButton("release", true);
-        } else {
-            this.updateButton("release", false);
-        }
+        this.updateSwitch("pause", true);
     }
 
 }

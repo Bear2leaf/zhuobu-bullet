@@ -30,8 +30,8 @@ export default class UI {
         this.scene = new Transform();
         const releaseY = -9 * gl.renderer.dpr;
 
-        this.buttons.push(new Button(gl, "release", new Vec3(0, releaseY, 0), true));
         this.buttons.push(new Button(gl, "help", new Vec3(0, -7, 0), true));
+        this.switches.push(new Switch(gl, "pause", new Vec3(0, releaseY, 0)));
         this.switches.push(new Switch(gl, "zoom", new Vec3(3, -5, 0)));
         this.switches.push(new Switch(gl, "audio", new Vec3(-3, -5, 0)));
         this.buttons.push(new Button(gl, "info", new Vec3(0, 0, 0)));
@@ -154,11 +154,9 @@ export default class UI {
         for (const button of this.buttons) {
             button.init();
             button.setParent(this.scene);
-            if (button.getMesh().name === "release") {
-                button.updateText("释放")
-            } else if (button.getMesh().name === "help") {
+            if (button.getMesh().name === "help") {
                 button.getMesh().scale.multiply(0.5);
-                button.updateText("操作说明：\n1.重力朝向下方\n2.点击按钮释放小球\n3.划动屏幕旋转关卡\n4.点击箭头切换关卡\n5.点击缩放聚焦小球\n6.引导小球抵达绿色终点")
+                button.updateText("操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏")
                 button.getMesh().visible = false;
             }
         }

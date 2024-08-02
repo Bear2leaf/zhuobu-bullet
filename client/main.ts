@@ -16,13 +16,19 @@ export async function mainMinigame() {
     await device.loadSubpackage();
     return device;
 }
-
+let pause = false;
 function release(stage: Stage, device: Device) {
-
-    stage.updateButton("release", false);
-    device.sendmessage && device.sendmessage({
-        type: "release"
-    })
+    pause = !pause;
+    stage.updateSwitch("pause", pause);
+    if (pause) {
+        device.sendmessage && device.sendmessage({
+            type: "pause"
+        })
+    } else {
+        device.sendmessage && device.sendmessage({
+            type: "release"
+        })
+    }
 }
 function initStageTouchEvents(stage: Stage, device: Device) {
 
@@ -121,6 +127,7 @@ async function start(device: Device) {
         } else if (message.type === "requestLevel") {
             audio.play();
             stage.requestLevel();
+            pause = true;
         } else if (message.type === "ready") {
             stage.onorientationchange = (quat) => {
                 rotation[0] = quat.x;
@@ -144,7 +151,7 @@ async function start(device: Device) {
     await audio.load();
     device.createWorker("dist/worker/main.js");
     stage.onclick = (tag?: string) => {
-        if (tag === "release") {
+        if (tag === "pause") {
             release(stage, device);
         } else if (tag === "zoom") {
             stage.updateZoom();
@@ -159,7 +166,7 @@ async function start(device: Device) {
             })
         } else if (tag === "audio") {
             audio.toggle();
-            stage.updateSwitch("audio",  audio.isOn())
+            stage.updateSwitch("audio", audio.isOn())
         } else if (tag === "information") {
             stage.updateButton("help");
         }
