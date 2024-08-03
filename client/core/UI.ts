@@ -156,7 +156,6 @@ export default class UI {
             button.setParent(this.scene);
             if (button.getMesh().name === "help") {
                 button.getMesh().scale.multiply(0.5);
-                button.updateText("操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏")
                 button.getMesh().visible = false;
             }
         }
@@ -178,6 +177,9 @@ export default class UI {
     }
     updateInfo(data: string) {
         this.buttons.find(button => button.getMesh().name === "info")?.updateText(data);
+    }
+    updateHelp(data: string) {
+        this.buttons.find(button => button.getMesh().name === "help")?.updateText(data);
     }
     updateLevel(data: string) {
         this.buttons.find(button => button.getMesh().name === "level")?.updateText(data);

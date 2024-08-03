@@ -19,6 +19,7 @@ export default class Stage {
     private readonly sceneQuat = new Quat();
     private readonly tempQuat = new Quat();
     private readonly tempPosition = new Vec3();
+    private charset: string = "";
     private fragment: string = "";
     private vertex: string = "";
     private t = 0;
@@ -50,6 +51,7 @@ export default class Stage {
     }
     async load() {
 
+        this.charset = await (await fetch("resources/font/charset.txt")).text();
         this.vertex = await (await fetch("resources/glsl/simple.vert.sk")).text();
         this.fragment = await (await fetch("resources/glsl/simple.frag.sk")).text();
         await this.ui.load();
@@ -146,7 +148,7 @@ export default class Stage {
             camera.position.z = z;
 
         }
-        
+
         this.renderer.render({ scene: this.scene, camera: camera });
         this.ui.render();
         this.quat.fill(0)
@@ -207,18 +209,43 @@ export default class Stage {
         }
     }
     reverse = false;
+    private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏";
+    private readonly levelMsg = "关卡：";
     requestLevel() {
+        this.ui.updateHelp(this.helpMsg);
         this.level.request(this.scene, this.reverse);
         this.reverse = false;
-        this.ui.updateLevel(`关卡: ${this.level.getIndex() + 1}`);
+        this.ui.updateLevel(`${this.levelMsg}${this.level.getIndex() + 1}`);
         this.rotation.fill(0)
         this.sceneRotation.fill(0);
         const root = this.scene.children.find(node => !(node instanceof Mesh));
         if (root) {
             const child = root.children.find(child => child.visible)
+            if (!child?.name) {
+                throw new Error("level name is empty");
+            }
+            this.ui.updateLevel(child.name)
         }
         this.updateSwitch("pause", true);
-        console.log(this.camera);
+        this.checkCharset();
+    }
+    checkCharset() {
+        let levelMsg = "";
+        this.scene.traverse((node) => {
+            levelMsg += node.name || ""
+        });
+        const allMsg = this.helpMsg + levelMsg;
+        const uniqueCharset = Array.from(new Set(allMsg.split(''))).sort().join('');
+        let errorCharset = ""
+        for (const char of uniqueCharset.split("")) {
+            if (this.charset.indexOf(char) === -1) {
+                errorCharset += char;
+            }
+        }
+        if (errorCharset) {
+            throw new Error("undefined char: " + errorCharset);
+
+        }
     }
 
 }
