@@ -142,7 +142,7 @@ export default class Stage {
         const z = this.level.cameras[this.level.getIndex()].position.clone().multiply(0.01).z;
         if (this.scale) {
             camera.position = (this.tempPosition.lerp(this.scene.children[0].position, scaleT).clone().applyMatrix4(this.scene.matrix));
-            camera.position.z = z;
+            camera.position.z += 0.5;
         } else {
             camera.position.copy(this.tempPosition.lerp(this.level.cameras[this.level.getIndex()].position.clone().multiply(0.01), scaleT))
             camera.position.z = z;

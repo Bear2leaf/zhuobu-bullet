@@ -115,6 +115,7 @@ export default class Level {
             const element = cameras[index];
             this.cameras.push(element);
         }
+        console.log(gltf)
     }
     setIndex(level: number) {
         this.current = level;
