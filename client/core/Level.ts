@@ -89,7 +89,6 @@ export default class Level {
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
-    readonly cameras: Camera[] = [];
     mazeMode = false;
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
@@ -110,12 +109,6 @@ export default class Level {
         for (let index = 0; index < gltf.scene[0].children.length; index++) {
             this.collections.push(gltf.scene[0].children[index]);
         }
-        const cameras = (gltf as GLTF & {cameras: Camera[]}).cameras;
-        for (let index = 0; index < cameras.length; index++) {
-            const element = cameras[index];
-            this.cameras.push(element);
-        }
-        console.log(gltf)
     }
     setIndex(level: number) {
         this.current = level;

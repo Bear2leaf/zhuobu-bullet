@@ -79,7 +79,7 @@ export default class Stage {
         this.scale = (this.scale + 1) % 2;
         this.sceneScale.set(this.scale + 1, this.scale + 1, this.scale + 1);
         this.sceneScale.multiply(0.01);
-        this.scene.children[0].worldMatrix.getTranslation(this.tempPosition)
+        this.scene.children[0].worldMatrix.getTranslation(this.tempPosition);
         this.scaleT = 0;
         this.updateSwitch("zoom", !this.scale)
     }
@@ -139,14 +139,14 @@ export default class Stage {
         this.scene.quaternion.copy(this.tempQuat);
         this.scene.scale.lerp(this.sceneScale, scaleT);
         const camera = this.camera;
-        const z = this.level.cameras[this.level.getIndex()].position.clone().multiply(0.01).z;
+        const z = this.level.getIndex() < 3 ? 0.5 : 1.5;
         if (this.scale) {
-            camera.position = (this.tempPosition.lerp(this.scene.children[0].position, scaleT).clone().applyMatrix4(this.scene.matrix));
-            camera.position.z += 0.5;
+            const pos = this.scene.children[0].position.clone();
+            camera.position = (this.tempPosition.lerp(pos, scaleT).applyMatrix4(this.scene.matrix));
+            camera.position.z += z;
         } else {
-            camera.position.copy(this.tempPosition.lerp(this.level.cameras[this.level.getIndex()].position.clone().multiply(0.01), scaleT))
+            camera.position = this.tempPosition.lerp(new Vec3(0, 0, 0), scaleT);
             camera.position.z = z;
-
         }
 
         this.renderer.render({ scene: this.scene, camera: camera });
