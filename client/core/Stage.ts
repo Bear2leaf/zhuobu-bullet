@@ -210,12 +210,10 @@ export default class Stage {
     }
     reverse = false;
     private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏";
-    private readonly levelMsg = "关卡：";
     requestLevel() {
         this.ui.updateHelp(this.helpMsg);
         this.level.request(this.scene, this.reverse);
         this.reverse = false;
-        this.ui.updateLevel(`${this.levelMsg}${this.level.getIndex() + 1}`);
         this.rotation.fill(0)
         this.sceneRotation.fill(0);
         const root = this.scene.children.find(node => !(node instanceof Mesh));

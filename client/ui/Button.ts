@@ -108,7 +108,6 @@ export default class Button implements ButtonStatus {
         this.generateText(data);
     }
     generateText(data: string) {
-
         const gl = this.gl;
         const text = this.text;
         if (text === undefined) {
