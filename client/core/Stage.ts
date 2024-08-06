@@ -163,10 +163,10 @@ export default class Stage {
         if (this.scale) {
             const pos = this.scene.children[0].position.clone();
             camera.position = (this.tempPosition.lerp(pos, scaleT).applyMatrix4(this.scene.matrix));
-            camera.position.z += z;
+            camera.position.z += (this.level.radius * 0.0225) / Math.tan(camera.fov / 2.0);
         } else {
             camera.position = this.tempPosition.lerp(new Vec3(0, 0, 0), scaleT);
-            camera.position.z = z;
+            camera.position.z = (this.level.radius * 0.0225) / Math.tan(camera.fov / 2.0);
         }
 
         this.renderer.render({ scene: this.scene, camera: camera });

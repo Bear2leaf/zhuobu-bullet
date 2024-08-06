@@ -89,6 +89,7 @@ export default class Level {
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
+    radius = 0;
     mazeMode = false;
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
@@ -126,6 +127,7 @@ export default class Level {
             }
         }
         const collection = this.collections[this.current];
+        let maxRadius = 0;
         collection.children.forEach((child) => {
             const extras = child.extras && (child.extras as Record<string, boolean>);
             if (this.onaddball && extras?.spawnPoint) {
@@ -139,7 +141,10 @@ export default class Level {
             const indices = primitive.geometry.attributes.index.data as AttributeData;
             attributeData && this.onaddmesh && this.onaddmesh(child.name, child.matrix, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
             child.visible = true;
+            primitive.geometry.computeBoundingSphere();
+            maxRadius = Math.max(maxRadius, primitive.geometry.bounds.radius);
         });
+        this.radius = maxRadius;
         collection.visible = true;
         collection.parent?.setParent(scene)
         this.current = (this.current + 1) % this.collections.length;

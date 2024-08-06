@@ -124,6 +124,9 @@ export default class UI {
         document.addEventListener("touchmove", (e) => move({ x: e.touches[0].pageX, y: e.touches[0].pageY }))
         document.addEventListener("touchend", () => end())
         document.addEventListener("touchcancel", () => end())
+        document.addEventListener("mousedown", (e) => start({ x: e.pageX, y: e.pageY }))
+        document.addEventListener("mousemove", (e) => move({ x: e.pageX, y: e.pageY }))
+        document.addEventListener("mouseup", () => end())
     }
     async load() {
         for await (const button of this.buttons) {
