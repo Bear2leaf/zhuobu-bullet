@@ -13,7 +13,7 @@ export default class Button implements ButtonStatus {
     private vertex: string = "";
     private bgFragment: string = "";
     private bgVertex: string = "";
-    constructor(private readonly gl: OGLRenderingContext, name: string, private readonly position: Vec3, background = false) {
+    constructor(private readonly gl: OGLRenderingContext, name: string, private readonly position: Vec3, background = false, private readonly type: 0 | 1 = 0) {
 
         this.texture = new Texture(gl);
         this.bgTexture = new Texture(gl, {
@@ -44,10 +44,10 @@ export default class Button implements ButtonStatus {
         image.src = `resources/font/${this.font}.png`;
         const bgImage = new Image();
         bgImage.onload = () => (this.bgTexture.image = bgImage);
-        bgImage.src = `resources/image/input_square.png`;
+        bgImage.src = `resources/image/${this.type === 0 ? "input_square" : "input_square"}.png`;
         const bgImageDown = new Image();
         bgImageDown.onload = () => (this.bgTextureDown.image = bgImageDown);
-        bgImageDown.src = `resources/image/input_outline_square.png`;
+        bgImageDown.src = `resources/image/${this.type === 0 ? "input_square_down" : "input_square_down"}.png`;
     }
     getMesh() {
         return this.mesh;
@@ -75,13 +75,17 @@ export default class Button implements ButtonStatus {
     init() {
         const gl = this.gl;
         const font = this.fontData;
+        const color = [0.2, 0.1, 0.3];
+        if (this.type === 1) {
+            // color.fill(0)
+        }
         const program = new Program(gl, {
             vertex: this.vertex,
             fragment: this.fragment,
             transparent: true,
             cullFace: false,
             depthWrite: false,
-            uniforms: { tMap: { value: this.texture }, uColor: { value: [0.2, 0.1, 0.3] } },
+            uniforms: { tMap: { value: this.texture }, uColor: { value: color } },
 
         });
         this.getMesh().program = program;
@@ -123,7 +127,8 @@ export default class Button implements ButtonStatus {
         });
         geometry.computeBoundingBox();
         const offset = geometry.bounds.max.y + geometry.bounds.min.y;
-        const dimension = [Math.abs(geometry.bounds.max.x - geometry.bounds.min.x) + 1, Math.abs(geometry.bounds.max.y - geometry.bounds.min.y) + 1];
+        const padding = this.type === 0 ? 1 : 2;
+        const dimension = [Math.abs(geometry.bounds.max.x - geometry.bounds.min.x) + padding, Math.abs(geometry.bounds.max.y - geometry.bounds.min.y) + padding];
         this.getMesh().geometry = geometry;
         this.getBgMesh().geometry = new Plane(gl, {
             width: dimension[0],

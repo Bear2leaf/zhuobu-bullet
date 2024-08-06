@@ -19,14 +19,20 @@ export default class Stage {
     private readonly sceneQuat = new Quat();
     private readonly tempQuat = new Quat();
     private readonly tempPosition = new Vec3();
+    readonly availableLevels: number[] = [0];
     private charset: string = "";
     private fragment: string = "";
     private vertex: string = "";
     private t = 0;
     private scaleT = 0;
     private scale = 0;
+    reverse = false;
+    private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏\n（点击关闭说明）";
+    private readonly continueMsg = "恭喜过关！\n点击进入下一关"
     onclick?: (tag?: string) => void;
     onorientationchange?: (quat: Quat) => void;
+    continueButtonResolve?: (value: unknown) => void;
+    isContinue: boolean = false;
 
     constructor(device: Device) {
         const [width, height, dpr] = device.getWindowInfo();
@@ -114,6 +120,20 @@ export default class Stage {
         } else {
             this.ui.getButton(name).getMesh().visible = visible;
         }
+    }
+    updateSprite(name: string, visible?: boolean) {
+        if (visible === undefined) {
+            this.ui.getSprite(name).getMesh().visible = !this.ui.getSprite(name).getMesh().visible;
+        } else {
+            this.ui.getSprite(name).getMesh().visible = visible;
+        }
+    }
+    async waitContinueButton() {
+        this.updateButton("continue", true);
+        this.ui.getButton("continue").updateText("恭喜过关\n点击进入下一关")
+        await new Promise((resolve) => {
+            this.continueButtonResolve = resolve;
+        })
     }
     updateSwitch(name: string, value: boolean) {
         if (value) {
@@ -208,11 +228,18 @@ export default class Stage {
             child.visible = true;
         }
     }
-    reverse = false;
-    private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏\n（点击其它区域关闭说明）";
-    requestLevel() {
+    async requestLevel() {
         this.ui.updateHelp(this.helpMsg);
+        if (this.isContinue) {
+            await this.waitContinueButton();
+        }
         this.level.request(this.scene, this.reverse);
+        if (this.level.getIndex() === 0) {
+            this.updateButton("help", true);
+        }
+        if (this.isContinue) {
+            this.availableLevels.push(this.level.getIndex());
+        }
         this.reverse = false;
         this.rotation.fill(0)
         this.sceneRotation.fill(0);
@@ -226,8 +253,16 @@ export default class Stage {
         }
         this.updateSwitch("pause", true);
         this.checkCharset();
-        if (this.level.getIndex() === 0) {
-            this.updateButton("help", true);
+        this.isContinue = true;
+        if (this.availableLevels.indexOf(this.level.getIndex() + 1) !== -1) {
+            this.updateSprite("next", true);
+        } else {
+            this.updateSprite("next", false);
+        }
+        if (this.availableLevels.indexOf(this.level.getIndex() - 1) !== -1) {
+            this.updateSprite("prev", true);
+        } else {
+            this.updateSprite("prev", false);
         }
     }
     checkCharset() {
@@ -235,7 +270,7 @@ export default class Stage {
         this.scene.traverse((node) => {
             levelMsg += node.name || ""
         });
-        const allMsg = this.helpMsg + levelMsg;
+        const allMsg = this.helpMsg + levelMsg + this.continueMsg;
         const uniqueCharset = Array.from(new Set(allMsg.split(''))).sort().join('');
         let errorCharset = ""
         for (const char of uniqueCharset.split("")) {

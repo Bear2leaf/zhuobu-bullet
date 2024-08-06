@@ -186,7 +186,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             messageHandler(message);
             message = handler.messageQueue.shift();
         }
-        if (fromLastMessageFrames > 300) {
+        if (fromLastMessageFrames > 10) {
             return;
         }
         if (pause) {

@@ -125,9 +125,9 @@ async function start(device: Device) {
         } else if (message.type === "addBody") {
             stage.addBody(message);
         } else if (message.type === "requestLevel") {
+            pause = true;
             audio.play();
             stage.requestLevel();
-            pause = true;
         } else if (message.type === "ready") {
             stage.onorientationchange = (quat) => {
                 rotation[0] = quat.x;
@@ -151,15 +151,23 @@ async function start(device: Device) {
     await audio.load();
     device.createWorker("dist/worker/main.js");
     stage.onclick = (tag?: string) => {
-        if (tag === "pause") {
+        if (stage.continueButtonResolve) {
+            if (tag === "continue") {
+                stage.continueButtonResolve(void (0));
+                stage.updateButton("continue");
+                stage.continueButtonResolve = undefined;
+            }
+        } else if (tag === "pause") {
             release(stage, device);
         } else if (tag === "zoom") {
             stage.updateZoom();
         } else if (tag === "next") {
+            stage.isContinue = false;
             device.sendmessage && device.sendmessage({
                 type: "resetWorld",
             })
         } else if (tag === "prev") {
+            stage.isContinue = false;
             stage.reverse = true;
             device.sendmessage && device.sendmessage({
                 type: "resetWorld",
@@ -188,7 +196,7 @@ async function start(device: Device) {
         audio.process();
         gravity.copy(acc).applyQuaternion(rotation.inverse()).normalize().scale(10);
         device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${gravity[0]},${gravity[1]},${gravity[2]}` })
-       
+
     }
     requestAnimationFrame((t) => {
         last = t;

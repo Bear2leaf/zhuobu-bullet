@@ -12,7 +12,7 @@ export default class UI {
     private readonly sprites: Sprite[] = [];
     private readonly switches: Switch[] = [];
     get all(): ButtonStatus[] {
-        return [...this.sprites, ...this.switches, ...this.buttons];
+        return [...this.sprites, ...this.switches, ...this.buttons].filter(o => o.getMesh().visible);
     }
     onclick?: (tag?: string) => void;
     constructor(private readonly renderer: Renderer) {
@@ -28,10 +28,10 @@ export default class UI {
         })
         this.camera.position.z = 1;
         this.scene = new Transform();
-        const releaseY = -9 * gl.renderer.dpr;
 
         this.buttons.push(new Button(gl, "help", new Vec3(0, -7, 0), true));
-        this.switches.push(new Switch(gl, "pause", new Vec3(0, releaseY, 0)));
+        this.buttons.push(new Button(gl, "continue", new Vec3(0, -8, 0), true, 1));
+        this.switches.push(new Switch(gl, "pause", new Vec3(0, -9 * dpr, 0)));
         this.switches.push(new Switch(gl, "zoom", new Vec3(3, -5, 0)));
         this.switches.push(new Switch(gl, "audio", new Vec3(-3, -5, 0)));
         this.buttons.push(new Button(gl, "info", new Vec3(0, 0, 0)));
@@ -142,6 +142,13 @@ export default class UI {
             throw new Error("button not found: " + name);
         }
         return button;
+    }
+    getSprite(name: string) {
+        const sprite = this.sprites.find(sprite => sprite?.getMesh().name === name);
+        if (!sprite) {
+            throw new Error("sprite not found: " + name);
+        }
+        return sprite;
     }
     getSwitch(name: string) {
         const button = this.switches.find(button => button?.getMesh().name === name);
