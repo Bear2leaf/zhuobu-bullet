@@ -19,7 +19,7 @@ export default class Stage {
     private readonly sceneQuat = new Quat();
     private readonly tempQuat = new Quat();
     private readonly tempPosition = new Vec3();
-    readonly availableLevels: number[] = [0];
+    readonly availableLevels: Set<number> = new Set();
     private charset: string = "";
     private fragment: string = "";
     private vertex: string = "";
@@ -54,6 +54,7 @@ export default class Stage {
         }
         this.scene = new Transform();
         this.ui = new UI(renderer);
+        this.availableLevels.add(0);
     }
     async load() {
 
@@ -238,7 +239,7 @@ export default class Stage {
             this.updateButton("help", true);
         }
         if (this.isContinue) {
-            this.availableLevels.push(this.level.getIndex());
+            this.availableLevels.add(this.level.getIndex());
         }
         this.reverse = false;
         this.rotation.fill(0)
@@ -254,12 +255,12 @@ export default class Stage {
         this.updateSwitch("pause", true);
         this.checkCharset();
         this.isContinue = true;
-        if (this.availableLevels.indexOf(this.level.getIndex() + 1) !== -1) {
+        if (this.availableLevels.has(this.level.getIndex() + 1)) {
             this.updateSprite("next", true);
         } else {
             this.updateSprite("next", false);
         }
-        if (this.availableLevels.indexOf(this.level.getIndex() - 1) !== -1) {
+        if (this.availableLevels.has(this.level.getIndex() - 1)) {
             this.updateSprite("prev", true);
         } else {
             this.updateSprite("prev", false);
