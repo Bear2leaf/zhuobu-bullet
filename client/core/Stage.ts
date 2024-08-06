@@ -139,7 +139,7 @@ export default class Stage {
         this.scene.quaternion.copy(this.tempQuat);
         this.scene.scale.lerp(this.sceneScale, scaleT);
         const camera = this.camera;
-        const z = this.level.getIndex() < 3 ? 0.5 : 1.5;
+        const z = this.level.getIndex() < 3 ? 0.5 : 1.75;
         if (this.scale) {
             const pos = this.scene.children[0].position.clone();
             camera.position = (this.tempPosition.lerp(pos, scaleT).applyMatrix4(this.scene.matrix));
@@ -209,7 +209,7 @@ export default class Stage {
         }
     }
     reverse = false;
-    private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏";
+    private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏\n（点击其它区域关闭说明）";
     requestLevel() {
         this.ui.updateHelp(this.helpMsg);
         this.level.request(this.scene, this.reverse);
@@ -226,6 +226,9 @@ export default class Stage {
         }
         this.updateSwitch("pause", true);
         this.checkCharset();
+        if (this.level.getIndex() === 0) {
+            this.updateButton("help", true);
+        }
     }
     checkCharset() {
         let levelMsg = "";
