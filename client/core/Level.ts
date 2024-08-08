@@ -102,9 +102,9 @@ export default class Level {
 
         this.gltfvertex = await (await fetch("resources/glsl/gltf.vert.sk")).text();
         this.gltffragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
-        const gltf = (await GLTFLoader.load(this.gl, `resources/gltf/Playground.glb`));
+        const gltf = (await GLTFLoader.load(this.gl, `resources/gltf/Maze.glb`));
         if (gltf.lights.directional[0].direction) {
-            this.light.value = gltf.lights.directional[0].direction.value;
+            this.light.value = gltf.lights.directional[0].direction.value.multiply(new Vec3(1, 1, 1)).normalize();
         }
         gltf.scene[0].children.find(child => child.name === "MISC")?.setParent(null);
         for (let index = 0; index < gltf.scene[0].children.length; index++) {
@@ -115,7 +115,7 @@ export default class Level {
         this.current = level;
     }
     request(scene: Transform, reverse = false) {
-        this.collections.forEach(collection => collection.visible = false);
+        this.collections.forEach((collection) => collection.visible = false);
         if (reverse) {
             this.current--;
             if (this.current < 0) {
@@ -129,7 +129,7 @@ export default class Level {
         const collection = this.collections[this.current];
         let maxRadius = 0;
         collection.children.forEach((child) => {
-            const extras = child.extras && (child.extras as Record<string, boolean>);
+            const extras = child.children[0].extras && (child.children[0].extras as Record<string, boolean>);
             if (this.onaddball && extras?.spawnPoint) {
                 this.onaddball(child.matrix.toArray())
                 this.mazeMode = extras.mazeMode;
