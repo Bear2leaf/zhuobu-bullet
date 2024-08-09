@@ -4,6 +4,7 @@ import { WorkerMessage } from "../../worker/ammo.worker.js";
 import UI from "./UI.js";
 import Level from "./Level.js";
 import { table } from "../misc/rotation.js";
+import { Entity, State } from "@geckos.io/snapshot-interpolation/lib/types.js";
 export default class Stage {
     private readonly renderer: Renderer;
     private readonly scene: Transform;
@@ -129,6 +130,38 @@ export default class Stage {
             this.ui.getSprite(name).getMesh().visible = visible;
         }
     }
+    updateSI(state: State) {
+        const scene = this.scene;
+        // this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
+        for (let index = 0; index < state.length; index++) {
+            let child: Transform | undefined;
+
+            const entity = state[index] as Entity & {
+                x: number, y: number, z: number, q: {
+                    x: number,
+                    y: number,
+                    z: number,
+                    w: number
+                }
+            };
+            const name = entity.id;
+            if (index === 0) {
+                child = scene.children.find(child => child.visible && child instanceof Mesh)
+            } else {
+                child = scene.children.find(child => child.visible && !(child instanceof Mesh))?.children[this.level.getIndex()].children.find(child => child.name === name);
+            }
+            if (!child) {
+                throw new Error("child is undefined");
+            }
+            child.position.x = entity.x;
+            child.position.y = entity.y;
+            child.position.z = entity.z;
+            child.quaternion.x = entity.q.x;
+            child.quaternion.y = entity.q.y;
+            child.quaternion.z = entity.q.z;
+            child.quaternion.w = entity.q.w;
+        }
+    }
     async waitContinueButton() {
         this.updateButton("continue", true);
         this.ui.getButton("continue").updateText("恭喜过关\n点击进入下一关")
@@ -160,11 +193,10 @@ export default class Stage {
         this.scene.quaternion.copy(this.tempQuat);
         this.scene.scale.lerp(this.sceneScale, scaleT);
         const camera = this.camera;
-        const z = this.level.getIndex() < 3 ? 0.5 : 1.75;
         if (this.scale) {
             const pos = this.scene.children[0].position.clone();
             camera.position = (this.tempPosition.lerp(pos, scaleT).applyMatrix4(this.scene.matrix));
-            camera.position.z += (this.level.radius * 0.0225) / Math.tan(camera.fov / 2.0);
+            camera.position.z = (this.level.radius * 0.0225) / Math.tan(camera.fov / 2.0);
         } else {
             camera.position = this.tempPosition.lerp(new Vec3(0, 0, 0), scaleT);
             camera.position.z = (this.level.radius * 0.0225) / Math.tan(camera.fov / 2.0);

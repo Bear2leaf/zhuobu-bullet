@@ -1,3 +1,5 @@
+import { Snapshot } from "@geckos.io/snapshot-interpolation/lib/types.js";
+
 export default Ammo;
 declare const config: {
     wasmBinary: Uint8Array;
@@ -30,6 +32,9 @@ export type MainMessage = {
 export type WorkerMessage = {
     type: "update"
     objects: [number, number, number, number, number, number, number, string][]; allFPS: number; currFPS: number
+} | {
+    type: "updateSI"
+    snapshot: Snapshot
 } | {
     type: "ready",
 } | {

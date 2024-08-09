@@ -1,5 +1,7 @@
 import Ammo, { config, Module, handler, MainMessage } from "./ammo.worker.js"
 import { WorkerMessage } from "./ammo.worker.js";
+import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
+const SI = new SnapshotInterpolation()
 
 handler.onmessage = function (message) {
     this.messageQueue.push(message)
@@ -25,6 +27,17 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     dynamicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
 
     let pause = true;
+    // the worldState on the server
+    const worldState: {
+        id: string,
+        x: number,
+        y: number,
+        z: number,
+        q: { x: number, y: number, z: number, w: number }
+    }[] = []
+
+    // calc interpolation on the client
+    SI.calcInterpolation('x y z')
     const bodies: Ammo.btRigidBody[] = [];
     function createBall() {
         const startTransform = new Ammo.btTransform();
@@ -90,9 +103,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     const vertex0 = new Ammo.btVector3;
     const vertex1 = new Ammo.btVector3;
     const vertex2 = new Ammo.btVector3;
-    let fromLastMessageFrames = 0;
     function messageHandler(message: MainMessage) {
-        fromLastMessageFrames = 0;
         if (message.type === "updateGravity") {
             const g = message.data.split(",").map(x => parseFloat(x));
             gravity.setX(g[0])
@@ -186,18 +197,35 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             messageHandler(message);
             message = handler.messageQueue.shift();
         }
-        if (fromLastMessageFrames > 10) {
-            return;
-        }
         if (pause) {
             const result: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
-    
+
             // Read bullet data into JS objects
             for (let i = 0; i < bodies.length; i++) {
                 result.objects[i] = result.objects[i] || []
                 readBulletObject(i, result.objects[i]);
+                worldState[i] = worldState[i] || {}
+                worldState[i].id = result.objects[i][7];
+                worldState[i].x = result.objects[i][0];
+                worldState[i].y = result.objects[i][1];
+                worldState[i].z = result.objects[i][2];
+                worldState[i].q = {
+                    x: result.objects[i][3]
+                    , y: result.objects[i][4]
+                    , z: result.objects[i][5]
+                    , w: result.objects[i][6]
+                };
+
             }
-    
+            // create a snapshot of the current world
+            const snapshot = SI.snapshot.create(worldState)
+
+            // add the snapshot to the vault in case you want to access it later (optional)
+            SI.vault.add(snapshot)
+            handler.postMessage({
+                type: "updateSI",
+                snapshot
+            });
             handler.postMessage(result);
             return;
         }
@@ -226,19 +254,40 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         }
         meanDt = alpha * dt + (1 - alpha) * meanDt;
 
-        fromLastMessageFrames++;
         const alpha2 = 1 / frame++;
         meanDt2 = alpha2 * dt + (1 - alpha2) * meanDt2;
 
         const result: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
 
+
+
         // Read bullet data into JS objects
         for (let i = 0; i < bodies.length; i++) {
             result.objects[i] = result.objects[i] || []
             readBulletObject(i, result.objects[i]);
-        }
+            worldState[i] = worldState[i] || {}
+            worldState[i].id = result.objects[i][7];
+            worldState[i].x = result.objects[i][0];
+            worldState[i].y = result.objects[i][1];
+            worldState[i].z = result.objects[i][2];
+            worldState[i].q = {
+                x: result.objects[i][3]
+                , y: result.objects[i][4]
+                , z: result.objects[i][5]
+                , w: result.objects[i][6]
+            };
 
-        handler.postMessage(result);
+        }
+        // create a snapshot of the current world
+        const snapshot = SI.snapshot.create(worldState)
+
+        // add the snapshot to the vault in case you want to access it later (optional)
+        SI.vault.add(snapshot)
+        handler.postMessage({
+            type: "updateSI",
+            snapshot
+        });
+        // handler.postMessage(result);
         checkDestination()
     }
     frame = 1;

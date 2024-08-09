@@ -12,7 +12,7 @@ export default class UI {
     private readonly sprites: Sprite[] = [];
     private readonly switches: Switch[] = [];
     get all(): ButtonStatus[] {
-        return [...this.sprites, ...this.switches, ...this.buttons].filter(o => o.getMesh().visible);
+        return [...this.sprites, ...this.switches, ...this.buttons].filter(o => o.getMesh().visible && o.getMesh().geometry && o.getMesh().program);
     }
     onclick?: (tag?: string) => void;
     constructor(private readonly renderer: Renderer) {
@@ -52,11 +52,7 @@ export default class UI {
 
             // raycast.intersectBounds will test against the bounds of each mesh, and
             // return an array of intersected meshes in order of closest to farthest
-            const hits = raycast.intersectBounds([
-                ...this.buttons.map(button => button.getMesh())
-                , ...this.sprites.map(sprite => sprite.getMesh())
-                , ...this.switches.map(s => s.getMesh())
-            ]);
+            const hits = raycast.intersectBounds(this.all.map(node => node.getMesh() as Mesh));
 
             // Update our feedback using this array
             this.all.forEach(item => {
@@ -78,11 +74,7 @@ export default class UI {
 
             // raycast.intersectBounds will test against the bounds of each mesh, and
             // return an array of intersected meshes in order of closest to farthest
-            const hits = raycast.intersectBounds([
-                ...this.buttons.map(button => button.getMesh())
-                , ...this.sprites.map(sprite => sprite.getMesh())
-                , ...this.switches.map(s => s.getMesh())
-            ]);
+            const hits = raycast.intersectBounds(this.all.map(node => node.getMesh() as Mesh));
 
             // Update our feedback using this array
             this.all.forEach(item => {
@@ -101,11 +93,7 @@ export default class UI {
 
             // raycast.intersectBounds will test against the bounds of each mesh, and
             // return an array of intersected meshes in order of closest to farthest
-            const hits = raycast.intersectBounds([
-                ...this.buttons.map(button => button.getMesh())
-                , ...this.sprites.map(sprite => sprite.getMesh())
-                , ...this.switches.map(s => s.getMesh())
-            ]);
+            const hits = raycast.intersectBounds(this.all.map(node => node.getMesh() as Mesh));
 
             // Update our feedback using this array
             this.all.forEach(item => {

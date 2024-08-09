@@ -3,6 +3,10 @@ import Stage from "./core/Stage.js";
 import AudioManager from "./audio/AudioManager.js";
 import { WorkerMessage } from "../worker/ammo.worker.js";
 import { Quat, Vec3 } from "ogl";
+import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
+
+// initialize the library (add your server's fps)
+const SI = new SnapshotInterpolation(60)
 
 export async function mainH5() {
     const BrowserDevice = (await import("./device/BrowserDevice.js")).default;
@@ -121,7 +125,7 @@ async function start(device: Device) {
     function messageHandler(message: WorkerMessage) {
         // console.log("message from worker", message);
         if (message.type === "update") {
-            stage.updateBody(message);
+            // stage.updateBody(message);
         } else if (message.type === "addBody") {
             stage.addBody(message);
         } else if (message.type === "requestLevel") {
@@ -141,6 +145,9 @@ async function start(device: Device) {
             paused = false;
         } else if (message.type === "removeBody") {
             stage.removeBody(message.data);
+        } else if (message.type === "updateSI") {
+            SI.snapshot.add(message.snapshot)
+
         }
     };
     let delta = 0;
@@ -188,6 +195,12 @@ async function start(device: Device) {
         }
         if (paused) {
             return;
+        }  // calculate the interpolation for the parameters x and y and return the snapshot
+        const snapshot = SI.calcInterpolation('x y z q(quat)') // [deep: string] as optional second parameter
+        if (snapshot) {
+            // access your state
+            const { state } = snapshot;
+            stage.updateSI(state)
         }
         delta = (t - last) / 1000;
         last = t;
