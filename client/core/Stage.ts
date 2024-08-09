@@ -151,7 +151,7 @@ export default class Stage {
                 child = scene.children.find(child => child.visible && !(child instanceof Mesh))?.children[this.level.getIndex()].children.find(child => child.name === name);
             }
             if (!child) {
-                throw new Error("child is undefined");
+                return;
             }
             child.position.x = entity.x;
             child.position.y = entity.y;

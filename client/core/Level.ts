@@ -1,4 +1,4 @@
-import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform, Box, Raycast, Vec2, Renderer, Camera, Mat4, GLTFMesh, Euler, Quat } from "ogl";
+import { Mesh, GLTFProgram, Skin, Texture, Program, Vec3, GLTF, GLTFLoader, AttributeData, OGLRenderingContext, Transform, Box, Raycast, Vec2, Renderer, Camera, Mat4, GLTFMesh, Euler, Quat, GLTFMaterial } from "ogl";
 
 function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: string, isWebgl2: boolean = true, light?: GLTF["lights"]["directional"][0]) {
 
@@ -79,7 +79,7 @@ function createProgram(node: Mesh, shadow: boolean, vertex?: string, fragment?: 
         cullFace: gltf.doubleSided ? false : gl.BACK,
     });
     (program as GLTFProgram).gltfMaterial = gltf;
-    return program;
+    return program as GLTFProgram;
 }
 export default class Level {
 
@@ -129,17 +129,19 @@ export default class Level {
         const collection = this.collections[this.current];
         let maxRadius = 0;
         collection.children.forEach((child) => {
-            const extras = child.children[0].extras && (child.children[0].extras as Record<string, boolean>);
+            const primitive = child.children[0] as Mesh & { program: GLTFProgram };
+            const primitiveExtras = primitive.extras && (primitive.extras as Record<string, boolean>);
+            const materialExtras = primitive.program.gltfMaterial?.extras && (primitive.program?.gltfMaterial?.extras as Record<string, boolean>);
+            const extras = {...primitiveExtras, ...materialExtras};
             if (this.onaddball && extras?.spawnPoint) {
                 this.onaddball(child.matrix.toArray())
                 this.mazeMode = extras.mazeMode;
                 return;
             }
-            const primitive = child.children[0] as Mesh;
             primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, { direction: this.light })
             const attributeData = primitive.geometry.getPosition().data;
             const indices = primitive.geometry.attributes.index.data as AttributeData;
-            attributeData && this.onaddmesh && this.onaddmesh(child.name, child.matrix, [...attributeData], [...indices], primitive.extras as Record<string, boolean> | undefined);
+            attributeData && this.onaddmesh && this.onaddmesh(child.name, child.matrix, [...attributeData], [...indices], extras);
             child.visible = true;
             primitive.geometry.computeBoundingSphere();
             maxRadius = Math.max(maxRadius, primitive.geometry.bounds.radius);
