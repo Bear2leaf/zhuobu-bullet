@@ -3,9 +3,6 @@ import { WorkerMessage } from "./ammo.worker.js";
 import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
 const SI = new SnapshotInterpolation()
 
-handler.onmessage = function (message) {
-    this.messageQueue.push(message)
-}
 
 
 
@@ -173,6 +170,9 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             pause = true;
         }
     }
+    handler.onmessage = function (message) {
+        messageHandler(message);
+    }
     function checkDestination() {
 
         const collisionNum = dispatcher.getNumManifolds();
@@ -192,11 +192,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     }
     let meanDt = 0, meanDt2 = 0, frame = 1;
     function simulate(dt: number) {
-        let message = handler.messageQueue.shift();
-        while (message) {
-            messageHandler(message);
-            message = handler.messageQueue.shift();
-        }
         if (pause) {
             const result: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
 

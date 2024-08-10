@@ -119,8 +119,7 @@ async function start(device: Device) {
     const gravity = new Vec3;
     const rotation = new Quat;
     const acc = new Vec3(0, -10, 0);
-    const messageQueue: WorkerMessage[] = [];
-    device.onmessage = (message) => messageQueue.push(message);
+    device.onmessage = messageHandler;
     let paused = true;
     function messageHandler(message: WorkerMessage) {
         // console.log("message from worker", message);
@@ -188,11 +187,6 @@ async function start(device: Device) {
     }
     function update(t: number) {
         requestAnimationFrame(update);
-        let message = messageQueue.shift();
-        while (message) {
-            messageHandler(message);
-            message = messageQueue.shift();
-        }
         if (paused) {
             return;
         }  // calculate the interpolation for the parameters x and y and return the snapshot

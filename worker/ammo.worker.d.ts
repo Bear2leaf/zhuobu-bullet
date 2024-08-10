@@ -11,7 +11,6 @@ declare const Module: {
 declare const handler: {
     onmessage: (message: MainMessage) => void;
     postMessage: (message: WorkerMessage) => void;
-    messageQueue: MainMessage[]
 }
 export type MainMessage = {
     type: "updateGravity"

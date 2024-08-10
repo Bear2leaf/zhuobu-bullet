@@ -292,11 +292,11 @@ export default class Stage {
         } else {
             this.updateSprite("next", false);
         }
-        // if (this.availableLevels.has(this.level.getIndex() - 1)) {
-        //     this.updateSprite("prev", true);
-        // } else {
-        //     this.updateSprite("prev", false);
-        // }
+        if (this.availableLevels.has(this.level.getIndex() - 1)) {
+            this.updateSprite("prev", true);
+        } else {
+            this.updateSprite("prev", false);
+        }
     }
     checkCharset() {
         let levelMsg = "";
