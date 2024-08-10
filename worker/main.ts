@@ -80,16 +80,13 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         object[7] = data.name!;
     }
     function resetWorld() {
-        while (bodies.length) {
+        while (bodies.length > 1) {
             const removed = bodies.pop()!;
             dynamicsWorld.removeRigidBody(removed);
-            const data = Ammo.castObject(removed.getUserPointer(), UserData);
-            handler.postMessage({
-                type: "removeBody",
-                data: data.name!
-            })
         }
-        createBall();
+        if (bodies.length === 0) {
+            createBall();
+        }
         handler.postMessage({
             type: "requestLevel",
         })
