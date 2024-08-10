@@ -30,7 +30,7 @@ export type MainMessage = {
 }
 export type WorkerMessage = {
     type: "update"
-    objects: [number, number, number, number, number, number, number, string][]; allFPS: number; currFPS: number
+    objects: [number, number, number, number, number, number, number, string][];
 } | {
     type: "updateSI"
     snapshot: Snapshot

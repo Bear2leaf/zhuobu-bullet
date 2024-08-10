@@ -186,7 +186,7 @@ async function start(device: Device) {
         }
     }
     function update(t: number) {
-        requestAnimationFrame(update);
+        requestAnimationFrame((t) => update(t));
         if (paused) {
             return;
         }  // calculate the interpolation for the parameters x and y and return the snapshot
@@ -203,7 +203,6 @@ async function start(device: Device) {
         audio.process();
         gravity.copy(acc).applyQuaternion(rotation.inverse()).normalize().scale(10);
         device.sendmessage && device.sendmessage({ type: "updateGravity", data: `${gravity[0]},${gravity[1]},${gravity[2]}` })
-
     }
     requestAnimationFrame((t) => {
         last = t;

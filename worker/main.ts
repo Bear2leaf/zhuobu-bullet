@@ -188,9 +188,10 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         }
     }
     let meanDt = 0, meanDt2 = 0, frame = 1;
+    const result: WorkerMessage & { type: "update" } = { type: "update", objects: [] };
+    const tempVec = new Ammo.btVector3;
     function simulate(dt: number) {
         if (pause) {
-            const result: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
 
             // Read bullet data into JS objects
             for (let i = 0; i < bodies.length; i++) {
@@ -231,7 +232,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 const props = Ammo.castObject(body.getUserPointer(), UserData).propertities;
                 if (props && props.dynamic) {
                     const state = body.getMotionState();
-                    transform.setOrigin(new Ammo.btVector3(5 * Math.sin(frame / 100), -5, 0))
+                    tempVec.setValue(5 * Math.sin(frame / 100), -5, 0)
+                    transform.setOrigin(tempVec)
                     state.setWorldTransform(transform)
                     body.setMotionState(state);
                 }
@@ -249,7 +251,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         const alpha2 = 1 / frame++;
         meanDt2 = alpha2 * dt + (1 - alpha2) * meanDt2;
 
-        const result: WorkerMessage | { type: "update" } = { type: "update", objects: [], currFPS: Math.round(1000 / meanDt), allFPS: Math.round(1000 / meanDt2) };
 
 
 

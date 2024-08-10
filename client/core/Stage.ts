@@ -15,6 +15,7 @@ export default class Stage {
     private readonly matrix = new Mat4();
     private readonly rotation: Vec3 = new Vec3;
     private readonly sceneRotation = new Vec3();
+    private readonly zeroVec3 = new Vec3(0, 0, 0);
     private readonly sceneScale = new Vec3(0.01, 0.01, 0.01);
     private readonly sceneEuler = new Euler();
     private readonly sceneQuat = new Quat();
@@ -194,11 +195,11 @@ export default class Stage {
         this.scene.scale.lerp(this.sceneScale, scaleT);
         const camera = this.camera;
         if (this.scale) {
-            const pos = this.scene.children[0].position.clone();
+            const pos = this.scene.children[0].position;
             camera.position = (this.tempPosition.lerp(pos, scaleT).applyMatrix4(this.scene.matrix));
             camera.position.z = (this.level.radius * 0.0225) / Math.tan(camera.fov / 2.0);
         } else {
-            camera.position = this.tempPosition.lerp(new Vec3(0, 0, 0), scaleT);
+            camera.position = this.tempPosition.lerp(this.zeroVec3, scaleT);
             camera.position.z = (this.level.radius * 0.0225) / Math.tan(camera.fov / 2.0);
         }
 
