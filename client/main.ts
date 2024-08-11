@@ -3,7 +3,7 @@ import Stage from "./core/Stage.js";
 import AudioManager from "./audio/AudioManager.js";
 import { WorkerMessage } from "../worker/ammo.worker.js";
 import { getContours } from "./misc/contour2d.js";
-import ndarray from "ndarray";
+import ndarray from "./misc/ndarray/ndarray.js"
 
 export async function mainH5() {
     const BrowserDevice = (await import("./device/BrowserDevice.js")).default;

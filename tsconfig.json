@@ -6,7 +6,8 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "typeRoots": [
-      "node_modules/ammojs-typed/ammo/ambient"
+      "node_modules/ammojs-typed/ammo/ambient",
+      "client/misc/ndarray"
     ]
   }
 }

@@ -1,4 +1,3 @@
-import { NdArray } from "ndarray"
 
 class Segment {
     start: number
@@ -30,7 +29,7 @@ class Vertex {
         this.orientation = orientation
     }
 }
-function getParallelCountours(array: NdArray, direction: number) {
+function getParallelCountours(array: any, direction: number) {
     const n = array.shape[0]
     const m = array.shape[1]
     const contours = []
@@ -153,7 +152,7 @@ function compareVertex(a: Vertex, b: Vertex) {
     return a.orientation - b.orientation
 }
 
-export function getContours(array: NdArray, clockwise: boolean) {
+export function getContours(array: any, clockwise: boolean) {
 
     clockwise = !!clockwise
 

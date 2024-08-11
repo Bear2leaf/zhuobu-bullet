@@ -1,5 +1,4 @@
-import Ammo, { config, Module, handler, MainMessage } from "./ammo.worker.js"
-import { WorkerMessage } from "./ammo.worker.js";
+import Ammo, { config, Module, handler, MainMessage, WorkerMessage } from "./ammo.worker.js"
 import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
 const SI = new SnapshotInterpolation()
 
