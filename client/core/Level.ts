@@ -133,12 +133,12 @@ export default class Level {
             const primitiveExtras = primitive.extras && (primitive.extras as Record<string, boolean>);
             const materialExtras = primitive.program.gltfMaterial?.extras && (primitive.program?.gltfMaterial?.extras as Record<string, boolean>);
             const extras = {...primitiveExtras, ...materialExtras};
+            primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, { direction: this.light })
             if (this.onaddball && extras?.spawnPoint) {
                 this.onaddball(child.matrix.toArray())
                 this.mazeMode = extras.mazeMode;
                 return;
             }
-            primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, { direction: this.light })
             const attributeData = primitive.geometry.getPosition().data;
             const indices = primitive.geometry.attributes.index.data as AttributeData;
             attributeData && this.onaddmesh && this.onaddmesh(child.name, child.matrix, [...attributeData], [...indices], extras);
