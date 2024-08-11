@@ -91,72 +91,6 @@ export default class Stage {
         }
         this.t = 0;
     }
-    private initStageTouchEvents() {
-        const stage = this;
-        let xDown: number | null = null;
-        let yDown: number | null = null;
-
-
-        function handleTouchStart(x: number, y: number) {
-            xDown = x;
-            yDown = y;
-        };
-
-        function handleTouchMove(x: number, y: number) {
-            if (!xDown || !yDown) {
-                return;
-            }
-
-            const xUp = x;
-            const yUp = y;
-
-            const xDiff = xUp - xDown;
-            const yDiff = yDown - yUp
-            if (Math.abs(xDiff) > Math.abs(yDiff)) {/*most significant*/
-                if (xDiff > 0) {
-                    /* right swipe */
-                    stage.rollCamera("right")
-                } else {
-                    /* left swipe */
-                    stage.rollCamera("left")
-                }
-            } else {
-                if (yDiff > 0) {
-                    /* up swipe */
-                    stage.rollCamera("up")
-                } else {
-                    /* down swipe */
-                    stage.rollCamera("down")
-                }
-            }
-            /* reset values */
-            xDown = null;
-            yDown = null;
-        };
-        document.addEventListener("touchstart", (ev) => handleTouchStart(ev.touches[0].clientX, ev.touches[0].clientY));
-        document.addEventListener("touchmove", (ev) => handleTouchMove(ev.touches[0].clientX, ev.touches[0].clientY));
-        document.addEventListener("keydown", (ev) => {
-            switch (ev.key) {
-                case "ArrowUp":
-                    stage.rollCamera("up");
-                    break;
-                case "ArrowDown":
-                    stage.rollCamera("down");
-                    break;
-                case "ArrowLeft":
-                    stage.rollCamera("left");
-                    break;
-                case "ArrowRight":
-                    stage.rollCamera("right");
-                    break;
-                case " ":
-                    this.release();
-                    break;
-                default:
-                    break;
-            }
-        })
-    }
     private updateZoom() {
         this.scale = (this.scale + 1) % 2;
         this.sceneScale.set(this.scale + 1, this.scale + 1, this.scale + 1);
@@ -193,7 +127,12 @@ export default class Stage {
                 this.updateButton("help");
             }
         }
-        this.initStageTouchEvents();
+
+        this.ui.onswipe = (dir) => {
+            this.rollCamera(dir)
+        }
+        this.ui.initTouchEvents();
+
     }
 
     setInitLevel(level: number) {
@@ -212,62 +151,8 @@ export default class Stage {
         }
         child.visible = false;
     }
-    private updateButton(name: string, visible?: boolean) {
-        if (visible === undefined) {
-            this.ui.getButton(name).getMesh().visible = !this.ui.getButton(name).getMesh().visible;
-        } else {
-            this.ui.getButton(name).getMesh().visible = visible;
-        }
-    }
-    private updateSprite(name: string, visible?: boolean) {
-        if (visible === undefined) {
-            this.ui.getSprite(name).getMesh().visible = !this.ui.getSprite(name).getMesh().visible;
-        } else {
-            this.ui.getSprite(name).getMesh().visible = visible;
-        }
-    }
     updateSI(snapshot: Snapshot) {
         this.si.snapshot.add(snapshot)
-    }
-    private updateState(state: State) {
-
-        const scene = this.scene;
-        // this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
-        for (let index = 0; index < state.length; index++) {
-            let child: Transform | undefined;
-
-            const entity = state[index] as Entity & {
-                x: number, y: number, z: number, q: {
-                    x: number,
-                    y: number,
-                    z: number,
-                    w: number
-                }
-            };
-            const name = entity.id;
-            if (index === 0) {
-                child = scene.children.find(child => child.visible && child instanceof Mesh)
-            } else {
-                child = scene.children.find(child => child.visible && !(child instanceof Mesh))?.children[this.level.getIndex()].children.find(child => child.name === name);
-            }
-            if (!child) {
-                return;
-            }
-            child.position.x = entity.x;
-            child.position.y = entity.y;
-            child.position.z = entity.z;
-            child.quaternion.x = entity.q.x;
-            child.quaternion.y = entity.q.y;
-            child.quaternion.z = entity.q.z;
-            child.quaternion.w = entity.q.w;
-        }
-    }
-    private async waitContinueButton() {
-        this.updateButton("continue", true);
-        this.ui.getButton("continue").updateText("恭喜过关\n点击进入下一关")
-        await new Promise((resolve) => {
-            this.continueButtonResolve = resolve;
-        })
     }
     updateSwitch(name: string, value: boolean) {
         if (value) {
@@ -276,17 +161,6 @@ export default class Stage {
             this.ui.getSwitch(name).off();
         }
     }
-    private release() {
-        const stage = this;
-        const pause = this.pause = !this.pause;
-        stage.updateSwitch("pause", pause);
-        if (pause) {
-            this.onpause && this.onpause();
-        } else {
-            this.onrelease && this.onrelease();
-        }
-    }
-
     // Game loop
     loop = (timeStamp: number) => {
         const snapshot = this.si.calcInterpolation('x y z q(quat)') // [deep: string] as optional second parameter
@@ -354,6 +228,71 @@ export default class Stage {
             child.visible = true;
         }
     }
+    private updateButton(name: string, visible?: boolean) {
+        if (visible === undefined) {
+            this.ui.getButton(name).getMesh().visible = !this.ui.getButton(name).getMesh().visible;
+        } else {
+            this.ui.getButton(name).getMesh().visible = visible;
+        }
+    }
+    private updateSprite(name: string, visible?: boolean) {
+        if (visible === undefined) {
+            this.ui.getSprite(name).getMesh().visible = !this.ui.getSprite(name).getMesh().visible;
+        } else {
+            this.ui.getSprite(name).getMesh().visible = visible;
+        }
+    }
+    private updateState(state: State) {
+
+        const scene = this.scene;
+        // this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
+        for (let index = 0; index < state.length; index++) {
+            let child: Transform | undefined;
+
+            const entity = state[index] as Entity & {
+                x: number, y: number, z: number, q: {
+                    x: number,
+                    y: number,
+                    z: number,
+                    w: number
+                }
+            };
+            const name = entity.id;
+            if (index === 0) {
+                child = scene.children.find(child => child.visible && child instanceof Mesh)
+            } else {
+                child = scene.children.find(child => child.visible && !(child instanceof Mesh))?.children[this.level.getIndex()].children.find(child => child.name === name);
+            }
+            if (!child) {
+                return;
+            }
+            child.position.x = entity.x;
+            child.position.y = entity.y;
+            child.position.z = entity.z;
+            child.quaternion.x = entity.q.x;
+            child.quaternion.y = entity.q.y;
+            child.quaternion.z = entity.q.z;
+            child.quaternion.w = entity.q.w;
+        }
+    }
+    private async waitContinueButton() {
+        this.updateButton("continue", true);
+        this.ui.getButton("continue").updateText("恭喜过关\n点击进入下一关")
+        await new Promise((resolve) => {
+            this.continueButtonResolve = resolve;
+        })
+    }
+    private release() {
+        const stage = this;
+        const pause = this.pause = !this.pause;
+        stage.updateSwitch("pause", pause);
+        if (pause) {
+            this.onpause && this.onpause();
+        } else {
+            this.onrelease && this.onrelease();
+        }
+    }
+
     async requestLevel() {
         this.pause = true;
         this.ui.updateHelp(this.helpMsg);

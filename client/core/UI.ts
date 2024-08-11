@@ -15,6 +15,7 @@ export default class UI {
         return [...this.sprites, ...this.switches, ...this.buttons].filter(o => o.getMesh().visible && o.getMesh().geometry && o.getMesh().program);
     }
     onclick?: (tag?: string) => void;
+    onswipe?: (direction: "left" | "right" | "up" | "down") => void;
     constructor(private readonly renderer: Renderer) {
         const gl = this.renderer.gl;
         const { width, height, dpr } = this.renderer;
@@ -177,5 +178,71 @@ export default class UI {
     }
     render() {
         this.renderer.render({ scene: this.scene, camera: this.camera, clear: false })
+    }
+    initTouchEvents() {
+        const ui = this;
+        let xDown: number | null = null;
+        let yDown: number | null = null;
+
+
+        function handleTouchStart(x: number, y: number) {
+            xDown = x;
+            yDown = y;
+        };
+        
+        function handleTouchMove(x: number, y: number) {
+            if (!xDown || !yDown) {
+                return;
+            }
+
+            const xUp = x;
+            const yUp = y;
+
+            const xDiff = xUp - xDown;
+            const yDiff = yDown - yUp
+            if (Math.abs(xDiff) > Math.abs(yDiff)) {/*most significant*/
+                if (xDiff > 0) {
+                    /* right swipe */
+                    ui.onswipe && ui.onswipe("right");
+                } else {
+                    /* left swipe */
+                    ui.onswipe && ui.onswipe("left");
+                }
+            } else {
+                if (yDiff > 0) {
+                    /* up swipe */
+                    ui.onswipe && ui.onswipe("up");
+                } else {
+                    /* down swipe */
+                    ui.onswipe && ui.onswipe("down");
+                }
+            }
+            /* reset values */
+            xDown = null;
+            yDown = null;
+        };
+        document.addEventListener("touchstart", (ev) => handleTouchStart(ev.touches[0].clientX, ev.touches[0].clientY));
+        document.addEventListener("touchmove", (ev) => handleTouchMove(ev.touches[0].clientX, ev.touches[0].clientY));
+        document.addEventListener("keydown", (ev) => {
+            switch (ev.key) {
+                case "ArrowUp":
+                    ui.onswipe && ui.onswipe("up");
+                    break;
+                case "ArrowDown":
+                    ui.onswipe && ui.onswipe("down");
+                    break;
+                case "ArrowLeft":
+                    ui.onswipe && ui.onswipe("left");
+                    break;
+                case "ArrowRight":
+                    ui.onswipe && ui.onswipe("right");
+                    break;
+                case " ":
+                    ui.onclick && ui.onclick("pause");
+                    break;
+                default:
+                    break;
+            }
+        })
     }
 }
