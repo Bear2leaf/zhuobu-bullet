@@ -2,6 +2,8 @@ import Device from "./device/Device.js";
 import Stage from "./core/Stage.js";
 import AudioManager from "./audio/AudioManager.js";
 import { WorkerMessage } from "../worker/ammo.worker.js";
+import { getContours } from "./misc/contour2d.js";
+import ndarray from "ndarray";
 
 export async function mainH5() {
     const BrowserDevice = (await import("./device/BrowserDevice.js")).default;
@@ -81,7 +83,10 @@ async function start(device: Device) {
         update(t);
     });
 }
-
+console.log(getContours(ndarray([
+    1, 1, 1, 0, 0,
+    1, 0, 1, 1, 1,
+    1, 1, 1, 1, 1], [3, 5]), false))
 export {
     start,
 }

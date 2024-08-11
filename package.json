@@ -13,9 +13,11 @@
   "license": "ISC",
   "dependencies": {
     "@geckos.io/snapshot-interpolation": "^1.1.0",
+    "ndarray": "^1.0.19",
     "ogl": "^1.0.8"
   },
   "devDependencies": {
+    "@types/ndarray": "^1.0.14",
     "esbuild": "^0.23.0",
     "minigame-api-typings": "^3.8.4"
   }
