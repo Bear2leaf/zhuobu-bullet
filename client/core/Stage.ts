@@ -4,8 +4,12 @@ import { WorkerMessage } from "../../worker/ammo.worker.js";
 import UI from "./UI.js";
 import Level from "./Level.js";
 import { table } from "../misc/rotation.js";
-import { Entity, State } from "@geckos.io/snapshot-interpolation/lib/types.js";
+import { Entity, Snapshot, State } from "@geckos.io/snapshot-interpolation/lib/types.js";
+import { SnapshotInterpolation } from "@geckos.io/snapshot-interpolation";
 export default class Stage {
+    private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏\n（点击关闭说明）";
+    private readonly continueMsg = "恭喜过关！\n点击进入下一关"
+    private readonly si = new SnapshotInterpolation(60)
     private readonly renderer: Renderer;
     private readonly scene: Transform;
     private readonly camera: Camera;
@@ -21,6 +25,8 @@ export default class Stage {
     private readonly sceneQuat = new Quat();
     private readonly tempQuat = new Quat();
     private readonly tempPosition = new Vec3();
+    readonly gravity = new Vec3;
+    private readonly acc = new Vec3(0, -10, 0);
     readonly availableLevels: Set<number> = new Set();
     private charset: string = "";
     private fragment: string = "";
@@ -29,16 +35,19 @@ export default class Stage {
     private scaleT = 0;
     private scale = 0;
     reverse = false;
-    private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏\n（点击关闭说明）";
-    private readonly continueMsg = "恭喜过关！\n点击进入下一关"
+    pause = true;
     onclick?: (tag?: string) => void;
-    onorientationchange?: (quat: Quat) => void;
-    continueButtonResolve?: (value: unknown) => void;
+    ontoggleaudio?: VoidFunction;
+    onpause?: VoidFunction;
+    onrelease?: VoidFunction;
+    onresetworld?: VoidFunction;
+    onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
+    onaddball?: (transform: number[]) => void;
+    private continueButtonResolve?: (value: unknown) => void;
     isContinue: boolean = false;
 
-    constructor(device: Device) {
-        const [width, height, dpr] = device.getWindowInfo();
-        const renderer = this.renderer = new Renderer({ dpr, canvas: device.getCanvasGL() });
+    constructor(width: number, height: number, dpr: number, canvas: HTMLCanvasElement) {
+        const renderer = this.renderer = new Renderer({ dpr, canvas });
         const gl = renderer.gl;
         gl.clearColor(0.3, 0.3, 0.6, 1);
         const camera = this.camera = new Camera(gl, {
@@ -66,9 +75,7 @@ export default class Stage {
         await this.ui.load();
         await this.level.load();
     }
-    onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
-    onaddball?: (transform: number[]) => void;
-    rollCamera(tag: "right" | "left" | "up" | "down") {
+    private rollCamera(tag: "right" | "left" | "up" | "down") {
         const rotation = this.rotation;
         if (!this.level.mazeMode) {
             const key = `${rotation.x}${rotation.y}${rotation.z}`;
@@ -84,7 +91,73 @@ export default class Stage {
         }
         this.t = 0;
     }
-    updateZoom() {
+    private initStageTouchEvents() {
+        const stage = this;
+        let xDown: number | null = null;
+        let yDown: number | null = null;
+
+
+        function handleTouchStart(x: number, y: number) {
+            xDown = x;
+            yDown = y;
+        };
+
+        function handleTouchMove(x: number, y: number) {
+            if (!xDown || !yDown) {
+                return;
+            }
+
+            const xUp = x;
+            const yUp = y;
+
+            const xDiff = xUp - xDown;
+            const yDiff = yDown - yUp
+            if (Math.abs(xDiff) > Math.abs(yDiff)) {/*most significant*/
+                if (xDiff > 0) {
+                    /* right swipe */
+                    stage.rollCamera("right")
+                } else {
+                    /* left swipe */
+                    stage.rollCamera("left")
+                }
+            } else {
+                if (yDiff > 0) {
+                    /* up swipe */
+                    stage.rollCamera("up")
+                } else {
+                    /* down swipe */
+                    stage.rollCamera("down")
+                }
+            }
+            /* reset values */
+            xDown = null;
+            yDown = null;
+        };
+        document.addEventListener("touchstart", (ev) => handleTouchStart(ev.touches[0].clientX, ev.touches[0].clientY));
+        document.addEventListener("touchmove", (ev) => handleTouchMove(ev.touches[0].clientX, ev.touches[0].clientY));
+        document.addEventListener("keydown", (ev) => {
+            switch (ev.key) {
+                case "ArrowUp":
+                    stage.rollCamera("up");
+                    break;
+                case "ArrowDown":
+                    stage.rollCamera("down");
+                    break;
+                case "ArrowLeft":
+                    stage.rollCamera("left");
+                    break;
+                case "ArrowRight":
+                    stage.rollCamera("right");
+                    break;
+                case " ":
+                    this.release();
+                    break;
+                default:
+                    break;
+            }
+        })
+    }
+    private updateZoom() {
         this.scale = (this.scale + 1) % 2;
         this.sceneScale.set(this.scale + 1, this.scale + 1, this.scale + 1);
         this.sceneScale.multiply(0.01);
@@ -93,12 +166,30 @@ export default class Stage {
         this.updateSwitch("zoom", !this.scale)
     }
     start() {
-        {
-            this.ui.init();
-            this.ui.onclick = (tag) => {
-                this.onclick && this.onclick(tag);
+        this.ui.init();
+        this.ui.onclick = (tag) => {
+            if (tag === "continue") {
+                this.continueButtonResolve && this.continueButtonResolve(void (0));
+                this.updateButton("continue");
+                this.continueButtonResolve = undefined;
+            } else if (tag === "pause") {
+                this.release();
+            } else if (tag === "zoom") {
+                this.updateZoom();
+            } else if (tag === "next") {
+                this.isContinue = false;
+                this.onresetworld && this.onresetworld();
+            } else if (tag === "prev") {
+                this.isContinue = false;
+                this.reverse = true;
+                this.onresetworld && this.onresetworld();
+            } else if (tag === "audio") {
+                this.ontoggleaudio && this.ontoggleaudio()
+            } else if (tag === "information") {
+                this.updateButton("help");
             }
         }
+        this.initStageTouchEvents();
     }
 
     setInitLevel(level: number) {
@@ -117,21 +208,25 @@ export default class Stage {
         }
         child.visible = false;
     }
-    updateButton(name: string, visible?: boolean) {
+    private updateButton(name: string, visible?: boolean) {
         if (visible === undefined) {
             this.ui.getButton(name).getMesh().visible = !this.ui.getButton(name).getMesh().visible;
         } else {
             this.ui.getButton(name).getMesh().visible = visible;
         }
     }
-    updateSprite(name: string, visible?: boolean) {
+    private updateSprite(name: string, visible?: boolean) {
         if (visible === undefined) {
             this.ui.getSprite(name).getMesh().visible = !this.ui.getSprite(name).getMesh().visible;
         } else {
             this.ui.getSprite(name).getMesh().visible = visible;
         }
     }
-    updateSI(state: State) {
+    updateSI(snapshot: Snapshot) {
+        this.si.snapshot.add(snapshot)
+    }
+    private updateState(state: State) {
+
         const scene = this.scene;
         // this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
         for (let index = 0; index < state.length; index++) {
@@ -163,7 +258,7 @@ export default class Stage {
             child.quaternion.w = entity.q.w;
         }
     }
-    async waitContinueButton() {
+    private async waitContinueButton() {
         this.updateButton("continue", true);
         this.ui.getButton("continue").updateText("恭喜过关\n点击进入下一关")
         await new Promise((resolve) => {
@@ -177,14 +272,28 @@ export default class Stage {
             this.ui.getSwitch(name).off();
         }
     }
-    down(name: string) {
+    private down(name: string) {
         this.ui.down(name)
     }
-    release(name: string) {
-        this.ui.release(name)
+    private release() {
+        const stage = this;
+        const pause = this.pause = !this.pause;
+        stage.updateSwitch("pause", pause);
+        if (pause) {
+            this.onpause && this.onpause();
+        } else {
+            this.onrelease && this.onrelease();
+        }
     }
+
     // Game loop
-    loop = (timeStamp: number, now: number) => {
+    loop = (timeStamp: number) => {
+        const snapshot = this.si.calcInterpolation('x y z q(quat)') // [deep: string] as optional second parameter
+        if (snapshot) {
+            // access your state
+            const { state } = snapshot;
+            this.updateState(state)
+        }
         this.t += timeStamp;
         this.scaleT += timeStamp;
         const scaleT = Math.min(1, this.scaleT);
@@ -208,26 +317,8 @@ export default class Stage {
         this.quat.fill(0)
         this.matrix.fromArray(camera.viewMatrix.multiply(this.scene.worldMatrix));
         this.matrix.getRotation(this.quat);
-        this.onorientationchange && this.onorientationchange(this.quat)
-    }
-    updateBody(message: WorkerMessage & { type: "update" }) {
-        const scene = this.scene;
-        // this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
-        for (let index = 0; index < message.objects.length; index++) {
-            let child: Transform | undefined;
-            const name = message.objects[index][7];
-            if (index === 0) {
-                child = scene.children.find(child => child.visible && child instanceof Mesh)
-            } else {
-                child = scene.children.find(child => child.visible && !(child instanceof Mesh))?.children[this.level.getIndex()].children.find(child => child.name === name);
-            }
-            if (!child) {
-                throw new Error("child is undefined");
-            }
-            const phyObject = message.objects[index];
-            child.position.fromArray(phyObject.slice(0, 3) as number[])
-            child.quaternion.fromArray(phyObject.slice(3, 7) as number[])
-        }
+
+        this.gravity.copy(this.acc).applyQuaternion(this.quat.inverse()).normalize().scale(10);
     }
     addBody(message: WorkerMessage & { type: "addBody" }) {
         const gl = this.renderer.gl;
@@ -263,6 +354,7 @@ export default class Stage {
         }
     }
     async requestLevel() {
+        this.pause = true;
         this.ui.updateHelp(this.helpMsg);
         if (this.isContinue) {
             await this.waitContinueButton();
@@ -299,7 +391,7 @@ export default class Stage {
             this.updateSprite("prev", false);
         }
     }
-    checkCharset() {
+    private checkCharset() {
         let levelMsg = "";
         this.scene.traverse((node) => {
             levelMsg += node.name || ""

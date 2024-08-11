@@ -33,8 +33,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         q: { x: number, y: number, z: number, w: number }
     }[] = []
 
-    // calc interpolation on the client
-    SI.calcInterpolation('x y z')
     const bodies: Ammo.btRigidBody[] = [];
     function createBall() {
         const startTransform = new Ammo.btTransform();

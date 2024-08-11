@@ -12,7 +12,7 @@ const handler = {
 }
 if (isBrowser) {
     config.locateFile = () => "/wasm/ammo.wasm.wasm";
-    onmessage = (event) => handler.onmessage(event.data);
+    onmessage = (event) => handler.onmessage && handler.onmessage(event.data);
     handler.postMessage = (data) => postMessage(data);
     importScripts("/worker/ammo.wasm.js")
 } else {

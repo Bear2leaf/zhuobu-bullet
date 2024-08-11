@@ -67,8 +67,8 @@ export default class MinigameDevice implements Device {
         this.worker.onMessage((message) => this.onmessage && this.onmessage(message as unknown as WorkerMessage))
         this.sendmessage = this.worker!.postMessage.bind(this.worker)
     }
-    onmessage?: (message: WorkerMessage) => void;
-    sendmessage?: (message: MainMessage) => void;
+    onmessage: (message: WorkerMessage) => void = () => { throw new Error("Worker not inited") };
+    sendmessage: (message: MainMessage) => void = () => { throw new Error("Worker not inited") };
     terminateWorker(): void {
         this.worker?.terminate();
     }

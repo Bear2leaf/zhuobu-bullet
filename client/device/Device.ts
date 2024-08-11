@@ -1,8 +1,8 @@
 import { MainMessage, WorkerMessage } from "../../worker/ammo.worker.js"
 
 export default interface Device {
-  sendmessage?: (message: MainMessage) => void;
-  onmessage?: (message: WorkerMessage) => void;
+  sendmessage: (message: MainMessage) => void;
+  onmessage: (message: WorkerMessage) => void;
   createWorker(url: string): void;
   getParam(name: string): string;
   terminateWorker(): void;
