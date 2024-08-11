@@ -49,22 +49,24 @@ export default class Level {
         const collection = this.collections[this.current];
         let maxRadius = 0;
         collection.children.forEach((child) => {
-            const primitive = child.children[0] as Mesh & { program: GLTFProgram };
-            const primitiveExtras = primitive.extras && (primitive.extras as Record<string, boolean>);
-            const materialExtras = primitive.program.gltfMaterial?.extras && (primitive.program?.gltfMaterial?.extras as Record<string, boolean>);
-            const extras = {...primitiveExtras, ...materialExtras};
-            primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, { direction: this.light })
-            if (this.onaddball && extras?.spawnPoint) {
-                this.onaddball(child.matrix.toArray())
-                this.mazeMode = extras.mazeMode;
-                return;
+            const primitives = child.children as (Mesh & { program: GLTFProgram })[];
+            for (const primitive of primitives) {
+                const primitiveExtras = primitive.extras && (primitive.extras as Record<string, boolean>);
+                const materialExtras = primitive.program.gltfMaterial?.extras && (primitive.program?.gltfMaterial?.extras as Record<string, boolean>);
+                const extras = { ...primitiveExtras, ...materialExtras };
+                primitive.program = createProgram(primitive, false, this.gltfvertex, this.gltffragment, true, { direction: this.light })
+                if (this.onaddball && extras?.spawnPoint) {
+                    this.onaddball(child.matrix.toArray())
+                    this.mazeMode = extras.mazeMode;
+                    return;
+                }
+                const attributeData = primitive.geometry.getPosition().data;
+                const indices = primitive.geometry.attributes.index.data as AttributeData;
+                attributeData && this.onaddmesh && this.onaddmesh(child.name, child.matrix, [...attributeData], [...indices], extras);
+                child.visible = true;
+                primitive.geometry.computeBoundingSphere();
+                maxRadius = Math.max(maxRadius, primitive.geometry.bounds.radius);
             }
-            const attributeData = primitive.geometry.getPosition().data;
-            const indices = primitive.geometry.attributes.index.data as AttributeData;
-            attributeData && this.onaddmesh && this.onaddmesh(child.name, child.matrix, [...attributeData], [...indices], extras);
-            child.visible = true;
-            primitive.geometry.computeBoundingSphere();
-            maxRadius = Math.max(maxRadius, primitive.geometry.bounds.radius);
         });
         this.radius = maxRadius;
         collection.visible = true;
