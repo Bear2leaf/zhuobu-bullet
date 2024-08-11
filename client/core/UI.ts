@@ -166,13 +166,6 @@ export default class UI {
             s.setParent(this.scene);
         }
     }
-    down(name: string) {
-        this.all.find(button => button.getMesh().name === name)?.down();
-    }
-    release(name: string) {
-        this.all.find(button => button.getMesh().name === name)?.release();
-
-    }
     updateInfo(data: string) {
         this.buttons.find(button => button.getMesh().name === "info")?.updateText(data);
     }

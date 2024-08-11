@@ -1,11 +1,10 @@
-import { Box, Camera, Mesh, Program, Renderer, Transform, Vec3, Plane, Sphere, GLTF, GLTFLoader, AttributeData, Orbit, GLTFProgram, Skin, Texture, Mat4, Quat, Euler, AxesHelper, Vec2, Triangle } from "ogl";
-import Device from "../device/Device.js";
-import { WorkerMessage } from "../../worker/ammo.worker.js";
-import UI from "./UI.js";
-import Level from "./Level.js";
-import { table } from "../misc/rotation.js";
-import { Entity, Snapshot, State } from "@geckos.io/snapshot-interpolation/lib/types.js";
 import { SnapshotInterpolation } from "@geckos.io/snapshot-interpolation";
+import { Entity, Snapshot, State } from "@geckos.io/snapshot-interpolation/lib/types.js";
+import { Camera, Euler, Mat4, Mesh, Program, Quat, Renderer, Sphere, Transform, Vec3 } from "ogl";
+import { WorkerMessage } from "../../worker/ammo.worker.js";
+import { table } from "../misc/rotation.js";
+import Level from "./Level.js";
+import UI from "./UI.js";
 export default class Stage {
     private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关"
@@ -34,8 +33,11 @@ export default class Stage {
     private t = 0;
     private scaleT = 0;
     private scale = 0;
-    reverse = false;
-    pause = true;
+    private reverse = false;
+    private pause = true;
+    private freezeUI = false;
+    private isContinue: boolean = false;
+    private continueButtonResolve?: (value: unknown) => void;
     onclick?: (tag?: string) => void;
     ontoggleaudio?: VoidFunction;
     onpause?: VoidFunction;
@@ -43,8 +45,6 @@ export default class Stage {
     onresetworld?: VoidFunction;
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
-    private continueButtonResolve?: (value: unknown) => void;
-    isContinue: boolean = false;
 
     constructor(width: number, height: number, dpr: number, canvas: HTMLCanvasElement) {
         const renderer = this.renderer = new Renderer({ dpr, canvas });
@@ -168,11 +168,15 @@ export default class Stage {
     start() {
         this.ui.init();
         this.ui.onclick = (tag) => {
-            if (tag === "continue") {
-                this.continueButtonResolve && this.continueButtonResolve(void (0));
-                this.updateButton("continue");
-                this.continueButtonResolve = undefined;
-            } else if (tag === "pause") {
+            if (this.freezeUI) {
+                if (tag === "continue") {
+                    this.continueButtonResolve && this.continueButtonResolve(void (0));
+                    this.updateButton("continue");
+                    this.continueButtonResolve = undefined;
+                }
+                return;
+            }
+            if (tag === "pause") {
                 this.release();
             } else if (tag === "zoom") {
                 this.updateZoom();
@@ -272,9 +276,6 @@ export default class Stage {
             this.ui.getSwitch(name).off();
         }
     }
-    private down(name: string) {
-        this.ui.down(name)
-    }
     private release() {
         const stage = this;
         const pause = this.pause = !this.pause;
@@ -357,6 +358,7 @@ export default class Stage {
         this.pause = true;
         this.ui.updateHelp(this.helpMsg);
         if (this.isContinue) {
+            this.freezeUI = true;
             await this.waitContinueButton();
         }
         this.level.request(this.scene, this.reverse);
@@ -380,6 +382,7 @@ export default class Stage {
         this.updateSwitch("pause", true);
         this.checkCharset();
         this.isContinue = true;
+        this.freezeUI = false;
         if (this.availableLevels.has(this.level.getIndex() + 1)) {
             this.updateSprite("next", true);
         } else {

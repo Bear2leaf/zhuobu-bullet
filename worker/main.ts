@@ -156,7 +156,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             body.setUserPointer(v)
             dynamicsWorld.addRigidBody(body);
             bodies.push(body);
-            return;
         } else if (message.type === "resetWorld") {
             resetWorld();
         } else if (message.type === "release") {
