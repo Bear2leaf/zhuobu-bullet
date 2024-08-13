@@ -83,7 +83,7 @@ async function start(device: Device) {
         update(t);
     });
 }
-console.log(getContours(ndarray([
+const contours = (getContours(ndarray([
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
@@ -111,7 +111,15 @@ console.log(getContours(ndarray([
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1
 
-], [26, 37]), false))
+], [26, 37]), false));
+console.log(
+    `<svg height="${26 * 10}" width="${37 * 10}" xmlns="http://www.w3.org/2000/svg">
+${contours.map(contour => {
+        return `<polygon points="${contour.map(point => point.map(x => x * 10).join(",")).join(" ")}" />`
+    }).join("\n")
+    }
+</svg>`
+)
 export {
     start,
 }
