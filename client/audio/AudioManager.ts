@@ -2,22 +2,18 @@ import Device from "../device/Device.js";
 import BgmAudio from "./BgmAudio.js";
 import BleepAudio from "./BleepAudio.js";
 import DemoAudio from "./DemoAudio.js";
-// import MidiAudio from "./MidiAudio.js";
 export default class AudioManager {
     private mute = false;
     private readonly demoAudio = new DemoAudio;
     private readonly bgmAudio = new BgmAudio;
     private readonly bleepAudio = new BleepAudio;
-    // private readonly midiAudio = new MidiAudio;
     private readonly context: AudioContext = this.device.createWebAudioContext();
     private readonly gain = this.context.createGain();
     constructor(private readonly device: Device) { }
     async load(): Promise<void> {
         const device = this.device;
-        // await this.getCacheManager().loadWavCache("bleep");
         this.bleepAudio.setBuffer((await (await fetch("/resources/audio/bleep.wav")).arrayBuffer()));
         this.bgmAudio.setBuffer((await (await fetch("/resources/audio/happy_adveture.mp3")).arrayBuffer()));
-        // await this.midiAudio.load(device);
     }
     isOn(): boolean {
         return !!this.gain.gain.value;
@@ -28,7 +24,6 @@ export default class AudioManager {
             this.demoAudio,
             this.bgmAudio,
             this.bleepAudio,
-            // this.midiAudio
         ].forEach(clip => {
             clip.setContext(context);
         });
@@ -38,7 +33,6 @@ export default class AudioManager {
             this.demoAudio,
             this.bgmAudio,
             this.bleepAudio,
-            // this.midiAudio
         ].forEach(clip => {
             clip.init();
             clip.connect(this.gain);
@@ -52,7 +46,6 @@ export default class AudioManager {
         [
             this.demoAudio,
             this.bleepAudio,
-            // this.midiAudio
         ].forEach(clip => {
             clip.update();
         });

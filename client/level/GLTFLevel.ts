@@ -1,7 +1,8 @@
 import { Mesh, GLTFProgram, Vec3, GLTFLoader, AttributeData, OGLRenderingContext, Transform, Box, Raycast, Vec2, Renderer, Camera, Mat4, GLTFMesh, Euler, Quat, GLTFMaterial } from "ogl";
 import { createProgram } from "../misc/createProgram";
+import Level from "./Level.js";
 
-export default class Level {
+export default class GLTFLevel implements Level {
 
     private readonly mouse = new Vec2();
     private readonly collections: Transform[] = [];
@@ -9,11 +10,17 @@ export default class Level {
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
-    radius = 0;
-    mazeMode = false;
+    private radius = 0;
+    private mazeMode = false;
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
     constructor(private readonly gl: OGLRenderingContext) {
+    }
+    getRadius(): number {
+        return this.radius;
+    }
+    isMazeMode(): boolean {
+        return this.mazeMode;
     }
     getIndex() {
         return (this.current + this.collections.length - 1) % this.collections.length;

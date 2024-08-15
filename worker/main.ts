@@ -117,9 +117,14 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const vertices = message.data.vertices;
             const indices = message.data.indices;
             const newVertices: number[] = [];
-            for (let index = 0; index < indices.length; index++) {
-                const i = indices[index];
-                newVertices.push(vertices[i * 3 + 0], vertices[i * 3 + 1], vertices[i * 3 + 2])
+            if (indices.length) {
+
+                for (let index = 0; index < indices.length; index++) {
+                    const i = indices[index];
+                    newVertices.push(vertices[i * 3 + 0], vertices[i * 3 + 1], vertices[i * 3 + 2])
+                }
+            } else {
+                newVertices.push(...vertices);
             }
             startTransform.setFromOpenGLMatrix(transform);
             let shape

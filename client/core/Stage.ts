@@ -1,10 +1,11 @@
 import { SnapshotInterpolation } from "@geckos.io/snapshot-interpolation";
 import { Entity, Snapshot, State } from "@geckos.io/snapshot-interpolation/lib/types.js";
-import { Camera, Euler, Mat4, Mesh, Program, Quat, Renderer, Sphere, Transform, Vec3 } from "ogl";
+import { Camera, Euler, Mat4, Mesh, Orbit, Program, Quat, Renderer, Sphere, Transform, Vec3 } from "ogl";
 import { WorkerMessage } from "../../worker/ammo.worker.js";
 import { table } from "../misc/rotation.js";
-import Level from "./Level.js";
 import UI from "./UI.js";
+import LDtkLevel from "../level/LDtkLevel.js";
+import Level from "../level/Level.js";
 export default class Stage {
     private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关"
@@ -23,10 +24,11 @@ export default class Stage {
     private readonly sceneEuler = new Euler();
     private readonly sceneQuat = new Quat();
     private readonly tempQuat = new Quat();
+    private readonly controls: Orbit;
     private readonly tempPosition = new Vec3();
-    readonly gravity = new Vec3;
     private readonly acc = new Vec3(0, -10, 0);
     readonly availableLevels: Set<number> = new Set();
+    readonly gravity = new Vec3;
     private charset: string = "";
     private fragment: string = "";
     private vertex: string = "";
@@ -50,13 +52,22 @@ export default class Stage {
         const renderer = this.renderer = new Renderer({ dpr, canvas });
         const gl = renderer.gl;
         gl.clearColor(0.3, 0.3, 0.6, 1);
+        // const camera = this.camera = new Camera(gl, {
+        //     aspect: width / height,
+        //     fov: 45
+        // })
         const camera = this.camera = new Camera(gl, {
-            aspect: width / height,
-            fov: 45
+            left: -width / 2 / height,
+            right: width / 2 / height,
+            top: 1 / 2,
+            bottom: -1 / 2
         })
         camera.position.z = 0.5;
+        // Create controls and pass parameters
+        this.controls = new Orbit(camera, {
+        });
         renderer.setSize(width, height);
-        this.level = new Level(renderer.gl);
+        this.level = new LDtkLevel(renderer.gl);
         this.level.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
             this.onaddmesh && this.onaddmesh(name, transform, vertices, indices, propertities);
         }
@@ -77,7 +88,7 @@ export default class Stage {
     }
     private rollCamera(tag: "right" | "left" | "up" | "down") {
         const rotation = this.rotation;
-        if (!this.level.mazeMode) {
+        if (!this.level.isMazeMode()) {
             const key = `${rotation.x}${rotation.y}${rotation.z}`;
             table[key](tag, rotation);
             this.sceneRotation.set(rotation.x * Math.PI / 2, rotation.y * Math.PI / 2, rotation.z * Math.PI / 2);
@@ -171,6 +182,8 @@ export default class Stage {
         }
         this.t += timeStamp;
         this.scaleT += timeStamp;
+        // Need to update controls every frame
+        this.controls.update();
         const scaleT = Math.min(1, this.scaleT);
         this.sceneEuler.set(this.sceneRotation.x, this.sceneRotation.y, this.sceneRotation.z);
         this.sceneQuat.fromEuler(this.sceneEuler);
@@ -181,10 +194,10 @@ export default class Stage {
         if (this.scale) {
             const pos = this.scene.children[0].position;
             camera.position = (this.tempPosition.lerp(pos, scaleT).applyMatrix4(this.scene.matrix));
-            camera.position.z = (this.level.radius * 0.0225) / Math.tan(camera.fov / 2.0);
+            camera.position.z = (this.level.getRadius() * 0.0225) / Math.tan(camera.fov / 2.0);
         } else {
             camera.position = this.tempPosition.lerp(this.zeroVec3, scaleT);
-            camera.position.z = (this.level.radius * 0.0225) / Math.tan(camera.fov / 2.0);
+            camera.position.z = (this.level.getRadius() * 0.0225) / Math.tan(camera.fov / 2.0);
         }
 
         this.renderer.render({ scene: this.scene, camera: camera });
