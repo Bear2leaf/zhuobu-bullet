@@ -1,4 +1,4 @@
-import { Box, Geometry, Mat4, Mesh, OGLRenderingContext, Plane, Program, Transform, Vec3, Vec4 } from "ogl";
+import { Box, Camera, Geometry, Mat4, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Texture, Transform, Triangle, Vec3, Vec4 } from "ogl";
 import Level from "./Level.js";
 import { getContours } from "../misc/contour2d.js";
 import ndarray from "../misc/ndarray/ndarray.js";
@@ -8,11 +8,14 @@ export default class LDtkLevel implements Level {
 
     private fragment: string = "";
     private vertex: string = "";
-    private ldtkData: string = "";
+    private spriteFragment: string = "";
+    private spriteVertex: string = "";
+    private ldtkData?: LDtk;
     private radius = 0;
     private counter = 0;
     private readonly center = new Vec3();
-    private readonly levels: LDtk["levels"] = [];
+    private readonly textures: Texture[] = [];
+    private readonly renderTargets: RenderTarget[] = []
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
     constructor(private readonly gl: OGLRenderingContext) {
@@ -27,14 +30,169 @@ export default class LDtkLevel implements Level {
 
         this.vertex = await (await fetch("resources/glsl/level.vert.sk")).text();
         this.fragment = await (await fetch("resources/glsl/level.frag.sk")).text();
-        this.ldtkData = await (await fetch("resources/ldtk/WorldMap_GridVania_layout.json")).text();
-        this.levels.push(...Convert.toLDtk(this.ldtkData).levels);
+        const spriteVertex = this.spriteVertex = await (await fetch("resources/glsl/sprite.vert.sk")).text();
+        const spriteFragment = this.spriteFragment = await (await fetch("resources/glsl/sprite.frag.sk")).text();
+        const ldtkJsonText = await (await fetch("resources/ldtk/WorldMap_GridVania_layout.json")).text();
+        this.ldtkData = Convert.toLDtk(ldtkJsonText);
+        const gl = this.gl;
+        for await (const tileset of this.ldtkData.defs.tilesets) {
+            if (tileset.relPath) {
+                await new Promise((resoive) => {
+                    const image = new Image();
+                    image.onload = () => {
+                        this.textures.push(new Texture(gl, {
+                            image,
+                            width: image.width,
+                            height: image.height,
+                        }));
+                        resoive(void (0));
+                    };
+                    image.src = `resources/ldtk/${tileset.relPath}`;
+                })
+            }
+        }
+        const texture = this.textures[0];
+        const levels = this.ldtkData.levels.filter(level => !level.worldDepth);
+        for (const level of levels) {
+            console.log(level.identifier)
+            const collisions = level.layerInstances?.find(inst => inst.__identifier === "Collisions");
+            if (!collisions) {
+                throw new Error("parsing error")
+            }
+            const renderTarget = new RenderTarget(gl, {
+                width: level.pxWid,
+                height: level.pxHei,
+                minFilter: gl.NEAREST,
+                magFilter: gl.NEAREST,
+            });
+            const position = new Float32Array(collisions.autoLayerTiles.length * 6 * 3);
+            const uv = new Float32Array(collisions.autoLayerTiles.length * 6 * 2);
+            for (let index = 0; index < collisions.autoLayerTiles.length; index++) {
+                const tileInstance = collisions.autoLayerTiles[index];
+                position[index * 3 * 6 + 0 + 3 * 0] = tileInstance.px[0];
+                position[index * 3 * 6 + 1 + 3 * 0] = (tileInstance.px[1]);
+                position[index * 3 * 6 + 2 + 3 * 0] = 0;
+                position[index * 3 * 6 + 0 + 3 * 1] = tileInstance.px[0] + 16;
+                position[index * 3 * 6 + 1 + 3 * 1] = (tileInstance.px[1]);
+                position[index * 3 * 6 + 2 + 3 * 1] = 0;
+                position[index * 3 * 6 + 0 + 3 * 2] = tileInstance.px[0] + 16;
+                position[index * 3 * 6 + 1 + 3 * 2] = (tileInstance.px[1] + 16);
+                position[index * 3 * 6 + 2 + 3 * 2] = 0;
+                position[index * 3 * 6 + 0 + 3 * 3] = tileInstance.px[0] + 16;
+                position[index * 3 * 6 + 1 + 3 * 3] = (tileInstance.px[1] + 16);
+                position[index * 3 * 6 + 2 + 3 * 3] = 0;
+                position[index * 3 * 6 + 0 + 3 * 4] = tileInstance.px[0];
+                position[index * 3 * 6 + 1 + 3 * 4] = (tileInstance.px[1] + 16);
+                position[index * 3 * 6 + 2 + 3 * 4] = 0;
+                position[index * 3 * 6 + 0 + 3 * 5] = tileInstance.px[0];
+                position[index * 3 * 6 + 1 + 3 * 5] = (tileInstance.px[1]);
+                position[index * 3 * 6 + 2 + 3 * 5] = 0;
+                const ux = tileInstance.src[0];
+                const uy = tileInstance.src[1];
+                const w = texture.width;
+                const h = texture.height;
+                if (tileInstance.f === 0b00) {
+                    uv[index * 2 * 6 + 0 + 2 * 0] = ux / w;
+                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - uy / h;
+                    uv[index * 2 * 6 + 0 + 2 * 1] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - uy / h;
+                    uv[index * 2 * 6 + 0 + 2 * 2] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy + 16) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 3] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy + 16) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 4] = ux / w;
+                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy + 16) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 5] = ux / w;
+                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - uy / h;
+                } else if (tileInstance.f === 0b01) {
+                    // flip x
+                    uv[index * 2 * 6 + 0 + 2 * 0] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - uy / h;
+                    uv[index * 2 * 6 + 0 + 2 * 1] = ux / w;
+                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - uy / h;
+                    uv[index * 2 * 6 + 0 + 2 * 2] = ux / w;
+                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy + 16) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 3] = ux / w;
+                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy + 16) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 4] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy + 16) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 5] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - uy / h;
+                } else if (tileInstance.f === 0b10) {
+                    // flip y
+                    uv[index * 2 * 6 + 0 + 2 * 0] = ux / w;
+                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - (uy + 16) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 1] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - (uy + 16) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 2] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - ((uy)) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 3] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - ((uy)) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 4] = ux / w;
+                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - ((uy)) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 5] = ux / w;
+                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - (uy + 16) / h;
+                } else if (tileInstance.f === 0b11) {
+                    // flip xy
+                    uv[index * 2 * 6 + 0 + 2 * 0] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - (uy + 16) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 1] = ((ux)) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - (uy + 16) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 2] = ((ux)) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 3] = ((ux)) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 4] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 5] = (ux + 16) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - (uy + 16) / h;
+                } else {
+                    throw new Error("unsupport filp param: " + tileInstance.f)
+                }
+            }
+            const camera = new Camera(gl, {
+                left: 0,
+                right: renderTarget.width,
+                top: renderTarget.height,
+                bottom: 0,
+                near: 1,
+                far: -1
+            })
+            const scene = new Mesh(gl, {
+                geometry: new Geometry(gl, {
+                    position: {
+                        size: 3,
+                        data: position
+                    },
+                    uv: {
+                        size: 2,
+                        data: uv
+                    },
+                }),
+                program: new Program(gl, {
+                    vertex: spriteVertex,
+                    fragment: spriteFragment,
+                    uniforms: {
+                        tMap: { value: texture },
+                    },
+                })
+            });
+            gl.renderer.render({
+                scene,
+                camera,
+                target: renderTarget,
+            })
+            this.renderTargets.push(renderTarget);
+        }
     }
     setIndex(level: number) {
     }
     request(scene: Transform, reverse = false) {
         const gl = this.gl;
-        const levels = this.levels.filter(level => !level.worldDepth);
+        const levels = this.ldtkData?.levels.filter(level => !level.worldDepth);
+        if (!levels) {
+            throw new Error("levels is undefined");
+        }
         const min = new Vec3();
         const max = new Vec3();
         for (let levelIndex = 0; levelIndex < levels.length; levelIndex++) {
@@ -91,6 +249,30 @@ export default class LDtkLevel implements Level {
                 const indices = mesh.geometry.attributes.index?.data;
                 this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
             }
+            const renderTarget = this.renderTargets[levelIndex];
+            if (renderTarget) {
+                const mesh = new Mesh(gl, {
+                    geometry: new Plane(gl, {
+                        width: renderTarget.width,
+                        height: renderTarget.height,
+                    }),
+                    program: new Program(gl, {
+                        vertex: this.spriteVertex,
+                        fragment: this.spriteFragment,
+                        uniforms: {
+                            tMap: { value: renderTarget.texture }
+                        },
+                        frontFace: gl.CW,
+                        transparent: true
+                    })
+                });
+                mesh.position.x = (level.worldX + level.pxWid / 2) * 0.25;
+                mesh.position.y = -(level.worldY + level.pxHei / 2) * 0.25;
+                mesh.rotation.x = Math.PI;
+                mesh.position.z = -0.999
+                mesh.scale.multiply(new Vec3(0.25, 0.25, 1))
+                mesh.setParent(scene);
+            }
         }
 
         {
@@ -106,7 +288,7 @@ export default class LDtkLevel implements Level {
                         uColor: {
                             value: new Vec3(0.4, 0.4, 0.4)
                         }
-                    },
+                    }
                 })
             });
             mesh.name = "test" + this.counter++;

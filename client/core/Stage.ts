@@ -197,7 +197,7 @@ export default class Stage {
             this.center.z = 100;
         } else {
             this.center.copy(this.level.getCenter());
-            this.center.z = (this.level.getRadius() * 2) / Math.tan(camera.fov / 2.0);
+            this.center.z = (this.level.getRadius() * 2.5) / Math.tan(camera.fov / 2.0);
         }
         camera.position = this.tempPosition.lerp(this.center.sub(this.scene.position), this.scaleT);
         this.renderer.render({ scene: this.scene, camera: camera });
