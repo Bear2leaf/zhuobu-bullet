@@ -1,4 +1,4 @@
-import { Transform } from "ogl";
+import { Transform, Vec3 } from "ogl";
 
 export default interface Level {
     getRadius(): number
@@ -9,4 +9,5 @@ export default interface Level {
     load(): Promise<void>
     setIndex(level: number): void
     request(scene: Transform, reverse: boolean): void
+    getCenter(): Vec3;
 }

@@ -1,6 +1,4 @@
 import Ammo, { config, Module, handler, MainMessage, WorkerMessage } from "./ammo.worker.js"
-import { SnapshotInterpolation } from '@geckos.io/snapshot-interpolation'
-const SI = new SnapshotInterpolation()
 
 
 
@@ -211,15 +209,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 };
 
             }
-            // create a snapshot of the current world
-            const snapshot = SI.snapshot.create(worldState)
-
-            // add the snapshot to the vault in case you want to access it later (optional)
-            SI.vault.add(snapshot)
-            handler.postMessage({
-                type: "updateSI",
-                snapshot
-            });
             handler.postMessage(result);
             return;
         }
@@ -272,16 +261,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             };
 
         }
-        // create a snapshot of the current world
-        const snapshot = SI.snapshot.create(worldState)
-
-        // add the snapshot to the vault in case you want to access it later (optional)
-        SI.vault.add(snapshot)
-        handler.postMessage({
-            type: "updateSI",
-            snapshot
-        });
-        // handler.postMessage(result);
+        handler.postMessage(result);
         checkDestination()
     }
     frame = 1;

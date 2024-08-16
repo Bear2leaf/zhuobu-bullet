@@ -1,5 +1,3 @@
-import { SnapshotInterpolation } from "@geckos.io/snapshot-interpolation";
-import { Entity, Snapshot, State } from "@geckos.io/snapshot-interpolation/lib/types.js";
 import { Camera, Euler, Mat4, Mesh, Orbit, Program, Quat, Renderer, Sphere, Transform, Vec3 } from "ogl";
 import { WorkerMessage } from "../../worker/ammo.worker.js";
 import { table } from "../misc/rotation.js";
@@ -9,7 +7,6 @@ import Level from "../level/Level.js";
 export default class Stage {
     private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关"
-    private readonly si = new SnapshotInterpolation(60)
     private readonly renderer: Renderer;
     private readonly scene: Transform;
     private readonly camera: Camera;
@@ -19,16 +16,14 @@ export default class Stage {
     private readonly matrix = new Mat4();
     private readonly rotation: Vec3 = new Vec3;
     private readonly sceneRotation = new Vec3();
-    private readonly zeroVec3 = new Vec3(0, 0, 0);
-    private readonly sceneScale = new Vec3(0.01, 0.01, 0.01);
     private readonly sceneEuler = new Euler();
     private readonly sceneQuat = new Quat();
-    private readonly tempQuat = new Quat();
     // private readonly controls: Orbit;
     private readonly tempPosition = new Vec3();
     private readonly acc = new Vec3(0, -10, 0);
     readonly availableLevels: Set<number> = new Set();
     readonly gravity = new Vec3;
+    private readonly center = new Vec3();
     private charset: string = "";
     private fragment: string = "";
     private vertex: string = "";
@@ -52,19 +47,20 @@ export default class Stage {
         const renderer = this.renderer = new Renderer({ dpr, canvas });
         const gl = renderer.gl;
         gl.clearColor(0.3, 0.3, 0.6, 1);
-        // const camera = this.camera = new Camera(gl, {
-        //     aspect: width / height,
-        //     fov: 45
-        // })
-        const camera = this.camera = new Camera(gl, {
-            left: -width / 2 / height,
-            right: width / 2 / height,
-            top: 1 / 2,
-            bottom: -1 / 2,
-            near: 10,
-            far: -10
+        this.camera = new Camera(gl, {
+            aspect: width / height,
+            fov: 45,
+            near: 90,
+            far: 5000
         })
-        camera.position.z = 0.5;
+        // this.camera = new Camera(gl, {
+        //     left: -width * 50 / height,
+        //     right: width * 50 / height,
+        //     top: 50,
+        //     bottom: -50,
+        //     near: 0,
+        //     far: 10000
+        // })
         // Create controls and pass parameters
         // this.controls = new Orbit(camera);
         renderer.setSize(width, height);
@@ -94,20 +90,18 @@ export default class Stage {
             table[key](tag, rotation);
             this.sceneRotation.set(rotation.x * Math.PI / 2, rotation.y * Math.PI / 2, rotation.z * Math.PI / 2);
         } else {
-            if (tag === "left" || tag === "up") {
-                rotation.z -= 1;
-            } else {
+            if (tag === "left") {
                 rotation.z += 1;
+                this.sceneRotation.z = rotation.z * Math.PI / 2;
+            } else if (tag === "right") {
+                rotation.z -= 1;
+                this.sceneRotation.z = rotation.z * Math.PI / 2;
             }
-            this.sceneRotation.z = rotation.z * Math.PI / 2;
         }
         this.t = 0;
     }
     private updateZoom() {
         this.scale = (this.scale + 1) % 2;
-        this.sceneScale.set(this.scale + 1, this.scale + 1, this.scale + 1);
-        this.sceneScale.multiply(0.01);
-        this.scene.children[0].worldMatrix.getTranslation(this.tempPosition);
         this.scaleT = 0;
         this.updateSwitch("zoom", !this.scale)
     }
@@ -163,8 +157,22 @@ export default class Stage {
         }
         child.visible = false;
     }
-    updateSI(snapshot: Snapshot) {
-        this.si.snapshot.add(snapshot)
+
+    updateBody(message: WorkerMessage & { type: "update" }) {
+        const scene = this.scene;
+        // this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
+        for (let index = 0; index < message.objects.length; index++) {
+            let child: Transform | undefined;
+            const name = message.objects[index][7];
+
+            child = scene.children.find(child => child.name === name);
+            if (!child) {
+                throw new Error("child is undefined");
+            }
+            const phyObject = message.objects[index];
+            child.position.fromArray(phyObject.slice(0, 3) as number[])
+            child.quaternion.fromArray(phyObject.slice(3, 7) as number[])
+        }
     }
     updateSwitch(name: string, value: boolean) {
         if (value) {
@@ -175,32 +183,23 @@ export default class Stage {
     }
     // Game loop
     loop = (timeStamp: number) => {
-        const snapshot = this.si.calcInterpolation('x y z q(quat)') // [deep: string] as optional second parameter
-        if (snapshot) {
-            // access your state
-            const { state } = snapshot;
-            this.updateState(state)
-        }
-        this.t += timeStamp;
-        this.scaleT += timeStamp;
+        this.t = Math.min(1, this.t + timeStamp);
+        this.scaleT = Math.min(1, this.scaleT + timeStamp);
+        const camera = this.camera;
         // Need to update controls every frame
         // this.controls.update();
-        const scaleT = Math.min(1, this.scaleT);
         this.sceneEuler.set(this.sceneRotation.x, this.sceneRotation.y, this.sceneRotation.z);
         this.sceneQuat.fromEuler(this.sceneEuler);
-        this.tempQuat.slerp(this.sceneQuat, Math.min(1, this.t));
-        this.scene.quaternion.copy(this.tempQuat);
-        this.scene.scale.lerp(this.sceneScale, scaleT);
-        const camera = this.camera;
-        if (this.scale) {
-            const pos = this.scene.children[0].position;
-            camera.position = (this.tempPosition.lerp(pos, scaleT).applyMatrix4(this.scene.matrix));
-            camera.position.z = (this.level.getRadius() * 0.0225) / Math.tan(camera.fov / 2.0);
-        } else {
-            camera.position = this.tempPosition.lerp(this.zeroVec3, scaleT);
-            camera.position.z = (this.level.getRadius() * 0.0225) / Math.tan(camera.fov / 2.0);
-        }
+        camera.quaternion.slerp(this.sceneQuat, this.t);
 
+        if (this.scale) {
+            this.scene.children[0] && this.center.copy(this.scene.children[0].position);
+            this.center.z = 100;
+        } else {
+            this.center.copy(this.level.getCenter());
+            this.center.z = (this.level.getRadius() * 2) / Math.tan(camera.fov / 2.0);
+        }
+        camera.position = this.tempPosition.lerp(this.center.sub(this.scene.position), this.scaleT);
         this.renderer.render({ scene: this.scene, camera: camera });
         this.ui.render();
         this.quat.fill(0)
@@ -233,6 +232,7 @@ export default class Stage {
                     program,
                 });
                 mesh.setParent(scene);
+                mesh.name = "Ball"
             }
         } else {
             const child = this.scene.children.find(child => child instanceof Mesh);
@@ -254,39 +254,6 @@ export default class Stage {
             this.ui.getSprite(name).getMesh().visible = !this.ui.getSprite(name).getMesh().visible;
         } else {
             this.ui.getSprite(name).getMesh().visible = visible;
-        }
-    }
-    private updateState(state: State) {
-
-        const scene = this.scene;
-        // this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
-        for (let index = 0; index < state.length; index++) {
-            let child: Transform | undefined;
-
-            const entity = state[index] as Entity & {
-                x: number, y: number, z: number, q: {
-                    x: number,
-                    y: number,
-                    z: number,
-                    w: number
-                }
-            };
-            const name = entity.id;
-            if (index === 0) {
-                child = scene.children.find(child => child.visible && child instanceof Mesh)
-            } else {
-                child = scene.children.find(child => child.visible && !(child instanceof Mesh))?.children[this.level.getIndex()].children.find(child => child.name === name);
-            }
-            if (!child) {
-                return;
-            }
-            child.position.x = entity.x;
-            child.position.y = entity.y;
-            child.position.z = entity.z;
-            child.quaternion.x = entity.q.x;
-            child.quaternion.y = entity.q.y;
-            child.quaternion.z = entity.q.z;
-            child.quaternion.w = entity.q.w;
         }
     }
     private async waitContinueButton() {
@@ -346,6 +313,7 @@ export default class Stage {
         } else {
             this.updateSprite("prev", false);
         }
+        this.center.copy(this.level.getCenter());
     }
     private checkCharset() {
         let levelMsg = "";

@@ -34,8 +34,8 @@ async function start(device: Device) {
             });
         } else if (message.type === "removeBody") {
             stage.removeBody(message.data);
-        } else if (message.type === "updateSI") {
-            stage.updateSI(message.snapshot);
+        } else if (message.type === "update") {
+            stage.updateBody(message);
         }
     };
     stage.onpause = () => device.sendmessage({

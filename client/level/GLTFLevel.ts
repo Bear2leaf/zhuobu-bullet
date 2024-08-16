@@ -7,6 +7,7 @@ export default class GLTFLevel implements Level {
     private readonly mouse = new Vec2();
     private readonly collections: Transform[] = [];
     private readonly light = { value: new Vec3() };
+    private readonly center = new Vec3();
     private gltffragment: string = "";
     private gltfvertex: string = "";
     private current = 0;
@@ -79,5 +80,8 @@ export default class GLTFLevel implements Level {
         collection.visible = true;
         collection.parent?.setParent(scene)
         this.current = (this.current + 1) % this.collections.length;
+    }
+    getCenter(): Vec3 {
+        return this.center;
     }
 }

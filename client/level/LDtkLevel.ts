@@ -1,4 +1,4 @@
-import { Box, Geometry, Mat4, Mesh, OGLRenderingContext, Program, Transform, Vec3, Vec4 } from "ogl";
+import { Box, Geometry, Mat4, Mesh, OGLRenderingContext, Plane, Program, Transform, Vec3, Vec4 } from "ogl";
 import Level from "./Level.js";
 import { getContours } from "../misc/contour2d.js";
 import ndarray from "../misc/ndarray/ndarray.js";
@@ -10,6 +10,8 @@ export default class LDtkLevel implements Level {
     private vertex: string = "";
     private ldtkData: string = "";
     private radius = 0;
+    private counter = 0;
+    private readonly center = new Vec3();
     private readonly levels: LDtk["levels"] = [];
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
@@ -17,6 +19,9 @@ export default class LDtkLevel implements Level {
     }
     getIndex() {
         return 0;
+    }
+    getCenter(): Vec3 {
+        return this.center;
     }
     async load() {
 
@@ -47,11 +52,11 @@ export default class LDtkLevel implements Level {
                 const contour = contours[index];
                 const position = contour.reduce((prev, point, index, arr) => {
                     const p = [...point];
-                    p[0] = (p[0] + level.worldX / 16);
-                    p[1] = -((p[1] + level.worldY / 16));
+                    p[0] = (p[0] + level.worldX / 16) * 4;
+                    p[1] = -((p[1] + level.worldY / 16)) * 4;
                     const nextP = [...arr[(index + 1) % arr.length]];
-                    nextP[0] = (nextP[0] + level.worldX / 16);
-                    nextP[1] = -((nextP[1] + level.worldY / 16));
+                    nextP[0] = (nextP[0] + level.worldX / 16) * 4;
+                    nextP[1] = -((nextP[1] + level.worldY / 16)) * 4;
                     prev.push(...p, -2, ...p, 2, ...nextP, 2, ...nextP, 2, ...nextP, -2, ...p, -2);
                     return prev;
                 }, []);
@@ -64,12 +69,13 @@ export default class LDtkLevel implements Level {
                         fragment: this.fragment,
                         uniforms: {
                             uColor: {
-                                value: new Vec3(1, 1, 1)
+                                value: new Vec3(0.7, 0.7, 0.7)
                             }
                         },
                         cullFace: false
                     })
                 });
+                mesh.name = "test" + this.counter++;
                 mesh.setParent(scene);
                 mesh.geometry.computeBoundingBox();
                 mesh.geometry.computeBoundingSphere();
@@ -83,37 +89,71 @@ export default class LDtkLevel implements Level {
                 max.z = Math.max(meshMax.z, max.z);
                 const attributeData = mesh.geometry.getPosition().data;
                 const indices = mesh.geometry.attributes.index?.data;
-                this.onaddmesh && this.onaddmesh("test", mesh.matrix, [...attributeData || []], [...indices || []], {})
+                this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
             }
         }
 
-        const mesh = new Mesh(gl, {
-            geometry: new Box(gl, {
-                width: max.x - min.x,
-                height: max.y - min.y,
-                depth: max.z - min.z
-            }),
-            program: new Program(gl, {
-                vertex: this.vertex,
-                fragment: this.fragment,
-                uniforms: {
-                    uColor: {
-                        value: new Vec3(1, 1, 1)
+        {
+            const mesh = new Mesh(gl, {
+                geometry: new Plane(gl, {
+                    width: max.x - min.x,
+                    height: max.y - min.y,
+                }),
+                program: new Program(gl, {
+                    vertex: this.vertex,
+                    fragment: this.fragment,
+                    uniforms: {
+                        uColor: {
+                            value: new Vec3(0.4, 0.4, 0.4)
+                        }
+                    },
+                })
+            });
+            mesh.name = "test" + this.counter++;
+            mesh.setParent(scene)
+            mesh.position.x = (max.x + min.x) / 2;
+            mesh.position.y = (max.y + min.y) / 2;
+            mesh.position.z = max.z;
+            mesh.updateMatrix();
+            mesh.geometry.computeBoundingBox();
+            mesh.geometry.computeBoundingSphere();
+            mesh.visible = false;
+            const attributeData = mesh.geometry.getPosition().data;
+            const indices = mesh.geometry.attributes.index?.data;
+            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
+            this.radius = mesh.geometry.bounds.radius;
+        }
+        {
+            const mesh = new Mesh(gl, {
+                geometry: new Plane(gl, {
+                    width: max.x - min.x,
+                    height: max.y - min.y,
+                }),
+                program: new Program(gl, {
+                    vertex: this.vertex,
+                    fragment: this.fragment,
+                    uniforms: {
+                        uColor: {
+                            value: new Vec3(0.4, 0.4, 0.4)
+                        }
                     }
-                },
-                cullFace: false
-            })
-        });
-        mesh.position.x = min.x;
-        mesh.position.y = min.y;
-        mesh.position.z = min.z;
-        mesh.geometry.computeBoundingBox();
-        mesh.geometry.computeBoundingSphere();
-        const attributeData = mesh.geometry.getPosition().data;
-        const indices = mesh.geometry.attributes.index?.data;
-        this.onaddmesh && this.onaddmesh("test", mesh.matrix, [...attributeData || []], [...indices || []], {})
-        this.radius = mesh.geometry.bounds.radius;
-        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(1, -10, 0)))
+                })
+            });
+            mesh.name = "test" + this.counter++;
+            mesh.setParent(scene)
+            mesh.position.x = (max.x + min.x) / 2;
+            mesh.position.y = (max.y + min.y) / 2;
+            mesh.position.z = min.z;
+            mesh.updateMatrix();
+            mesh.geometry.computeBoundingBox();
+            mesh.geometry.computeBoundingSphere();
+            const attributeData = mesh.geometry.getPosition().data;
+            const indices = mesh.geometry.attributes.index?.data;
+            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
+            this.radius = mesh.geometry.bounds.radius;
+        }
+        this.center.copy(new Vec3((max.x + min.x) / 2, (max.y + min.y) / 2, 0))
+        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(1, -30, 0)))
     }
     getRadius(): number {
         return this.radius;
