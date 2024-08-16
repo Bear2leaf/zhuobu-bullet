@@ -8,7 +8,11 @@
         "type": "folder"
       },
       {
-        "value": "resources/font/NotoSansSC-Regular.ttf",
+        "value": "resources/gltf",
+        "type": "folder"
+      },
+      {
+        "value": "resources/font/NotoSansSC-Bold.ttf",
         "type": "file"
       }
     ],

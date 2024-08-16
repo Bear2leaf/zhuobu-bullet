@@ -24,7 +24,7 @@ if (isBrowser) {
     }
     config.wasmBinary = new Uint8Array(0)
 
-    worker.onMessage((event) => handler.onmessage(event));
+    worker.onMessage((event) => handler.onmessage &&handler.onmessage(event));
     handler.postMessage = (data) => worker.postMessage(data);
     var Ammo = require('./ammo.wasm.js');
 }

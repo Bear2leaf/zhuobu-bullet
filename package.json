@@ -13,7 +13,6 @@
   "license": "ISC",
   "dependencies": {
     "@geckos.io/snapshot-interpolation": "^1.1.0",
-    "ndarray": "^1.0.19",
     "ogl": "^1.0.8"
   },
   "devDependencies": {

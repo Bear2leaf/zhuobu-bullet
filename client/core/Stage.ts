@@ -24,7 +24,7 @@ export default class Stage {
     private readonly sceneEuler = new Euler();
     private readonly sceneQuat = new Quat();
     private readonly tempQuat = new Quat();
-    private readonly controls: Orbit;
+    // private readonly controls: Orbit;
     private readonly tempPosition = new Vec3();
     private readonly acc = new Vec3(0, -10, 0);
     readonly availableLevels: Set<number> = new Set();
@@ -60,12 +60,13 @@ export default class Stage {
             left: -width / 2 / height,
             right: width / 2 / height,
             top: 1 / 2,
-            bottom: -1 / 2
+            bottom: -1 / 2,
+            near: 10,
+            far: -10
         })
         camera.position.z = 0.5;
         // Create controls and pass parameters
-        this.controls = new Orbit(camera, {
-        });
+        // this.controls = new Orbit(camera);
         renderer.setSize(width, height);
         this.level = new LDtkLevel(renderer.gl);
         this.level.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
@@ -183,7 +184,7 @@ export default class Stage {
         this.t += timeStamp;
         this.scaleT += timeStamp;
         // Need to update controls every frame
-        this.controls.update();
+        // this.controls.update();
         const scaleT = Math.min(1, this.scaleT);
         this.sceneEuler.set(this.sceneRotation.x, this.sceneRotation.y, this.sceneRotation.z);
         this.sceneQuat.fromEuler(this.sceneEuler);
@@ -340,11 +341,11 @@ export default class Stage {
         } else {
             this.updateSprite("next", false);
         }
-        // if (this.availableLevels.has(this.level.getIndex() - 1)) {
-        //     this.updateSprite("prev", true);
-        // } else {
-        //     this.updateSprite("prev", false);
-        // }
+        if (this.availableLevels.has(this.level.getIndex() - 1)) {
+            this.updateSprite("prev", true);
+        } else {
+            this.updateSprite("prev", false);
+        }
     }
     private checkCharset() {
         let levelMsg = "";
