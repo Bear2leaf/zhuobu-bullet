@@ -1,4 +1,3 @@
-import { Snapshot } from "@geckos.io/snapshot-interpolation/lib/types.js";
 
 export default Ammo;
 declare const config: {
@@ -32,9 +31,6 @@ export type WorkerMessage = {
     type: "update"
     objects: [number, number, number, number, number, number, number, string][];
 } | {
-    type: "updateSI"
-    snapshot: Snapshot
-} | {
     type: "ready",
 } | {
     type: "addBody",
@@ -44,6 +40,9 @@ export type WorkerMessage = {
 } | {
     type: "removeBody",
     data: string | undefined
+} | {
+    type: "collision",
+    data: [string, string]
 }
 
 

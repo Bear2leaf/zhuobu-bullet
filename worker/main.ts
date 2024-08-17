@@ -177,13 +177,14 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const mainfold = dispatcher.getManifoldByIndexInternal(index);
             const body0 = mainfold.getBody0();
             const body1 = mainfold.getBody1();
-            const props0 = Ammo.castObject(body0.getUserPointer(), UserData).propertities;
-            const props1 = Ammo.castObject(body1.getUserPointer(), UserData).propertities;
-
-            if ((props0?.destination && props1?.ball) || (props1?.destination && props0?.ball)) {
-                resetWorld()
+            const data0 = Ammo.castObject(body0.getUserPointer(), UserData);
+            const data1 = Ammo.castObject(body1.getUserPointer(), UserData);
+            if (!(data0.name?.startsWith("test") || data1.name?.startsWith("test"))) {
+                handler.postMessage({
+                    type: "collision",
+                    data: [data0.name || "", data1.name || ""]
+                });
             }
-
         }
     }
     let meanDt = 0, meanDt2 = 0, frame = 1;

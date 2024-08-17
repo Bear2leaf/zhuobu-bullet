@@ -214,15 +214,6 @@ export default class LDtkLevel implements Level {
                 depth: false
             });
             this.renderTargets.push(renderTarget);
-            for (const layerInstance of level.layerInstances || []) {
-                if (layerInstance.__identifier === "Entities") {
-                    for (const entityInst of layerInstance.entityInstances) {
-                        if (entityInst.__identifier === "Player") {
-                            this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityInst.px[0], -(entityInst.px[1] - entityInst.height), 0)))
-                        }
-                    }
-                }
-            }
         }
         this.drawLayer("Background");
         this.drawLayer("Collisions");
@@ -282,6 +273,40 @@ export default class LDtkLevel implements Level {
                         const attributeData = mesh.geometry.getPosition().data;
                         const indices = mesh.geometry.attributes.index?.data;
                         this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
+                    }
+                } else if (layerInstance.__identifier === "Entities") {
+                    for (const entityInst of layerInstance.entityInstances) {
+                        const entityWorldX = (entityInst.__worldX || 0) + entityInst.width * (0.5 - entityInst.__pivot[0]);
+                        const entityWorldY = -(entityInst.__worldY || 0) - entityInst.height * (0.5 - entityInst.__pivot[1]);
+                        if (entityInst.__identifier === "Player") {
+                            this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)))
+                        } else if (entityInst.__identifier === "Item") {
+
+                            const mesh = new Mesh(gl, {
+                                geometry: new Plane(gl, {
+                                    width: entityInst.width,
+                                    height: entityInst.height,
+                                }),
+                                program: new Program(gl, {
+                                    vertex: this.vertex,
+                                    fragment: this.fragment,
+                                    uniforms: {
+                                        uColor: {
+                                            value: new Vec3(1, 1, 1)
+                                        }
+                                    }
+                                })
+                            });
+                            mesh.name = "item" + this.counter++;
+                            mesh.setParent(scene)
+                            mesh.position.x = entityWorldX;
+                            mesh.position.y = entityWorldY;
+                            mesh.position.z = -radius;
+                            mesh.updateMatrix();
+                            const attributeData = mesh.geometry.getPosition().data;
+                            const indices = mesh.geometry.attributes.index?.data;
+                            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
+                        }
                     }
                 }
 

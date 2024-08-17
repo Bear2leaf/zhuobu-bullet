@@ -36,6 +36,8 @@ async function start(device: Device) {
             stage.removeBody(message.data);
         } else if (message.type === "update") {
             stage.updateBody(message);
+        } else if (message.type === "collision") {
+            console.log(...message.data)
         }
     };
     stage.onpause = () => device.sendmessage({
