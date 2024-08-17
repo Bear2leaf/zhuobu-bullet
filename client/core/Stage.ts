@@ -200,7 +200,7 @@ export default class Stage {
             this.center.z = (this.level.getRadius() * 2.5) / Math.tan(camera.fov / 2.0);
         }
         camera.position = this.tempPosition.lerp(this.center.sub(this.scene.position), this.scaleT);
-        this.camera.orthographic({zoom: 125 / camera.position.z})
+        this.camera.orthographic({zoom: 200 / camera.position.z})
         this.renderer.render({ scene: this.scene, camera: camera });
         this.ui.render();
         this.quat.fill(0)
