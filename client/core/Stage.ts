@@ -47,20 +47,20 @@ export default class Stage {
         const renderer = this.renderer = new Renderer({ dpr, canvas });
         const gl = renderer.gl;
         gl.clearColor(0.3, 0.3, 0.6, 1);
-        this.camera = new Camera(gl, {
-            aspect: width / height,
-            fov: 45,
-            near: 90,
-            far: 5000
-        })
         // this.camera = new Camera(gl, {
-        //     left: -width * 50 / height,
-        //     right: width * 50 / height,
-        //     top: 50,
-        //     bottom: -50,
-        //     near: 0,
-        //     far: 10000
+        //     aspect: width / height,
+        //     fov: 45,
+        //     near: 90,
+        //     far: 5000
         // })
+        this.camera = new Camera(gl, {
+            left: -width * 50 / height,
+            right: width * 50 / height,
+            top: 50,
+            bottom: -50,
+            near: 0,
+            far: 10000
+        })
         // Create controls and pass parameters
         // this.controls = new Orbit(camera);
         renderer.setSize(width, height);
@@ -200,6 +200,7 @@ export default class Stage {
             this.center.z = (this.level.getRadius() * 2.5) / Math.tan(camera.fov / 2.0);
         }
         camera.position = this.tempPosition.lerp(this.center.sub(this.scene.position), this.scaleT);
+        this.camera.orthographic({zoom: 125 / camera.position.z})
         this.renderer.render({ scene: this.scene, camera: camera });
         this.ui.render();
         this.quat.fill(0)
