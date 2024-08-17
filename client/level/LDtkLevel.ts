@@ -226,7 +226,6 @@ export default class LDtkLevel implements Level {
         }
         this.drawLayer("Background");
         this.drawLayer("Collisions");
-        const scaleGrid = 16;
         const min = new Vec3();
         const max = new Vec3();
         for (let levelIndex = 0; levelIndex < levels.length; levelIndex++) {
@@ -238,6 +237,7 @@ export default class LDtkLevel implements Level {
                     const rows = collisions.__cHei;
                     const cols = collisions.__cWid;
 
+                    const scaleGrid = layerInstance.__gridSize;
                     const gridSize = collisions.__gridSize;
                     const contours = (getContours(ndarray(collisions.intGridCsv.map(x => x === 1 ? 1 : 0), [rows, cols]), false));
                     for (let index = 0; index < contours.length; index++) {
@@ -306,7 +306,7 @@ export default class LDtkLevel implements Level {
                 mesh.position.x = (level.worldX + level.pxWid / 2);
                 mesh.position.y = -(level.worldY + level.pxHei / 2);
                 mesh.rotation.x = Math.PI;
-                mesh.position.z = -radius + 0.01;
+                mesh.position.z = -radius;
                 mesh.setParent(scene);
             }
         }
@@ -361,6 +361,7 @@ export default class LDtkLevel implements Level {
             mesh.position.x = (max.x + min.x) / 2;
             mesh.position.y = (max.y + min.y) / 2;
             mesh.position.z = min.z;
+            mesh.visible = false;
             mesh.updateMatrix();
             mesh.geometry.computeBoundingBox();
             mesh.geometry.computeBoundingSphere();
