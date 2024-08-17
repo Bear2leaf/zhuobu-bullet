@@ -275,10 +275,11 @@ export default class LDtkLevel implements Level {
                         const indices = mesh.geometry.attributes.index?.data;
                         this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
                     }
-                } else if (layerInstance.entityInstances.some(entInst => entInst.__identifier === "Player")) {
-                    const player = layerInstance.entityInstances.find(entInst => entInst.__identifier === "Player");
-                    if (player) {
-                        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(player.px[0] * scalePosition, -(player.px[1] - player.height) * scalePosition, 0)))
+                } else if (layerInstance.__identifier === "Entities") {
+                    for (const entityInst of layerInstance.entityInstances) {
+                        if(entityInst.__identifier === "Player") {
+                            this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityInst.px[0] * scalePosition, -(entityInst.px[1] - entityInst.height) * scalePosition, 0)))
+                        }
                     }
                 }
 
