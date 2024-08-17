@@ -3,6 +3,7 @@ import Level from "./Level.js";
 import { getContours } from "../misc/contour2d.js";
 import ndarray from "../misc/ndarray/ndarray.js";
 import { Convert, LDtk } from "../misc/LDtkParser.js";
+import { radius } from "../misc/radius.js";
 
 export default class LDtkLevel implements Level {
 
@@ -195,19 +196,6 @@ export default class LDtkLevel implements Level {
                 })
             }
         }
-        const levels = this.ldtkData.levels.filter(level => !level.worldDepth);
-        for (const level of levels) {
-            const renderTarget = new RenderTarget(gl, {
-                width: level.pxWid,
-                height: level.pxHei,
-                minFilter: gl.NEAREST,
-                magFilter: gl.NEAREST,
-                depth: false
-            });
-            this.renderTargets.push(renderTarget);
-        }
-        this.drawLayer("Background");
-        this.drawLayer("Collisions");
     }
     setIndex(level: number) {
     }
@@ -217,8 +205,28 @@ export default class LDtkLevel implements Level {
         if (!levels) {
             throw new Error("levels is undefined");
         }
-        const scalePosition = 0.25;
-        const scaleGrid = 4;
+        for (const level of levels) {
+            const renderTarget = new RenderTarget(gl, {
+                width: level.pxWid,
+                height: level.pxHei,
+                minFilter: gl.NEAREST,
+                magFilter: gl.NEAREST,
+                depth: false
+            });
+            this.renderTargets.push(renderTarget);
+            for (const layerInstance of level.layerInstances || []) {
+                if (layerInstance.__identifier === "Entities") {
+                    for (const entityInst of layerInstance.entityInstances) {
+                        if (entityInst.__identifier === "Player") {
+                            this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityInst.px[0], -(entityInst.px[1] - entityInst.height), 0)))
+                        }
+                    }
+                }
+            }
+        }
+        this.drawLayer("Background");
+        this.drawLayer("Collisions");
+        const scaleGrid = 16;
         const min = new Vec3();
         const max = new Vec3();
         for (let levelIndex = 0; levelIndex < levels.length; levelIndex++) {
@@ -241,7 +249,7 @@ export default class LDtkLevel implements Level {
                             const nextP = [...arr[(index + 1) % arr.length]];
                             nextP[0] = (nextP[0] + level.worldX / gridSize) * scaleGrid;
                             nextP[1] = -((nextP[1] + level.worldY / gridSize)) * scaleGrid;
-                            prev.push(...p, -2, ...p, 2, ...nextP, 2, ...nextP, 2, ...nextP, -2, ...p, -2);
+                            prev.push(...p, -radius, ...p, radius, ...nextP, radius, ...nextP, radius, ...nextP, -radius, ...p, -radius);
                             return prev;
                         }, []);
                         const mesh = new Mesh(gl, {
@@ -275,12 +283,6 @@ export default class LDtkLevel implements Level {
                         const indices = mesh.geometry.attributes.index?.data;
                         this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
                     }
-                } else if (layerInstance.__identifier === "Entities") {
-                    for (const entityInst of layerInstance.entityInstances) {
-                        if(entityInst.__identifier === "Player") {
-                            this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityInst.px[0] * scalePosition, -(entityInst.px[1] - entityInst.height) * scalePosition, 0)))
-                        }
-                    }
                 }
 
             }
@@ -301,11 +303,10 @@ export default class LDtkLevel implements Level {
                         transparent: true
                     })
                 });
-                mesh.position.x = (level.worldX + level.pxWid / 2) * scalePosition;
-                mesh.position.y = -(level.worldY + level.pxHei / 2) * scalePosition;
+                mesh.position.x = (level.worldX + level.pxWid / 2);
+                mesh.position.y = -(level.worldY + level.pxHei / 2);
                 mesh.rotation.x = Math.PI;
-                mesh.position.z = -0.99
-                mesh.scale.multiply(new Vec3(scalePosition, scalePosition, 1));
+                mesh.position.z = -radius + 0.01;
                 mesh.setParent(scene);
             }
         }

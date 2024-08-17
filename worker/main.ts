@@ -1,3 +1,4 @@
+import { radius } from "../client/misc/radius.js";
 import Ammo, { config, Module, handler, MainMessage, WorkerMessage } from "./ammo.worker.js"
 
 
@@ -29,14 +30,13 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         z: number,
         q: { x: number, y: number, z: number, w: number }
     }[] = []
-
     const bodies: Ammo.btRigidBody[] = [];
     function createBall() {
         const startTransform = new Ammo.btTransform();
         startTransform.setIdentity();
         const mass = 1;
         const localInertia = new Ammo.btVector3(0, 0, 0);
-        const sphereShape = new Ammo.btSphereShape(1);
+        const sphereShape = new Ammo.btSphereShape(radius);
         sphereShape.calculateLocalInertia(mass, localInertia);
 
         const myMotionState = new Ammo.btDefaultMotionState(startTransform);
