@@ -28,7 +28,7 @@ export default class LDtkLevel implements Level {
     }
 
     drawLayer(identifer: string) {
-        
+
         const texture = this.textures[0];
         const levels = this.ldtkData?.levels.filter(level => !level.worldDepth);
         if (!levels) {
@@ -43,88 +43,86 @@ export default class LDtkLevel implements Level {
             const renderTarget = this.renderTargets[index];
             const position = new Float32Array(layerInstance.autoLayerTiles.length * 6 * 3);
             const uv = new Float32Array(layerInstance.autoLayerTiles.length * 6 * 2);
-            const uvOffset = 0.125;
-            const positionOffset = 0.5;
             const gridSize = layerInstance.__gridSize;
+            const w = texture.width;
+            const h = texture.height;
             for (let index = 0; index < layerInstance.autoLayerTiles.length; index++) {
                 const tileInstance = layerInstance.autoLayerTiles[index];
-                position[index * 3 * 6 + 0 + 3 * 0] = tileInstance.px[0] - positionOffset;
-                position[index * 3 * 6 + 1 + 3 * 0] = (tileInstance.px[1] - positionOffset);
+                position[index * 3 * 6 + 0 + 3 * 0] = tileInstance.px[0];
+                position[index * 3 * 6 + 1 + 3 * 0] = (tileInstance.px[1]);
                 position[index * 3 * 6 + 2 + 3 * 0] = 0;
-                position[index * 3 * 6 + 0 + 3 * 1] = tileInstance.px[0] + positionOffset + gridSize;
-                position[index * 3 * 6 + 1 + 3 * 1] = (tileInstance.px[1] - positionOffset);
+                position[index * 3 * 6 + 0 + 3 * 1] = tileInstance.px[0] + gridSize;
+                position[index * 3 * 6 + 1 + 3 * 1] = (tileInstance.px[1]);
                 position[index * 3 * 6 + 2 + 3 * 1] = 0;
-                position[index * 3 * 6 + 0 + 3 * 2] = tileInstance.px[0] + positionOffset + gridSize;
-                position[index * 3 * 6 + 1 + 3 * 2] = (tileInstance.px[1] + positionOffset + gridSize);
+                position[index * 3 * 6 + 0 + 3 * 2] = tileInstance.px[0] + gridSize;
+                position[index * 3 * 6 + 1 + 3 * 2] = (tileInstance.px[1] + gridSize);
                 position[index * 3 * 6 + 2 + 3 * 2] = 0;
-                position[index * 3 * 6 + 0 + 3 * 3] = tileInstance.px[0] + positionOffset + gridSize;
-                position[index * 3 * 6 + 1 + 3 * 3] = (tileInstance.px[1] + positionOffset + gridSize);
+                position[index * 3 * 6 + 0 + 3 * 3] = tileInstance.px[0] + gridSize;
+                position[index * 3 * 6 + 1 + 3 * 3] = (tileInstance.px[1] + gridSize);
                 position[index * 3 * 6 + 2 + 3 * 3] = 0;
-                position[index * 3 * 6 + 0 + 3 * 4] = tileInstance.px[0] - positionOffset;
-                position[index * 3 * 6 + 1 + 3 * 4] = (tileInstance.px[1] + positionOffset + gridSize);
+                position[index * 3 * 6 + 0 + 3 * 4] = tileInstance.px[0];
+                position[index * 3 * 6 + 1 + 3 * 4] = (tileInstance.px[1] + gridSize);
                 position[index * 3 * 6 + 2 + 3 * 4] = 0;
-                position[index * 3 * 6 + 0 + 3 * 5] = tileInstance.px[0] - positionOffset;
-                position[index * 3 * 6 + 1 + 3 * 5] = (tileInstance.px[1] - positionOffset);
+                position[index * 3 * 6 + 0 + 3 * 5] = tileInstance.px[0];
+                position[index * 3 * 6 + 1 + 3 * 5] = (tileInstance.px[1]);
                 position[index * 3 * 6 + 2 + 3 * 5] = 0;
                 const ux = tileInstance.src[0];
                 const uy = tileInstance.src[1];
-                const w = texture.width;
-                const h = texture.height;
                 if (tileInstance.f === 0b00) {
-                    uv[index * 2 * 6 + 0 + 2 * 0] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - (uy + uvOffset) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 1] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - (uy + uvOffset) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 2] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy - uvOffset + gridSize) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 3] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy - uvOffset + gridSize) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 4] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy - uvOffset + gridSize) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 5] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - (uy + uvOffset) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 0] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 1] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 2] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 3] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 4] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 5] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - (uy) / h;
                 } else if (tileInstance.f === 0b01) {
                     // flip x
-                    uv[index * 2 * 6 + 0 + 2 * 0] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - (uy + uvOffset) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 1] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - (uy + uvOffset) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 2] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy - uvOffset + gridSize) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 3] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy - uvOffset + gridSize) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 4] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy - uvOffset + gridSize) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 5] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - (uy + uvOffset) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 0] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 1] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 2] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 3] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 4] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 5] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - (uy) / h;
                 } else if (tileInstance.f === 0b10) {
                     // flip y
-                    uv[index * 2 * 6 + 0 + 2 * 0] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - (uy - uvOffset + gridSize) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 1] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - (uy - uvOffset + gridSize) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 2] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy + uvOffset) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 3] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy + uvOffset) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 4] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy + uvOffset) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 5] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - (uy - uvOffset + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 0] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - (uy + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 1] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - (uy + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 2] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 3] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 4] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 5] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - (uy + gridSize) / h;
                 } else if (tileInstance.f === 0b11) {
                     // flip xy
-                    uv[index * 2 * 6 + 0 + 2 * 0] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - (uy - uvOffset + gridSize) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 1] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - (uy - uvOffset + gridSize) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 2] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy + uvOffset) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 3] = (ux + uvOffset) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy + uvOffset) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 4] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy + uvOffset) / h;
-                    uv[index * 2 * 6 + 0 + 2 * 5] = (ux - uvOffset + gridSize) / w;
-                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - (uy - uvOffset + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 0] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 0] = 1 - (uy + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 1] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 1] = 1 - (uy + gridSize) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 2] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 2] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 3] = (ux) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 3] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 4] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 4] = 1 - (uy) / h;
+                    uv[index * 2 * 6 + 0 + 2 * 5] = (ux + gridSize) / w;
+                    uv[index * 2 * 6 + 1 + 2 * 5] = 1 - (uy + gridSize) / h;
                 } else {
                     throw new Error("unsupport filp param: " + tileInstance.f)
                 }
@@ -132,14 +130,17 @@ export default class LDtkLevel implements Level {
             const gl = this.gl;
             const spriteVertex = this.spriteVertex;
             const spriteFragment = this.spriteFragment;
+            //MAGIC!!! this 0.5 offset make REAL PIXEL PERFECT
             const camera = new Camera(gl, {
-                left: 0,
+                left: -0.5,
                 right: renderTarget.width,
                 top: renderTarget.height,
-                bottom: 0,
+                bottom: 0.5,
                 near: 0,
                 far: -1
             })
+            console.log(renderTarget.width, renderTarget.height)
+
             const scene = new Mesh(gl, {
                 geometry: new Geometry(gl, {
                     position: {
@@ -155,7 +156,7 @@ export default class LDtkLevel implements Level {
                     vertex: spriteVertex,
                     fragment: spriteFragment,
                     uniforms: {
-                        tMap: { value: texture },
+                        tMap: { value: texture }
                     },
                     transparent: true
                 })
@@ -291,7 +292,7 @@ export default class LDtkLevel implements Level {
                         transparent: true
                     })
                 });
-                const offset = -0.5;
+                const offset = 0;
                 mesh.position.x = (level.worldX + level.pxWid / 2 + offset) * 0.25;
                 mesh.position.y = -(level.worldY + level.pxHei / 2 + offset) * 0.25;
                 mesh.rotation.x = Math.PI;
@@ -360,7 +361,7 @@ export default class LDtkLevel implements Level {
             this.radius = mesh.geometry.bounds.radius;
         }
         this.center.copy(new Vec3((max.x + min.x) / 2, (max.y + min.y) / 2, 0))
-        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(1, -30, 0)))
+        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(1, -40, 0)))
     }
     getRadius(): number {
         return this.radius;
