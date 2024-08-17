@@ -130,12 +130,12 @@ export default class LDtkLevel implements Level {
             const gl = this.gl;
             const spriteVertex = this.spriteVertex;
             const spriteFragment = this.spriteFragment;
-            //MAGIC!!! this 0.5 offset make REAL PIXEL PERFECT
+            //MAGIC!!! this 0.1 offset make REAL PIXEL PERFECT
             const camera = new Camera(gl, {
-                left: -0.5,
+                left: 0.1,
                 right: renderTarget.width,
                 top: renderTarget.height,
-                bottom: 0.5,
+                bottom: 0.1,
                 near: 0,
                 far: -1
             })
@@ -292,9 +292,8 @@ export default class LDtkLevel implements Level {
                         transparent: true
                     })
                 });
-                const offset = 0;
-                mesh.position.x = (level.worldX + level.pxWid / 2 + offset) * 0.25;
-                mesh.position.y = -(level.worldY + level.pxHei / 2 + offset) * 0.25;
+                mesh.position.x = (level.worldX + level.pxWid / 2) * 0.25;
+                mesh.position.y = -(level.worldY + level.pxHei / 2) * 0.25;
                 mesh.rotation.x = Math.PI;
                 mesh.position.z = -0.99
                 mesh.scale.multiply(new Vec3(0.25, 0.25, 1));
