@@ -139,7 +139,6 @@ export default class LDtkLevel implements Level {
                 near: 0,
                 far: -1
             })
-            console.log(renderTarget.width, renderTarget.height)
 
             const scene = new Mesh(gl, {
                 geometry: new Geometry(gl, {
