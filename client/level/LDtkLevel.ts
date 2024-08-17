@@ -217,62 +217,71 @@ export default class LDtkLevel implements Level {
         if (!levels) {
             throw new Error("levels is undefined");
         }
+        const scalePosition = 0.25;
+        const scaleGrid = 4;
         const min = new Vec3();
         const max = new Vec3();
         for (let levelIndex = 0; levelIndex < levels.length; levelIndex++) {
             const level = levels[levelIndex];
             const layerInstances = level.layerInstances || [];
-            const collisions = layerInstances.find(inst => inst.__identifier === "Collisions");
-            if (!collisions) {
-                throw new Error("parsing error")
-            }
-            const rows = collisions.__cHei;
-            const cols = collisions.__cWid;
+            for (const layerInstance of layerInstances) {
+                if (layerInstance.__identifier === "Collisions") {
+                    const collisions = layerInstance;
+                    const rows = collisions.__cHei;
+                    const cols = collisions.__cWid;
 
-            const gridSize = collisions.__gridSize;
-            const contours = (getContours(ndarray(collisions.intGridCsv.map(x => x === 1 ? 1 : 0), [rows, cols]), false));
-            for (let index = 0; index < contours.length; index++) {
-                const contour = contours[index];
-                const position = contour.reduce((prev, point, index, arr) => {
-                    const p = [...point];
-                    p[0] = (p[0] + level.worldX / gridSize) * 4;
-                    p[1] = -((p[1] + level.worldY / gridSize)) * 4;
-                    const nextP = [...arr[(index + 1) % arr.length]];
-                    nextP[0] = (nextP[0] + level.worldX / gridSize) * 4;
-                    nextP[1] = -((nextP[1] + level.worldY / gridSize)) * 4;
-                    prev.push(...p, -2, ...p, 2, ...nextP, 2, ...nextP, 2, ...nextP, -2, ...p, -2);
-                    return prev;
-                }, []);
-                const mesh = new Mesh(gl, {
-                    geometry: new Geometry(gl, {
-                        position: { data: new Float32Array(position), size: 3 },
-                    }),
-                    program: new Program(gl, {
-                        vertex: this.vertex,
-                        fragment: this.fragment,
-                        uniforms: {
-                            uColor: {
-                                value: new Vec3(0.7, 0.7, 0.7)
-                            }
-                        },
-                        cullFace: false
-                    })
-                });
-                mesh.name = "test" + this.counter++;
-                mesh.setParent(scene);
-                mesh.geometry.computeBoundingBox();
-                mesh.geometry.computeBoundingSphere();
-                const meshMin = mesh.geometry.bounds.min;
-                const meshMax = mesh.geometry.bounds.max;
-                min.x = Math.min(meshMin.x, min.x);
-                min.y = Math.min(meshMin.y, min.y);
-                min.z = Math.min(meshMin.z, min.z);
-                max.x = Math.max(meshMax.x, max.x);
-                max.y = Math.max(meshMax.y, max.y);
-                max.z = Math.max(meshMax.z, max.z);
-                const attributeData = mesh.geometry.getPosition().data;
-                const indices = mesh.geometry.attributes.index?.data;
-                this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
+                    const gridSize = collisions.__gridSize;
+                    const contours = (getContours(ndarray(collisions.intGridCsv.map(x => x === 1 ? 1 : 0), [rows, cols]), false));
+                    for (let index = 0; index < contours.length; index++) {
+                        const contour = contours[index];
+                        const position = contour.reduce((prev, point, index, arr) => {
+                            const p = [...point];
+                            p[0] = (p[0] + level.worldX / gridSize) * scaleGrid;
+                            p[1] = -((p[1] + level.worldY / gridSize)) * scaleGrid;
+                            const nextP = [...arr[(index + 1) % arr.length]];
+                            nextP[0] = (nextP[0] + level.worldX / gridSize) * scaleGrid;
+                            nextP[1] = -((nextP[1] + level.worldY / gridSize)) * scaleGrid;
+                            prev.push(...p, -2, ...p, 2, ...nextP, 2, ...nextP, 2, ...nextP, -2, ...p, -2);
+                            return prev;
+                        }, []);
+                        const mesh = new Mesh(gl, {
+                            geometry: new Geometry(gl, {
+                                position: { data: new Float32Array(position), size: 3 },
+                            }),
+                            program: new Program(gl, {
+                                vertex: this.vertex,
+                                fragment: this.fragment,
+                                uniforms: {
+                                    uColor: {
+                                        value: new Vec3(0.7, 0.7, 0.7)
+                                    }
+                                },
+                                cullFace: false
+                            })
+                        });
+                        mesh.name = "test" + this.counter++;
+                        mesh.setParent(scene);
+                        mesh.geometry.computeBoundingBox();
+                        mesh.geometry.computeBoundingSphere();
+                        const meshMin = mesh.geometry.bounds.min;
+                        const meshMax = mesh.geometry.bounds.max;
+                        min.x = Math.min(meshMin.x, min.x);
+                        min.y = Math.min(meshMin.y, min.y);
+                        min.z = Math.min(meshMin.z, min.z);
+                        max.x = Math.max(meshMax.x, max.x);
+                        max.y = Math.max(meshMax.y, max.y);
+                        max.z = Math.max(meshMax.z, max.z);
+                        const attributeData = mesh.geometry.getPosition().data;
+                        const indices = mesh.geometry.attributes.index?.data;
+                        this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
+                    }
+                } else if (layerInstance.entityInstances.some(entInst => entInst.__identifier === "Player")) {
+                    const player = layerInstance.entityInstances.find(entInst => entInst.__identifier === "Player");
+                    if (player) {
+                        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(player.px[0] * scalePosition, -(player.px[1] - player.height) * scalePosition, 0)))
+                    }
+                }
+
             }
             const renderTarget = this.renderTargets[levelIndex];
             if (renderTarget) {
@@ -291,11 +300,11 @@ export default class LDtkLevel implements Level {
                         transparent: true
                     })
                 });
-                mesh.position.x = (level.worldX + level.pxWid / 2) * 0.25;
-                mesh.position.y = -(level.worldY + level.pxHei / 2) * 0.25;
+                mesh.position.x = (level.worldX + level.pxWid / 2) * scalePosition;
+                mesh.position.y = -(level.worldY + level.pxHei / 2) * scalePosition;
                 mesh.rotation.x = Math.PI;
                 mesh.position.z = -0.99
-                mesh.scale.multiply(new Vec3(0.25, 0.25, 1));
+                mesh.scale.multiply(new Vec3(scalePosition, scalePosition, 1));
                 mesh.setParent(scene);
             }
         }
@@ -359,7 +368,6 @@ export default class LDtkLevel implements Level {
             this.radius = mesh.geometry.bounds.radius;
         }
         this.center.copy(new Vec3((max.x + min.x) / 2, (max.y + min.y) / 2, 0))
-        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(1, -40, 0)))
     }
     getRadius(): number {
         return this.radius;
