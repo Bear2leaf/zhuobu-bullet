@@ -21,6 +21,9 @@ export type MainMessage = {
     type: "addBall",
     data: { transform: number[] }
 } | {
+    type: "updateVelocity",
+    data: { x: number, y: number, z: number, name: string }
+} | {
     type: "resetWorld",
 } | {
     type: "release",

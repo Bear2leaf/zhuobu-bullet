@@ -37,7 +37,7 @@ async function start(device: Device) {
         } else if (message.type === "update") {
             stage.updateBody(message);
         } else if (message.type === "collision") {
-            console.log(...message.data)
+            stage.handleCollision(message.data);
         }
     };
     stage.onpause = () => device.sendmessage({
@@ -50,6 +50,17 @@ async function start(device: Device) {
         type: "addMesh",
         data: { vertices: [...vertices], indices: [...indices], propertities, name, transform }
     })
+    stage.onupdatevelocity = (name, x, y, z) => {
+        device.sendmessage({
+            type: "updateVelocity",
+            data: {
+                name,
+                x,
+                y,
+                z
+            }
+        })
+    }
     stage.onaddball = (transform) => device.sendmessage({
         type: "addBall",
         data: { transform }

@@ -20,7 +20,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     }
     handler.postMessage({ type: "ready" });
     const DISABLE_DEACTIVATION = 4;
-    const CF_KINEMATIC_OBJECT = 2;
     // Bullet-interfacing code
 
     const collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
@@ -176,12 +175,24 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             pause = false;
         } else if (message.type === "pause") {
             pause = true;
+        } else if (message.type === "updateVelocity") {
+            updateVelocity(message.data)
         }
+    }
+    function updateVelocity({ name, x, y, z }: (MainMessage & { type: "updateVelocity" })["data"]) {
+        const body = bodies.find(body => Ammo.castObject(body.getUserPointer(), UserData).name === name);
+        if (body === undefined) {
+            throw new Error("body not found");
+        }
+        tempVec.setValue(x, y, z);
+        body.setLinearVelocity(tempVec);
+        body.setAngularVelocity(tempVec);
+
     }
     handler.onmessage = function (message) {
         messageHandler(message);
     }
-    function checkDestination() {
+    function checkCollision() {
 
         const collisionNum = dispatcher.getNumManifolds();
         for (let index = 0; index < collisionNum; index++) {
@@ -226,7 +237,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             return;
         }
         dt = dt || 1;
-        dynamicsWorld.stepSimulation(dt, CF_KINEMATIC_OBJECT);
+        dynamicsWorld.stepSimulation(dt, 2);
 
 
         {
@@ -275,7 +286,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
         }
         handler.postMessage(result);
-        checkDestination()
+        checkCollision()
     }
     frame = 1;
     meanDt = meanDt2 = 0;

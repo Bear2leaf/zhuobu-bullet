@@ -19,9 +19,10 @@ export default class Stage {
     private readonly sceneRotation = new Vec3();
     private readonly sceneEuler = new Euler();
     private readonly sceneQuat = new Quat();
+    private readonly gravityScale = 100;
     // private readonly controls: Orbit;
     private readonly tempPosition = new Vec3();
-    private readonly acc = new Vec3(0, -10, 0);
+    private readonly acc = new Vec3(0, -this.gravityScale, 0);
     readonly availableLevels: Set<number> = new Set();
     readonly gravity = new Vec3;
     private readonly center = new Vec3();
@@ -37,6 +38,7 @@ export default class Stage {
     private isContinue: boolean = false;
     private continueButtonResolve?: (value: unknown) => void;
     onclick?: (tag?: string) => void;
+    onupdatevelocity?: (name: string, x: number, y: number, z: number) => void;
     ontoggleaudio?: VoidFunction;
     onpause?: VoidFunction;
     onrelease?: VoidFunction;
@@ -105,6 +107,11 @@ export default class Stage {
         this.scale = (this.scale + 1) % 2;
         this.scaleT = 0;
         this.updateSwitch("zoom", !this.scale)
+    }
+    handleCollision(data: [string, string]) {
+        if (data[0] === "Ball") {
+            this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 0, 0);
+        }
     }
     start() {
         this.ui.init();
@@ -208,7 +215,7 @@ export default class Stage {
         this.matrix.fromArray(camera.viewMatrix.multiply(this.scene.worldMatrix));
         this.matrix.getRotation(this.quat);
 
-        this.gravity.copy(this.acc).applyQuaternion(this.quat.inverse()).normalize().scale(10);
+        this.gravity.copy(this.acc).applyQuaternion(this.quat.inverse()).normalize().scale(this.gravityScale);
     }
     addBody(message: WorkerMessage & { type: "addBody" }) {
         const gl = this.renderer.gl;
@@ -224,7 +231,8 @@ export default class Stage {
                     fragment,
                     uniforms: {
                         uColor: {
-                            value: new Vec3(0.7, 0.2, 0.7)                        }
+                            value: new Vec3(0.7, 0.2, 0.7)
+                        }
                     }
                 });
                 const geometry = new Sphere(gl, { radius });
