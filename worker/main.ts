@@ -2,6 +2,15 @@ import { radius } from "../client/misc/radius.js";
 import Ammo, { config, Module, handler, MainMessage, WorkerMessage } from "./ammo.worker.js"
 
 
+enum CollisionFlags {
+    CF_STATIC_OBJECT = 1,
+    CF_KINEMATIC_OBJECT = 2,
+    CF_NO_CONTACT_RESPONSE = 4,
+    CF_CUSTOM_MATERIAL_CALLBACK = 8,//this allows per-triangle material (friction/restitution)
+    CF_CHARACTER_OBJECT = 16,
+    CF_DISABLE_VISUALIZE_OBJECT = 32, //disable debug drawing
+    CF_DISABLE_SPU_COLLISION_PROCESSING = 64//disable parallel/SPU processing
+};
 
 
 Ammo.bind(Module)(config).then(function (Ammo) {
@@ -153,7 +162,10 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, shape, localInertia);
             const body = new Ammo.btRigidBody(rbInfo);
             if (v.propertities?.dynamic) {
-                body.setCollisionFlags(body.getCollisionFlags() | 2)
+                body.setCollisionFlags(body.getCollisionFlags() | CollisionFlags.CF_KINEMATIC_OBJECT)
+            }
+            if (v.propertities?.entity) {
+                body.setCollisionFlags(body.getCollisionFlags() | CollisionFlags.CF_NO_CONTACT_RESPONSE)
             }
             body.setUserPointer(v)
             dynamicsWorld.addRigidBody(body);
@@ -179,7 +191,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const body1 = mainfold.getBody1();
             const data0 = Ammo.castObject(body0.getUserPointer(), UserData);
             const data1 = Ammo.castObject(body1.getUserPointer(), UserData);
-            if (!(data0.name?.startsWith("test") || data1.name?.startsWith("test"))) {
+            if (data0.propertities?.entity || data1.propertities?.entity) {
                 handler.postMessage({
                     type: "collision",
                     data: [data0.name || "", data1.name || ""]

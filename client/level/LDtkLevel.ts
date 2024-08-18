@@ -31,6 +31,8 @@ export default class LDtkLevel implements Level {
     drawLayer(identifer: string) {
 
         const texture = this.textures[0];
+        const w = texture.width;
+        const h = texture.height;
         const levels = this.ldtkData?.levels.filter(level => !level.worldDepth);
         if (!levels) {
             throw new Error("levels is undefined")
@@ -45,8 +47,6 @@ export default class LDtkLevel implements Level {
             const position = new Float32Array(layerInstance.autoLayerTiles.length * 6 * 3);
             const uv = new Float32Array(layerInstance.autoLayerTiles.length * 6 * 2);
             const gridSize = layerInstance.__gridSize;
-            const w = texture.width;
-            const h = texture.height;
             for (let index = 0; index < layerInstance.autoLayerTiles.length; index++) {
                 const tileInstance = layerInstance.autoLayerTiles[index];
                 position[index * 3 * 6 + 0 + 3 * 0] = tileInstance.px[0];
@@ -194,6 +194,21 @@ export default class LDtkLevel implements Level {
                     };
                     image.src = `resources/ldtk/${tileset.relPath}`;
                 })
+            } else if (tileset.identifier === "Internal_Icons") {
+                await new Promise((resoive) => {
+                    const image = new Image();
+                    image.onload = () => {
+                        this.textures.push(new Texture(gl, {
+                            image,
+                            width: image.width,
+                            height: image.height,
+                            magFilter: gl.NEAREST,
+                            minFilter: gl.NEAREST
+                        }));
+                        resoive(void (0));
+                    };
+                    image.src = `resources/ldtk/atlas/finalbossblues-icons_full_16.png`;
+                })
             }
         }
     }
@@ -282,30 +297,46 @@ export default class LDtkLevel implements Level {
                             this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)))
                         } else if (entityInst.__identifier === "Item") {
 
+                            const tile = entityInst.__tile;
+                            if (!tile) {
+                                throw new Error("tile is undefined");
+                            }
+                            const texture = this.textures[1];
+                            const w = texture.width;
+                            const h = texture.height;
                             const mesh = new Mesh(gl, {
                                 geometry: new Plane(gl, {
                                     width: entityInst.width,
                                     height: entityInst.height,
                                 }),
                                 program: new Program(gl, {
-                                    vertex: this.vertex,
-                                    fragment: this.fragment,
+                                    vertex: this.spriteVertex,
+                                    fragment: this.spriteFragment,
                                     uniforms: {
-                                        uColor: {
-                                            value: new Vec3(1, 1, 1)
-                                        }
-                                    }
+                                        tMap: { value: texture }
+                                    },
+                                    frontFace: gl.CW,
+                                    transparent: true
                                 })
                             });
-                            mesh.name = "item" + this.counter++;
+                            const uvAttr = mesh.geometry.attributes.uv;
+                            uvAttr.data = new Float32Array([
+                                (tile.x) / w, 1 - (tile.y + tile.h) / h,
+                                (tile.x + tile.w) / w, 1 - (tile.y + tile.h) / h,
+                                (tile.x) / w, 1 - (tile.y) / h,
+                                (tile.x + tile.w) / w, 1 - (tile.y) / h,
+                            ])
+                            mesh.geometry.updateAttribute(uvAttr);
+                            mesh.name = "test" + this.counter++;
                             mesh.setParent(scene)
                             mesh.position.x = entityWorldX;
                             mesh.position.y = entityWorldY;
-                            mesh.position.z = -radius;
+                            mesh.position.z = -radius + 0.01;
+                            mesh.rotation.x = Math.PI;
                             mesh.updateMatrix();
                             const attributeData = mesh.geometry.getPosition().data;
                             const indices = mesh.geometry.attributes.index?.data;
-                            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
+                            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], { entity: true })
                         }
                     }
                 }

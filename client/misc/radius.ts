@@ -1,2 +1,2 @@
 
-export const radius = 4;
+export const radius = 8;

@@ -224,8 +224,7 @@ export default class Stage {
                     fragment,
                     uniforms: {
                         uColor: {
-                            value: new Vec3(0.7, 0.2, 0.7)
-                        }
+                            value: new Vec3(0.7, 0.2, 0.7)                        }
                     }
                 });
                 const geometry = new Sphere(gl, { radius });
