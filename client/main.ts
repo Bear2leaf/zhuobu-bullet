@@ -50,6 +50,12 @@ async function start(device: Device) {
         type: "addMesh",
         data: { vertices: [...vertices], indices: [...indices], propertities, name, transform }
     })
+    stage.onremovemesh = (name) => {
+        device.sendmessage({
+            type: "removeMesh",
+            data: name
+        })
+    }
     stage.onupdatevelocity = (name, x, y, z) => {
         device.sendmessage({
             type: "updateVelocity",

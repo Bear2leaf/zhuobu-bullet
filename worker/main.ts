@@ -177,6 +177,12 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             pause = true;
         } else if (message.type === "updateVelocity") {
             updateVelocity(message.data)
+        } else if (message.type === "removeMesh") {
+            const body = bodies.find(body => Ammo.castObject(body.getUserPointer(), UserData).name === message.data)
+            if (body) {
+                bodies.splice(bodies.indexOf(body), 1);
+                dynamicsWorld.removeRigidBody(body);
+            }
         }
     }
     function updateVelocity({ name, x, y, z }: (MainMessage & { type: "updateVelocity" })["data"]) {
@@ -205,7 +211,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             if (data0.propertities?.entity || data1.propertities?.entity) {
                 handler.postMessage({
                     type: "collision",
-                    data: [data0.name || "", data1.name || ""]
+                    data: [data0.name || "", data1.name || "", true]
                 });
             }
         }

@@ -43,6 +43,7 @@ export default class Stage {
     onpause?: VoidFunction;
     onrelease?: VoidFunction;
     onresetworld?: VoidFunction;
+    onremovemesh?: (name: string) => void;
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
 
@@ -86,31 +87,11 @@ export default class Stage {
         await this.ui.load();
         await this.level.load();
     }
-    private rollCamera(tag: "right" | "left" | "up" | "down") {
-        const rotation = this.rotation;
-        if (!this.level.isMazeMode()) {
-            const key = `${rotation.x}${rotation.y}${rotation.z}`;
-            table[key](tag, rotation);
-            this.sceneRotation.set(rotation.x * Math.PI / 2, rotation.y * Math.PI / 2, rotation.z * Math.PI / 2);
-        } else {
-            if (tag === "left") {
-                rotation.z += 1;
-                this.sceneRotation.z = rotation.z * Math.PI / 2;
-            } else if (tag === "right") {
-                rotation.z -= 1;
-                this.sceneRotation.z = rotation.z * Math.PI / 2;
-            }
-        }
-        this.t = 0;
-    }
-    private updateZoom() {
-        this.scale = (this.scale + 1) % 2;
-        this.scaleT = 0;
-        this.updateSwitch("zoom", !this.scale)
-    }
-    handleCollision(data: [string, string]) {
-        if (data[0] === "Ball") {
+    handleCollision(data: [string, string, boolean]) {
+        if (data[0] === "Ball" && data[2]) {
+            console.log("collision: ", ...data)
             this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 0, 0);
+            this.removeBody(data[1])
         }
     }
     start() {
@@ -152,18 +133,17 @@ export default class Stage {
     setInitLevel(level: number) {
         this.level.setIndex(level);
     }
-    removeBody(name: string | undefined) {
+    removeBody(name: string) {
         const scene = this.scene;
         let child: Transform | undefined;
         if (name === "Ball") {
             child = scene.children.find(child => child.visible && (child instanceof Mesh))
+            child && (child.visible = false);
         } else {
-            child = scene.children.find(child => child.visible && !(child instanceof Mesh))?.children[this.level.getIndex()].children.find(child => child.name === name);
+            child = scene.children.find(child => child.name === name);
+            child && scene.removeChild(child);
+            this.onremovemesh && this.onremovemesh(name);
         }
-        if (!child) {
-            throw new Error("child is undefined");
-        }
-        child.visible = false;
     }
 
     updateBody(message: WorkerMessage & { type: "update" }) {
@@ -341,6 +321,28 @@ export default class Stage {
             throw new Error("undefined char: " + errorCharset);
 
         }
+    }
+    private rollCamera(tag: "right" | "left" | "up" | "down") {
+        const rotation = this.rotation;
+        if (!this.level.isMazeMode()) {
+            const key = `${rotation.x}${rotation.y}${rotation.z}`;
+            table[key](tag, rotation);
+            this.sceneRotation.set(rotation.x * Math.PI / 2, rotation.y * Math.PI / 2, rotation.z * Math.PI / 2);
+        } else {
+            if (tag === "left") {
+                rotation.z += 1;
+                this.sceneRotation.z = rotation.z * Math.PI / 2;
+            } else if (tag === "right") {
+                rotation.z -= 1;
+                this.sceneRotation.z = rotation.z * Math.PI / 2;
+            }
+        }
+        this.t = 0;
+    }
+    private updateZoom() {
+        this.scale = (this.scale + 1) % 2;
+        this.scaleT = 0;
+        this.updateSwitch("zoom", !this.scale)
     }
 
 }

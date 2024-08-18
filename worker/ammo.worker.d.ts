@@ -18,6 +18,9 @@ export type MainMessage = {
     type: "addMesh",
     data: { vertices: number[], indices: number[], propertities?: Record<string, boolean>, name: string | undefined, transform: number[] }
 } | {
+    type: "removeMesh",
+    data: string
+} | {
     type: "addBall",
     data: { transform: number[] }
 } | {
@@ -42,10 +45,10 @@ export type WorkerMessage = {
     type: "requestLevel",
 } | {
     type: "removeBody",
-    data: string | undefined
+    data: string
 } | {
     type: "collision",
-    data: [string, string]
+    data: [string, string, boolean]
 }
 
 
