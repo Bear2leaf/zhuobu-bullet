@@ -14,6 +14,7 @@ export default class LDtkLevel implements Level {
     private ldtkData?: LDtk;
     private radius = 0;
     private counter = 0;
+    private readonly internalIconName = "finalbossblues-icons_full_16";
     private readonly center = new Vec3();
     private readonly textures: Texture[] = [];
     private readonly renderTargets: RenderTarget[] = []
@@ -207,7 +208,7 @@ export default class LDtkLevel implements Level {
                         }));
                         resoive(void (0));
                     };
-                    image.src = `resources/ldtk/atlas/finalbossblues-icons_full_16.png`;
+                    image.src = `resources/ldtk/atlas/${this.internalIconName}.png`;
                 })
             }
         }
@@ -295,13 +296,16 @@ export default class LDtkLevel implements Level {
                         const entityWorldY = -(entityInst.__worldY || 0) - entityInst.height * (0.5 - entityInst.__pivot[1]);
                         if (entityInst.__identifier === "Player") {
                             this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)))
-                        } else if (entityInst.__identifier === "Item") {
-
+                        } else if (entityInst.__identifier === "Exit") {
                             const tile = entityInst.__tile;
                             if (!tile) {
                                 throw new Error("tile is undefined");
                             }
-                            const texture = this.textures[1];
+                            const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.indexOf(this.internalIconName) !== -1)
+
+                            if (!texture) {
+                                throw new Error("texture is undefined");
+                            }
                             const w = texture.width;
                             const h = texture.height;
                             const mesh = new Mesh(gl, {
