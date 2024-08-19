@@ -83,7 +83,6 @@ async function start(device: Device) {
     await stage.load();
     await audio.load();
     device.createWorker("dist/worker/main.js");
-    stage.setInitLevel(parseInt(device.getParam("level")) || 0);
     function update(t: number) {
         requestAnimationFrame((t) => update(t));
         delta = (t - last) / 1000;

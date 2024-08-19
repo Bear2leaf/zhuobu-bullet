@@ -32,7 +32,6 @@ export default class Stage {
     private t = 0;
     private scaleT = 0;
     private scale = 0;
-    private reverse = false;
     private pause = true;
     private freezeUI = false;
     private isContinue: boolean = false;
@@ -91,7 +90,8 @@ export default class Stage {
         if (data[0] === "Ball" && data[2]) {
             console.log("collision: ", ...data)
             this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 0, 0);
-            this.removeBody(data[1])
+            this.level.updateLevel(false);
+            this.onresetworld && this.onresetworld();
         }
     }
     start() {
@@ -111,10 +111,11 @@ export default class Stage {
                 this.updateZoom();
             } else if (tag === "next") {
                 this.isContinue = false;
+                this.level.updateLevel(false);
                 this.onresetworld && this.onresetworld();
             } else if (tag === "prev") {
                 this.isContinue = false;
-                this.reverse = true;
+                this.level.updateLevel(true);
                 this.onresetworld && this.onresetworld();
             } else if (tag === "audio") {
                 this.ontoggleaudio && this.ontoggleaudio()
@@ -130,19 +131,12 @@ export default class Stage {
 
     }
 
-    setInitLevel(level: number) {
-        this.level.setIndex(level);
-    }
     removeBody(name: string) {
         const scene = this.scene;
         let child: Transform | undefined;
         if (name === "Ball") {
             child = scene.children.find(child => child.visible && (child instanceof Mesh))
             child && (child.visible = false);
-        } else {
-            child = scene.children.find(child => child.name === name);
-            child && scene.removeChild(child);
-            this.onremovemesh && this.onremovemesh(name);
         }
     }
 
@@ -152,14 +146,15 @@ export default class Stage {
         for (let index = 0; index < message.objects.length; index++) {
             let child: Transform | undefined;
             const name = message.objects[index][7];
-
             child = scene.children.find(child => child.name === name);
-            if (!child) {
-                throw new Error("child is undefined");
+            if (child === undefined) {
+                child = scene.children[this.level.getIndex() + 1].children.find(child => child.name === name);
             }
-            const phyObject = message.objects[index];
-            child.position.fromArray(phyObject.slice(0, 3) as number[])
-            child.quaternion.fromArray(phyObject.slice(3, 7) as number[])
+            if (child) {
+                const phyObject = message.objects[index];
+                child.position.fromArray(phyObject.slice(0, 3) as number[])
+                child.quaternion.fromArray(phyObject.slice(3, 7) as number[])
+            }
         }
     }
     updateSwitch(name: string, value: boolean) {
@@ -222,6 +217,7 @@ export default class Stage {
                 });
                 mesh.setParent(scene);
                 mesh.name = "Ball"
+                this.level.init(this.scene);
             }
         } else {
             const child = this.scene.children.find(child => child instanceof Mesh);
@@ -270,23 +266,21 @@ export default class Stage {
             this.freezeUI = true;
             await this.waitContinueButton();
         }
-        this.level.request(this.scene, this.reverse);
+        this.level.request(this.scene);
         if (this.level.getIndex() === 0) {
             this.updateButton("help", true);
         }
         if (this.isContinue) {
             this.availableLevels.add(this.level.getIndex());
         }
-        this.reverse = false;
         this.rotation.fill(0)
         this.sceneRotation.fill(0);
         const root = this.scene.children.find(node => !(node instanceof Mesh));
         if (root) {
-            const child = root.children.find(child => child.visible)
-            if (!child?.name) {
-                throw new Error("level name is empty");
+            if (!root.name) {
+                throw new Error("Level name is undefined");
             }
-            this.ui.updateLevel(child.name)
+            this.ui.updateLevel(root.name)
         }
         this.updateSwitch("pause", true);
         this.checkCharset();

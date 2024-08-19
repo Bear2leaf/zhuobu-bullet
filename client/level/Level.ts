@@ -7,7 +7,8 @@ export default interface Level {
     onaddball?: (transform: number[]) => void;
     getIndex(): number;
     load(): Promise<void>
-    setIndex(level: number): void
-    request(scene: Transform, reverse: boolean): void
+    updateLevel(reverse: boolean): void
+    init(scene: Transform): void
+    request(scene: Transform): void
     getCenter(): Vec3;
 }

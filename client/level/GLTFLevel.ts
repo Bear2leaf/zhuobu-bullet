@@ -39,8 +39,11 @@ export default class GLTFLevel implements Level {
             this.collections.push(gltf.scene[0].children[index]);
         }
     }
-    setIndex(level: number) {
-        this.current = level;
+    updateLevel() {
+        this.current++;
+    }
+    init(scene: Transform): void {
+        
     }
     request(scene: Transform, reverse = false) {
         this.collections.forEach((collection) => collection.visible = false);

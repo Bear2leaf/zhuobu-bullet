@@ -14,16 +14,19 @@ export default class LDtkLevel implements Level {
     private ldtkData?: LDtk;
     private radius = 0;
     private counter = 0;
+    private current = 0;
     private readonly internalIconName = "finalbossblues-icons_full_16";
     private readonly center = new Vec3();
     private readonly textures: Texture[] = [];
-    private readonly renderTargets: RenderTarget[] = []
+    private readonly renderTargets: RenderTarget[] = [];
+    private readonly collections: Transform[] = [];
+    private readonly entityIdSet = new Set<string | undefined>();
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
     constructor(private readonly gl: OGLRenderingContext) {
     }
     getIndex() {
-        return 0;
+        return this.current;
     }
     getCenter(): Vec3 {
         return this.center;
@@ -31,10 +34,7 @@ export default class LDtkLevel implements Level {
 
     drawLayer(identifer: string) {
 
-        const texture = this.textures[0];
-        const w = texture.width;
-        const h = texture.height;
-        const levels = this.ldtkData?.levels.filter(level => !level.worldDepth);
+        const levels = this.ldtkData?.levels;
         if (!levels) {
             throw new Error("levels is undefined")
         }
@@ -44,6 +44,12 @@ export default class LDtkLevel implements Level {
             if (!layerInstance) {
                 throw new Error("parsing error")
             }
+            const texture = this.textures.find(texture => layerInstance.__tilesetRelPath && (texture.image as HTMLImageElement).src.endsWith(layerInstance.__tilesetRelPath));
+            if (!texture) {
+                throw new Error("texture is undefined")
+            }
+            const w = texture.width;
+            const h = texture.height;
             const renderTarget = this.renderTargets[index];
             const position = new Float32Array(layerInstance.autoLayerTiles.length * 6 * 3);
             const uv = new Float32Array(layerInstance.autoLayerTiles.length * 6 * 2);
@@ -213,15 +219,22 @@ export default class LDtkLevel implements Level {
             }
         }
     }
-    setIndex(level: number) {
+    updateLevel(reverse: boolean) {
+        if (reverse) {
+            this.current = this.current === 0 ? (this.collections.length - 1) : (this.current - 1)
+        } else {
+            this.current = (this.current + 1) % this.collections.length;
+        }
     }
-    request(scene: Transform, reverse = false) {
+    init(scene: Transform) {
+
         const gl = this.gl;
-        const levels = this.ldtkData?.levels.filter(level => !level.worldDepth);
+        const levels = this.ldtkData?.levels;
         if (!levels) {
             throw new Error("levels is undefined");
         }
-        for (const level of levels) {
+        for (let levelIndex = 0; levelIndex < levels.length; levelIndex++) {
+            const level = levels[levelIndex];
             const renderTarget = new RenderTarget(gl, {
                 width: level.pxWid,
                 height: level.pxHei,
@@ -233,10 +246,12 @@ export default class LDtkLevel implements Level {
         }
         this.drawLayer("Background");
         this.drawLayer("Collisions");
-        const min = new Vec3();
-        const max = new Vec3();
         for (let levelIndex = 0; levelIndex < levels.length; levelIndex++) {
             const level = levels[levelIndex];
+            const levelNode = new Transform();
+            levelNode.name = level.identifier;
+            levelNode.setParent(scene);
+            this.collections.push(levelNode);
             const layerInstances = level.layerInstances || [];
             for (const layerInstance of layerInstances) {
                 if (layerInstance.__identifier === "Collisions") {
@@ -275,28 +290,15 @@ export default class LDtkLevel implements Level {
                             })
                         });
                         mesh.name = "test" + this.counter++;
-                        mesh.setParent(scene);
+                        mesh.setParent(levelNode);
                         mesh.geometry.computeBoundingBox();
                         mesh.geometry.computeBoundingSphere();
-                        const meshMin = mesh.geometry.bounds.min;
-                        const meshMax = mesh.geometry.bounds.max;
-                        min.x = Math.min(meshMin.x, min.x);
-                        min.y = Math.min(meshMin.y, min.y);
-                        min.z = Math.min(meshMin.z, min.z);
-                        max.x = Math.max(meshMax.x, max.x);
-                        max.y = Math.max(meshMax.y, max.y);
-                        max.z = Math.max(meshMax.z, max.z);
-                        const attributeData = mesh.geometry.getPosition().data;
-                        const indices = mesh.geometry.attributes.index?.data;
-                        this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
                     }
                 } else if (layerInstance.__identifier === "Entities") {
                     for (const entityInst of layerInstance.entityInstances) {
                         const entityWorldX = (entityInst.__worldX || 0) + entityInst.width * (0.5 - entityInst.__pivot[0]);
                         const entityWorldY = -(entityInst.__worldY || 0) - entityInst.height * (0.5 - entityInst.__pivot[1]);
-                        if (entityInst.__identifier === "Player") {
-                            this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)))
-                        } else if (entityInst.__identifier === "Exit") {
+                        if (entityInst.__identifier === "Exit") {
                             const tile = entityInst.__tile;
                             if (!tile) {
                                 throw new Error("tile is undefined");
@@ -332,105 +334,139 @@ export default class LDtkLevel implements Level {
                             ])
                             mesh.geometry.updateAttribute(uvAttr);
                             mesh.name = "test" + this.counter++;
-                            mesh.setParent(scene)
+                            mesh.setParent(levelNode)
                             mesh.position.x = entityWorldX;
                             mesh.position.y = entityWorldY;
                             mesh.position.z = -radius + 0.01;
                             mesh.rotation.x = Math.PI;
                             mesh.updateMatrix();
-                            const attributeData = mesh.geometry.getPosition().data;
-                            const indices = mesh.geometry.attributes.index?.data;
-                            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], { entity: true })
+                            mesh.geometry.computeBoundingBox();
+                            mesh.geometry.computeBoundingSphere();
+                            this.entityIdSet.add(mesh.name);
                         }
                     }
                 }
-
             }
             const renderTarget = this.renderTargets[levelIndex];
-            if (renderTarget) {
+            const mesh = new Mesh(gl, {
+                geometry: new Plane(gl, {
+                    width: renderTarget.width,
+                    height: renderTarget.height,
+                }),
+                program: new Program(gl, {
+                    vertex: this.spriteVertex,
+                    fragment: this.spriteFragment,
+                    uniforms: {
+                        tMap: { value: renderTarget.texture }
+                    },
+                    frontFace: gl.CW,
+                    transparent: true
+                })
+            });
+            mesh.name = "test" + this.counter++;
+            const offsetX = (level.worldX + level.pxWid / 2);
+            const offsetY = -(level.worldY + level.pxHei / 2)
+            mesh.position.x = offsetX;
+            mesh.position.y = offsetY;
+            mesh.rotation.x = Math.PI;
+            mesh.position.z = -radius;
+            mesh.updateMatrix()
+            mesh.setParent(levelNode);
+            mesh.geometry.computeBoundingBox();
+            mesh.geometry.computeBoundingSphere();
+            {
                 const mesh = new Mesh(gl, {
                     geometry: new Plane(gl, {
                         width: renderTarget.width,
                         height: renderTarget.height,
                     }),
                     program: new Program(gl, {
-                        vertex: this.spriteVertex,
-                        fragment: this.spriteFragment,
+                        vertex: this.vertex,
+                        fragment: this.fragment,
                         uniforms: {
-                            tMap: { value: renderTarget.texture }
-                        },
-                        frontFace: gl.CW,
-                        transparent: true
+                            uColor: {
+                                value: new Vec3(0.4, 0.4, 0.4)
+                            }
+                        }
                     })
                 });
-                mesh.position.x = (level.worldX + level.pxWid / 2);
-                mesh.position.y = -(level.worldY + level.pxHei / 2);
-                mesh.rotation.x = Math.PI;
+                mesh.name = "test" + this.counter++;
+                mesh.setParent(levelNode)
+                mesh.position.x = offsetX;
+                mesh.position.y = offsetY;
+                mesh.position.z = radius;
+                mesh.visible = false;
+                mesh.updateMatrix();
+                mesh.geometry.computeBoundingBox();
+                mesh.geometry.computeBoundingSphere();
+            }
+            {
+                const mesh = new Mesh(gl, {
+                    geometry: new Plane(gl, {
+                        width: renderTarget.width,
+                        height: renderTarget.height,
+                    }),
+                    program: new Program(gl, {
+                        vertex: this.vertex,
+                        fragment: this.fragment,
+                        uniforms: {
+                            uColor: {
+                                value: new Vec3(0.4, 0.4, 0.4)
+                            }
+                        }
+                    })
+                });
+                mesh.name = "test" + this.counter++;
+                mesh.setParent(levelNode)
+                mesh.position.x = offsetX;
+                mesh.position.y = offsetY;
                 mesh.position.z = -radius;
-                mesh.setParent(scene);
+                mesh.visible = false;
+                mesh.updateMatrix();
+                mesh.geometry.computeBoundingBox();
+                mesh.geometry.computeBoundingSphere();
             }
         }
-        {
-            const mesh = new Mesh(gl, {
-                geometry: new Plane(gl, {
-                    width: max.x - min.x,
-                    height: max.y - min.y,
-                }),
-                program: new Program(gl, {
-                    vertex: this.vertex,
-                    fragment: this.fragment,
-                    uniforms: {
-                        uColor: {
-                            value: new Vec3(0.4, 0.4, 0.4)
-                        }
+
+    }
+    request(scene: Transform) {
+        const levels = this.ldtkData?.levels;
+        if (!levels) {
+            throw new Error("levels is undefined");
+        }
+        const min = new Vec3();
+        const max = new Vec3();
+        this.radius = 0;
+        const level = levels[this.current];
+        const layerInstances = level.layerInstances || [];
+        for (const layerInstance of layerInstances) {
+            if (layerInstance.__identifier === "Entities") {
+                for (const entityInst of layerInstance.entityInstances) {
+                    const entityWorldX = (entityInst.__worldX || 0) + entityInst.width * (0.5 - entityInst.__pivot[0]);
+                    const entityWorldY = -(entityInst.__worldY || 0) - entityInst.height * (0.5 - entityInst.__pivot[1]);
+                    if (entityInst.__identifier === "Player") {
+                        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)))
                     }
-                })
-            });
-            mesh.name = "test" + this.counter++;
-            mesh.setParent(scene)
-            mesh.position.x = (max.x + min.x) / 2;
-            mesh.position.y = (max.y + min.y) / 2;
-            mesh.position.z = max.z;
-            mesh.updateMatrix();
-            mesh.geometry.computeBoundingBox();
-            mesh.geometry.computeBoundingSphere();
-            mesh.visible = false;
+                }
+            }
+        }
+        scene.children.forEach((child, index) => (index === 0 || index === (this.current + 1)) ? (child.visible = true) : (child.visible = false))
+        for (const child of scene.children[this.current + 1].children) {
+            const mesh = child as Mesh;
             const attributeData = mesh.geometry.getPosition().data;
             const indices = mesh.geometry.attributes.index?.data;
-            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
-            this.radius = mesh.geometry.bounds.radius;
+            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], { entity: this.entityIdSet.has(mesh.name) })
+            this.radius = Math.max(this.radius, mesh.geometry.bounds.radius);
+            const meshMin = mesh.geometry.bounds.min;
+            const meshMax = mesh.geometry.bounds.max;
+            min.x = Math.min(meshMin.x, min.x);
+            min.y = Math.min(meshMin.y, min.y);
+            min.z = Math.min(meshMin.z, min.z);
+            max.x = Math.max(meshMax.x, max.x);
+            max.y = Math.max(meshMax.y, max.y);
+            max.z = Math.max(meshMax.z, max.z);
         }
-        {
-            const mesh = new Mesh(gl, {
-                geometry: new Plane(gl, {
-                    width: max.x - min.x,
-                    height: max.y - min.y,
-                }),
-                program: new Program(gl, {
-                    vertex: this.vertex,
-                    fragment: this.fragment,
-                    uniforms: {
-                        uColor: {
-                            value: new Vec3(0.4, 0.4, 0.4)
-                        }
-                    }
-                })
-            });
-            mesh.name = "test" + this.counter++;
-            mesh.setParent(scene)
-            mesh.position.x = (max.x + min.x) / 2;
-            mesh.position.y = (max.y + min.y) / 2;
-            mesh.position.z = min.z;
-            mesh.visible = false;
-            mesh.updateMatrix();
-            mesh.geometry.computeBoundingBox();
-            mesh.geometry.computeBoundingSphere();
-            const attributeData = mesh.geometry.getPosition().data;
-            const indices = mesh.geometry.attributes.index?.data;
-            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], {})
-            this.radius = mesh.geometry.bounds.radius;
-        }
-        this.center.copy(new Vec3((max.x + min.x) / 2, (max.y + min.y) / 2, 0))
+        this.center.copy(new Vec3(max.x + min.x, max.y + min.y, 0));
     }
     getRadius(): number {
         return this.radius;
