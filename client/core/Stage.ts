@@ -179,13 +179,13 @@ export default class Stage {
         this.sceneEuler.set(this.sceneRotation.x, this.sceneRotation.y, this.sceneRotation.z);
         this.sceneQuat.fromEuler(this.sceneEuler);
         camera.quaternion.slerp(this.sceneQuat, this.t);
-
+        const cameraZ = this.level.getRadius() / Math.tan(camera.fov / 2.0);
         if (this.scale) {
             this.scene.children[0] && this.center.copy(this.scene.children[0].position);
-            this.center.z = radius * 100;
+            this.center.z = cameraZ;
         } else {
             this.center.copy(this.level.getCenter());
-            this.center.z = this.level.getRadius() / Math.tan(camera.fov / 2.0);
+            this.center.z = cameraZ * 2;
         }
         camera.position = this.tempPosition.lerp(this.center.sub(this.scene.position), this.scaleT);
         this.camera.orthographic({ zoom: 100 / camera.position.z })

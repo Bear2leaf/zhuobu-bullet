@@ -175,7 +175,7 @@ export default class LDtkLevel implements Level {
         this.fragment = await (await fetch("resources/glsl/level.frag.sk")).text();
         this.spriteVertex = this.spriteVertex = await (await fetch("resources/glsl/sprite.vert.sk")).text();
         this.spriteFragment = this.spriteFragment = await (await fetch("resources/glsl/sprite.frag.sk")).text();
-        const ldtkJsonText = await (await fetch("resources/ldtk/WorldMap_GridVania_layout.json")).text();
+        const ldtkJsonText = await (await fetch("resources/ldtk/starter.json")).text();
         this.ldtkData = Convert.toLDtk(ldtkJsonText);
         const gl = this.gl;
         for await (const tileset of this.ldtkData.defs.tilesets) {
@@ -245,7 +245,7 @@ export default class LDtkLevel implements Level {
 
                     const scaleGrid = layerInstance.__gridSize;
                     const gridSize = collisions.__gridSize;
-                    const contours = (getContours(ndarray(collisions.intGridCsv.map(x => x === 1 ? 1 : 0), [rows, cols]), false));
+                    const contours = (getContours(ndarray(collisions.intGridCsv.map(x => x === 0 ? 0 : 1), [rows, cols]), false));
                     for (let index = 0; index < contours.length; index++) {
                         const contour = contours[index];
                         const position = contour.reduce((prev, point, index, arr) => {
