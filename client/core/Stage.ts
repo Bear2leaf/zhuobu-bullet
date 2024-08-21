@@ -5,6 +5,7 @@ import UI from "./UI.js";
 import LDtkLevel from "../level/LDtkLevel.js";
 import Level from "../level/Level.js";
 import { radius } from "../misc/radius.js";
+import TiledLevel from "../level/TiledLevel.js";
 export default class Stage {
     private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关"
@@ -20,7 +21,6 @@ export default class Stage {
     private readonly sceneEuler = new Euler();
     private readonly sceneQuat = new Quat();
     private readonly gravityScale = 100;
-    // private readonly controls: Orbit;
     private readonly tempPosition = new Vec3();
     private readonly acc = new Vec3(0, -this.gravityScale, 0);
     readonly availableLevels: Set<number> = new Set();
@@ -50,12 +50,6 @@ export default class Stage {
         const renderer = this.renderer = new Renderer({ dpr, canvas });
         const gl = renderer.gl;
         gl.clearColor(0.3, 0.3, 0.6, 1);
-        // this.camera = new Camera(gl, {
-        //     aspect: width / height,
-        //     fov: 45,
-        //     near: 90,
-        //     far: 5000
-        // })
         this.camera = new Camera(gl, {
             left: -width * 50 / height,
             right: width * 50 / height,
@@ -64,10 +58,8 @@ export default class Stage {
             near: 0,
             far: 10000
         })
-        // Create controls and pass parameters
-        // this.controls = new Orbit(camera);
         renderer.setSize(width, height);
-        this.level = new LDtkLevel(renderer.gl);
+        this.level = new TiledLevel(renderer.gl);
         this.level.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
             this.onaddmesh && this.onaddmesh(name, transform, vertices, indices, propertities);
         }
@@ -144,7 +136,6 @@ export default class Stage {
 
     updateBody(message: WorkerMessage & { type: "update" }) {
         const scene = this.scene;
-        // this.ui.updateInfo(`fps: ${message.currFPS}, avg: ${message.allFPS}`);
         for (let index = 0; index < message.objects.length; index++) {
             let child: Transform | undefined;
             const name = message.objects[index][7];
@@ -171,8 +162,6 @@ export default class Stage {
         this.t = Math.min(1, this.t + timeStamp);
         this.scaleT = Math.min(1, this.scaleT + timeStamp);
         const camera = this.camera;
-        // Need to update controls every frame
-        // this.controls.update();
         this.sceneEuler.set(this.sceneRotation.x, this.sceneRotation.y, this.sceneRotation.z);
         this.sceneQuat.fromEuler(this.sceneEuler);
         camera.quaternion.slerp(this.sceneQuat, this.t);
