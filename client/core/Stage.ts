@@ -6,7 +6,7 @@ import LDtkLevel from "../level/LDtkLevel.js";
 import Level from "../level/Level.js";
 import { radius } from "../misc/radius.js";
 export default class Stage {
-    private readonly helpMsg = "操作说明：\n1.重力朝向下方\n2.划动屏幕旋转关卡\n3.点击箭头切换关卡\n4.点击缩放聚焦小球\n5.引导小球抵达绿色终点\n6.点击底部按钮暂停、继续游戏\n（点击关闭说明）";
+    private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关"
     private readonly renderer: Renderer;
     private readonly scene: Transform;

@@ -640,15 +640,15 @@
 					"entityInstances": []
 				}
 			],
-			"__neighbours": [{ "levelIid": "9f251430-4ce0-11ef-ab1a-e5ef4959da7d", "dir": ">" }]
+			"__neighbours": [{ "levelIid": "9f251430-4ce0-11ef-ab1a-e5ef4959da7d", "dir": "<" }]
 		},
 		{
 			"identifier": "Level_1",
 			"iid": "9f251430-4ce0-11ef-ab1a-e5ef4959da7d",
 			"uid": 21,
 			"worldX": 208,
-			"worldY": 208,
-			"worldDepth": 1,
+			"worldY": 80,
+			"worldDepth": -1,
 			"pxWid": 48,
 			"pxHei": 176,
 			"__bgColor": "#696A79",
@@ -689,7 +689,7 @@
 					"entityInstances": [
 						{
 							"__identifier": "Player",
-							"__grid": [1,1],
+							"__grid": [1,9],
 							"__pivot": [0,0],
 							"__tags": ["region"],
 							"__tile": { "tilesetUid": 20, "x": 0, "y": 240, "w": 16, "h": 16 },
@@ -698,14 +698,14 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 16,
-							"px": [16,16],
+							"px": [16,144],
 							"fieldInstances": [],
 							"__worldX": 224,
 							"__worldY": 224
 						},
 						{
 							"__identifier": "Exit",
-							"__grid": [1,9],
+							"__grid": [1,1],
 							"__pivot": [0,0],
 							"__tags": ["region"],
 							"__tile": { "tilesetUid": 20, "x": 80, "y": 832, "w": 16, "h": 16 },
@@ -714,10 +714,10 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 19,
-							"px": [16,144],
+							"px": [16,16],
 							"fieldInstances": [],
 							"__worldX": 224,
-							"__worldY": 352
+							"__worldY": 96
 						}
 					]
 				},
@@ -831,7 +831,7 @@
 					"entityInstances": []
 				}
 			],
-			"__neighbours": [{ "levelIid": "ac3ab300-4ce0-11ef-ab1a-6f7b2bab2c28", "dir": "<" }]
+			"__neighbours": [{ "levelIid": "ac3ab300-4ce0-11ef-ab1a-6f7b2bab2c28", "dir": ">" }]
 		}
 	],
 	"worlds": [],
