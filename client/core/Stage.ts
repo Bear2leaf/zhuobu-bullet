@@ -112,10 +112,12 @@ export default class Stage {
             } else if (tag === "next") {
                 this.isContinue = false;
                 this.level.updateLevel(false);
+                this.updateLevelUI();
                 this.onresetworld && this.onresetworld();
             } else if (tag === "prev") {
                 this.isContinue = false;
                 this.level.updateLevel(true);
+                this.updateLevelUI();
                 this.onresetworld && this.onresetworld();
             } else if (tag === "audio") {
                 this.ontoggleaudio && this.ontoggleaudio()
@@ -183,7 +185,7 @@ export default class Stage {
             this.center.z = cameraZ * 2;
         }
         camera.position = this.tempPosition.lerp(this.center.sub(this.scene.position), this.scaleT);
-        this.camera.orthographic({ zoom: 100 / camera.position.z })
+        this.camera.orthographic({ zoom: 50 / camera.position.z })
         this.renderer.render({ scene: this.scene, camera: camera });
         this.ui.render();
         this.quat.fill(0)
@@ -258,7 +260,15 @@ export default class Stage {
             this.onrelease && this.onrelease();
         }
     }
-
+    updateLevelUI() {
+        const root = this.scene.children[this.level.getIndex() + 1];
+        if (root) {
+            if (!root.name) {
+                throw new Error("Level name is undefined");
+            }
+            this.ui.updateLevel(root.name)
+        }
+    }
     async requestLevel() {
         this.pause = true;
         this.ui.updateHelp(this.helpMsg);
@@ -275,13 +285,7 @@ export default class Stage {
         }
         this.rotation.fill(0)
         this.sceneRotation.fill(0);
-        const root = this.scene.children.find(node => !(node instanceof Mesh));
-        if (root) {
-            if (!root.name) {
-                throw new Error("Level name is undefined");
-            }
-            this.ui.updateLevel(root.name)
-        }
+        this.updateLevelUI();
         this.updateSwitch("pause", true);
         this.checkCharset();
         this.isContinue = true;

@@ -225,6 +225,7 @@ export default class LDtkLevel implements Level {
         } else {
             this.current = (this.current + 1) % this.collections.length;
         }
+        console.log(this.current)
     }
     init(scene: Transform) {
 
