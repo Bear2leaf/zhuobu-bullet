@@ -1,4 +1,4 @@
-import { Box, Camera, Geometry, Mat4, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Texture, Transform, Triangle, Vec3, Vec4 } from "ogl";
+import { Box, Camera, Geometry, Mat4, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Sphere, Texture, Transform, Triangle, Vec2, Vec3, Vec4 } from "ogl";
 import Level from "./Level.js";
 import { getContours } from "../misc/contour2d.js";
 import ndarray from "../misc/ndarray/ndarray.js";
@@ -62,17 +62,24 @@ export default class TiledLevel implements Level {
             const position = new Array;
             const uv = new Array;
             const gridSize = tiledData.tilewidth;
+            const min = new Vec2();
+            const max = new Vec2();
             for (let i = 0; i < layer.chunks.length; i++) {
                 const chunk = layer.chunks[i];
+                min.x = Math.min(chunk.x, min.x);
+                min.y = Math.min(chunk.y, min.y);
+                max.x = Math.max(chunk.x + chunk.width, max.x);
+                max.y = Math.max(chunk.y + chunk.height, max.y);
                 for (let j = 0; j < chunk.data.length; j++) {
                     const gid = chunk.data[j];
                     if (gid === 0) {
                         continue;
                     }
-                    const ux = (((gid - tileset.firstgid) % tileset.columns) + tileset.spacing) * tileset.tilewidth;
-                    const uy = (Math.floor((gid - tileset.firstgid) / tileset.columns) + tileset.spacing) * tileset.tileheight;
-                    const x = (j % chunk.width) * gridSize + chunk.x;
-                    const y = Math.floor(j / chunk.width) * gridSize + chunk.y;
+                    const ux = ((gid - tileset.firstgid) % tileset.columns) * (tileset.tilewidth + tileset.spacing);
+                    const uy = Math.floor((gid - tileset.firstgid) / tileset.columns) * (tileset.tileheight + tileset.spacing);
+                    const x = ((j % chunk.width) + chunk.x) * gridSize;
+                    const y = (Math.floor(j / chunk.width) + chunk.y) * gridSize;
+
                     position.push(x);
                     position.push((y));
                     position.push(0);
@@ -110,10 +117,10 @@ export default class TiledLevel implements Level {
             const spriteFragment = this.spriteFragment;
             //MAGIC!!! this 0.1 offset make REAL PIXEL PERFECT
             const camera = new Camera(gl, {
-                left: 0.1,
-                right: layer.width * tileset.tilewidth,
-                top: layer.height * tileset.tileheight,
-                bottom: 0.1,
+                left: 0.1 + min.x * tileset.tilewidth,
+                right: max.x * tileset.tilewidth,
+                top: max.y * tileset.tileheight,
+                bottom: 0.1 + min.y * tileset.tileheight,
                 near: 0,
                 far: -1
             })
@@ -266,160 +273,168 @@ export default class TiledLevel implements Level {
                         const chunk = layer.chunks[i];
                         for (let j = 0; j < chunk.data.length; j++) {
                             const gid = chunk.data[j];
-                            if (gid !== 0) {
-                                const tileset = tiledData.tilesets.find(tileset => tileset.firstgid <= gid && gid < (tileset.firstgid + tileset.tilecount))
-                                if (!tileset) {
-                                    throw new Error("tileset is undefined");
-                                }
-                                const tx = (((gid - tileset.firstgid) % tileset.columns) + tileset.spacing) * tileset.tilewidth;
-                                const ty = (Math.floor((gid - tileset.firstgid) / tileset.columns) + tileset.spacing) * tileset.tileheight;
-                                const tileDef = tileset.tiles?.find(t => t.id === (gid - tileset.firstgid));
-                                if (!tileDef) {
-                                    throw new Error("tileDef is undefined");
-                                }
-                                const name = tileDef.properties.find(prop => prop.name === "name")?.value;
-                                if (!name) {
-                                    throw new Error("name is undefined");
-                                }
-                                const tile = {
-                                    name,
-                                    x: tx,
-                                    y: ty,
-                                    w: tileset.tilewidth,
-                                    h: tileset.tileheight
-                                }
-                                const entityWorldX = (chunk.x || 0) + chunk.width * (0.5);
-                                const entityWorldY = -(chunk.y || 0) - chunk.height * (0.5);
-                                if (tile.name === "Exit") {
-                                    const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.indexOf(this.internalIconName) !== -1)
-
-                                    if (!texture) {
-                                        throw new Error("texture is undefined");
-                                    }
-                                    const w = texture.width;
-                                    const h = texture.height;
-                                    const mesh = new Mesh(gl, {
-                                        geometry: new Plane(gl, {
-                                            width: chunk.width,
-                                            height: chunk.height,
-                                        }),
-                                        program: new Program(gl, {
-                                            vertex: this.spriteVertex,
-                                            fragment: this.spriteFragment,
-                                            uniforms: {
-                                                tMap: { value: texture }
-                                            },
-                                            frontFace: gl.CW,
-                                            transparent: true
-                                        })
-                                    });
-                                    const uvAttr = mesh.geometry.attributes.uv;
-                                    uvAttr.data = new Float32Array([
-                                        (tile.x) / w, 1 - (tile.y + tile.h) / h,
-                                        (tile.x + tile.w) / w, 1 - (tile.y + tile.h) / h,
-                                        (tile.x) / w, 1 - (tile.y) / h,
-                                        (tile.x + tile.w) / w, 1 - (tile.y) / h,
-                                    ])
-                                    mesh.geometry.updateAttribute(uvAttr);
-                                    mesh.name = "test" + this.counter++;
-                                    mesh.setParent(levelNode)
-                                    mesh.position.x = entityWorldX;
-                                    mesh.position.y = entityWorldY;
-                                    mesh.position.z = -radius + 0.01;
-                                    mesh.rotation.x = Math.PI;
-                                    mesh.updateMatrix();
-                                    mesh.geometry.computeBoundingBox();
-                                    mesh.geometry.computeBoundingSphere();
-                                    this.entityIdSet.add(mesh.name);
-                                }
+                            if (gid === 0) {
+                                continue;
                             }
+                            const tileset = tiledData.tilesets.find(tileset => tileset.firstgid <= gid && gid < (tileset.firstgid + tileset.tilecount))
+                            if (!tileset) {
+                                throw new Error("tileset is undefined");
+                            }
+                            const tx = (((gid - tileset.firstgid) % tileset.columns) + tileset.spacing) * tileset.tilewidth;
+                            const ty = (Math.floor((gid - tileset.firstgid) / tileset.columns) + tileset.spacing) * tileset.tileheight;
+                            const tileDef = tileset.tiles?.find(t => t.id === (gid - tileset.firstgid));
+                            if (!tileDef) {
+                                throw new Error("tileDef is undefined");
+                            }
+                            const name = tileDef.properties.find(prop => prop.name === "name")?.value;
+                            if (!name) {
+                                throw new Error("name is undefined");
+                            }
+                            const x = (j % chunk.width + chunk.x) * gridSize + (0.5 * tileset.tilewidth);
+                            const y = Math.floor(j / chunk.width + chunk.y) * gridSize + (0.5 * tileset.tileheight);
+                            const tile = {
+                                name,
+                                x: tx,
+                                y: ty,
+                                w: (tileset.tilewidth + tileset.spacing),
+                                h: (tileset.tileheight + tileset.spacing)
+                            }
+                            if (tile.name === "Exit") {
+                                const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.indexOf(this.internalIconName) !== -1)
 
+                                if (!texture) {
+                                    throw new Error("texture is undefined");
+                                }
+                                const w = texture.width;
+                                const h = texture.height;
+                                const mesh = new Mesh(gl, {
+                                    geometry: new Plane(gl, {
+                                        width: chunk.width,
+                                        height: chunk.height,
+                                    }),
+                                    program: new Program(gl, {
+                                        vertex: this.spriteVertex,
+                                        fragment: this.spriteFragment,
+                                        uniforms: {
+                                            tMap: { value: texture }
+                                        },
+                                        frontFace: gl.CW,
+                                        transparent: true
+                                    })
+                                });
+                                const uvAttr = mesh.geometry.attributes.uv;
+                                uvAttr.data = new Float32Array([
+                                    (tile.x) / w, 1 - (tile.y + tile.h) / h,
+                                    (tile.x + tile.w) / w, 1 - (tile.y + tile.h) / h,
+                                    (tile.x) / w, 1 - (tile.y) / h,
+                                    (tile.x + tile.w) / w, 1 - (tile.y) / h,
+                                ])
+                                mesh.geometry.updateAttribute(uvAttr);
+                                mesh.name = "test" + this.counter++;
+                                mesh.setParent(levelNode)
+                                mesh.position.x = x;
+                                mesh.position.y = -y;
+                                mesh.position.z = -radius + 0.01;
+                                mesh.rotation.x = Math.PI;
+                                mesh.updateMatrix();
+                                mesh.geometry.computeBoundingBox();
+                                mesh.geometry.computeBoundingSphere();
+                                this.entityIdSet.add(mesh.name);
+                            }
                         }
+
                     }
                 }
             }
 
-            for (let index = 0; index < this.renderTargets.length; index++) {
-                const layer = level.layers[index];
-                const renderTarget = this.renderTargets[index];
+            const renderTarget = this.renderTargets[levelIndex];
+            const mesh = new Mesh(gl, {
+                geometry: new Plane(gl, {
+                    width: renderTarget.width,
+                    height: renderTarget.height,
+                }),
+                program: new Program(gl, {
+                    vertex: this.spriteVertex,
+                    fragment: this.spriteFragment,
+                    uniforms: {
+                        tMap: { value: renderTarget.texture }
+                    },
+                    frontFace: gl.CW,
+                    transparent: true
+                })
+            });
+            mesh.name = "test" + this.counter++;
+            const min = level.layers.reduce((lprev, lcurr) => {
+                const min = lcurr.chunks.reduce((prev, curr) => {
+                    prev.x = Math.min(curr.x, prev.x);
+                    prev.y = Math.min(curr.y, prev.y);
+                    return prev;
+                }, new Vec2);
+                lprev.x = min.x;
+                lprev.y = min.y;
+                return lprev;
+            }, new Vec2)
+            const offsetX = (level.x + (min.x * gridSize) + renderTarget.width / 2);
+            const offsetY = -(level.y + (min.y * gridSize) + renderTarget.height / 2);
+            mesh.position.x = offsetX;
+            mesh.position.y = offsetY;
+            mesh.rotation.x = Math.PI;
+            mesh.position.z = -radius;
+            mesh.updateMatrix()
+            mesh.setParent(levelNode);
+            mesh.geometry.computeBoundingBox();
+            mesh.geometry.computeBoundingSphere();
+            {
                 const mesh = new Mesh(gl, {
                     geometry: new Plane(gl, {
                         width: renderTarget.width,
                         height: renderTarget.height,
                     }),
                     program: new Program(gl, {
-                        vertex: this.spriteVertex,
-                        fragment: this.spriteFragment,
+                        vertex: this.vertex,
+                        fragment: this.fragment,
                         uniforms: {
-                            tMap: { value: renderTarget.texture }
-                        },
-                        frontFace: gl.CW,
-                        transparent: true
+                            uColor: {
+                                value: new Vec3(0.4, 0.4, 0.4)
+                            }
+                        }
                     })
                 });
                 mesh.name = "test" + this.counter++;
-                const offsetX = (layer.x + layer.width / 2);
-                const offsetY = -(layer.y + layer.height / 2);
+                mesh.setParent(levelNode)
                 mesh.position.x = offsetX;
                 mesh.position.y = offsetY;
-                mesh.rotation.x = Math.PI;
-                mesh.position.z = -radius;
-                mesh.updateMatrix()
-                mesh.setParent(levelNode);
+                mesh.position.z = radius;
+                mesh.visible = false;
+                mesh.updateMatrix();
                 mesh.geometry.computeBoundingBox();
                 mesh.geometry.computeBoundingSphere();
-                {
-                    const mesh = new Mesh(gl, {
-                        geometry: new Plane(gl, {
-                            width: renderTarget.width,
-                            height: renderTarget.height,
-                        }),
-                        program: new Program(gl, {
-                            vertex: this.vertex,
-                            fragment: this.fragment,
-                            uniforms: {
-                                uColor: {
-                                    value: new Vec3(0.4, 0.4, 0.4)
-                                }
+            }
+            {
+                const mesh = new Mesh(gl, {
+                    geometry: new Plane(gl, {
+                        width: renderTarget.width,
+                        height: renderTarget.height,
+                    }),
+                    program: new Program(gl, {
+                        vertex: this.vertex,
+                        fragment: this.fragment,
+                        uniforms: {
+                            uColor: {
+                                value: new Vec3(0.4, 0.4, 0.4)
                             }
-                        })
-                    });
-                    mesh.name = "test" + this.counter++;
-                    mesh.setParent(levelNode)
-                    mesh.position.x = offsetX;
-                    mesh.position.y = offsetY;
-                    mesh.position.z = radius;
-                    mesh.visible = false;
-                    mesh.updateMatrix();
-                    mesh.geometry.computeBoundingBox();
-                    mesh.geometry.computeBoundingSphere();
-                }
-                {
-                    const mesh = new Mesh(gl, {
-                        geometry: new Plane(gl, {
-                            width: renderTarget.width,
-                            height: renderTarget.height,
-                        }),
-                        program: new Program(gl, {
-                            vertex: this.vertex,
-                            fragment: this.fragment,
-                            uniforms: {
-                                uColor: {
-                                    value: new Vec3(0.4, 0.4, 0.4)
-                                }
-                            }
-                        })
-                    });
-                    mesh.name = "test" + this.counter++;
-                    mesh.setParent(levelNode)
-                    mesh.position.x = offsetX;
-                    mesh.position.y = offsetY;
-                    mesh.position.z = -radius;
-                    mesh.visible = false;
-                    mesh.updateMatrix();
-                    mesh.geometry.computeBoundingBox();
-                    mesh.geometry.computeBoundingSphere();
-                }
+                        }
+                    })
+                });
+                mesh.name = "test" + this.counter++;
+                mesh.setParent(levelNode)
+                mesh.position.x = offsetX;
+                mesh.position.y = offsetY;
+                mesh.position.z = -radius;
+                mesh.visible = false;
+                mesh.updateMatrix();
+                mesh.geometry.computeBoundingBox();
+                mesh.geometry.computeBoundingSphere();
             }
         }
 
@@ -431,9 +446,6 @@ export default class TiledLevel implements Level {
         }
         const gridSize = tiledData.tilewidth;
         const levels = tiledData.layers;
-        const min = new Vec3();
-        const max = new Vec3();
-        this.radius = 0;
         const level = levels[this.current];
         const layerInstances = level.layers;
         for (const layerInstance of layerInstances) {
@@ -444,8 +456,8 @@ export default class TiledLevel implements Level {
                         if (gid === 0) {
                             continue;
                         }
-                        const x = (j % chunk.width) * gridSize + chunk.x;
-                        const y = Math.floor(j / chunk.width) * gridSize + chunk.y;
+                        const x = (j % chunk.width) * gridSize + chunk.x * gridSize;
+                        const y = Math.floor(j / chunk.width) * gridSize + chunk.y * gridSize;
                         const tileset = tiledData.tilesets.find(tileset => tileset.firstgid <= gid && gid < (tileset.firstgid + tileset.tilecount))
                         if (!tileset) {
                             throw new Error("tileset is undefined");
@@ -455,8 +467,8 @@ export default class TiledLevel implements Level {
                             throw new Error("tileDef is undefined");
                         }
                         const name = tileDef.properties.find(prop => prop.name === "name")?.value;
-                        const entityWorldX = (chunk.x + x) + chunk.width * (0.5);
-                        const entityWorldY = -(chunk.y + y) - chunk.height * (0.5);
+                        const entityWorldX = x + chunk.width * 0.5;
+                        const entityWorldY = -y - chunk.height * 0.5;
                         if (name === "Player") {
                             this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)))
                         }
@@ -465,22 +477,25 @@ export default class TiledLevel implements Level {
             }
         }
         scene.children.forEach((child, index) => (index === 0 || index === (this.current + 1)) ? (child.visible = true) : (child.visible = false))
+        const min = new Vec3(Infinity, Infinity, 0)
+        const max = new Vec3(-Infinity, -Infinity, 0);
         for (const child of scene.children[this.current + 1].children) {
             const mesh = child as Mesh;
             const attributeData = mesh.geometry.getPosition().data;
             const indices = mesh.geometry.attributes.index?.data;
             this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], { entity: this.entityIdSet.has(mesh.name) })
-            this.radius = Math.max(this.radius, mesh.geometry.bounds.radius);
-            const meshMin = mesh.geometry.bounds.min;
-            const meshMax = mesh.geometry.bounds.max;
-            min.x = Math.min(meshMin.x, min.x);
-            min.y = Math.min(meshMin.y, min.y);
-            min.z = Math.min(meshMin.z, min.z);
-            max.x = Math.max(meshMax.x, max.x);
-            max.y = Math.max(meshMax.y, max.y);
-            max.z = Math.max(meshMax.z, max.z);
+            if (!(mesh.geometry instanceof Plane || mesh.geometry instanceof Sphere)) {
+                const meshMin = mesh.geometry.bounds.min;
+                const meshMax = mesh.geometry.bounds.max;
+                min.x = Math.min(min.x, meshMin.x);
+                min.y = Math.min(min.y, meshMin.y);
+                max.x = Math.max(max.x, meshMax.x);
+                max.y = Math.max(max.y, meshMax.y);
+            }
         }
-        this.center.copy(new Vec3(max.x + min.x, max.y + min.y, 0));
+        this.radius = max.distance(min);
+        console.log(this.radius)
+        this.center.copy(max.add(min).multiply(0.5))
     }
     getRadius(): number {
         return this.radius;
