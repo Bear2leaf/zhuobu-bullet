@@ -525,6 +525,8 @@ export default class TiledLevel implements Level {
                 min.y = Math.min(min.y, meshMin.y);
                 max.x = Math.max(max.x, meshMax.x);
                 max.y = Math.max(max.y, meshMax.y);
+            } else if (this.exitMeshNameSet.has(mesh.name) ||this.rockMeshNameSet.has(mesh.name) || this.pickaxeMeshNameSet.has(mesh.name)) {
+                mesh.visible = true;
             }
         }
         this.radius = max.distance(min) / 2;
