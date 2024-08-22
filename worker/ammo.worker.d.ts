@@ -32,6 +32,8 @@ export type MainMessage = {
     type: "release",
 } | {
     type: "pause",
+} | {
+    type: "getPickaxe",
 }
 export type WorkerMessage = {
     type: "update"
@@ -48,7 +50,7 @@ export type WorkerMessage = {
     data: string
 } | {
     type: "collision",
-    data: [string, string, boolean]
+    data: [string, string]
 }
 
 

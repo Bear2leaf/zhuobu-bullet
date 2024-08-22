@@ -30,6 +30,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     dynamicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
 
     let pause = true;
+    let pickaxe = false;
     // the worldState on the server
     const worldState: {
         id: string,
@@ -163,7 +164,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             if (v.propertities?.dynamic) {
                 body.setCollisionFlags(body.getCollisionFlags() | CollisionFlags.CF_KINEMATIC_OBJECT)
             }
-            if (v.propertities?.entity) {
+            if (v.propertities?.exit || v.propertities?.pickaxe) {
                 body.setCollisionFlags(body.getCollisionFlags() | CollisionFlags.CF_NO_CONTACT_RESPONSE)
             }
             body.setUserPointer(v)
@@ -175,6 +176,18 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             pause = false;
         } else if (message.type === "pause") {
             pause = true;
+        } else if (message.type === "getPickaxe") {
+            pickaxe = true;
+
+            const bodyIndex = bodies.findIndex(body => Ammo.castObject(body.getUserPointer(), UserData).propertities?.pickaxe === true)
+            if (bodyIndex !== -1) {
+                const removed = bodies.splice(bodyIndex, 1)[0];
+                dynamicsWorld.removeRigidBody(removed);
+                handler.postMessage({
+                    type: "removeBody",
+                    data: Ammo.castObject(removed.getUserPointer(), UserData).name || ""
+                })
+            }
         } else if (message.type === "updateVelocity") {
             updateVelocity(message.data)
         } else if (message.type === "removeMesh") {
@@ -208,11 +221,24 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const body1 = mainfold.getBody1();
             const data0 = Ammo.castObject(body0.getUserPointer(), UserData);
             const data1 = Ammo.castObject(body1.getUserPointer(), UserData);
-            if (data0.propertities?.entity || data1.propertities?.entity) {
+            if (data1.propertities?.exit || data1.propertities?.pickaxe) {
                 handler.postMessage({
                     type: "collision",
-                    data: [data0.name || "", data1.name || "", true]
+                    data: [data0.name || "", data1.name || ""]
                 });
+            } else if (data1.propertities?.rock) {
+                if (pickaxe) {
+                    const bodyIndex = bodies.findIndex(body => Ammo.castObject(body.getUserPointer(), UserData).propertities?.rock === true)
+                    if (bodyIndex !== -1) {
+                        const removed = bodies.splice(bodyIndex, 1)[0];
+                        dynamicsWorld.removeRigidBody(removed);
+                        handler.postMessage({
+                            type: "removeBody",
+                            data: Ammo.castObject(removed.getUserPointer(), UserData).name || ""
+                        })
+                    }
+                    pickaxe = false;
+                }
             }
         }
     }

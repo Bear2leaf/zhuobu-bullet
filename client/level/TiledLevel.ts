@@ -20,7 +20,9 @@ export default class TiledLevel implements Level {
     private readonly textures: Texture[] = [];
     private readonly renderTargets: RenderTarget[] = [];
     private readonly collections: Transform[] = [];
-    private readonly entityIdSet = new Set<string | undefined>();
+    private readonly exitMeshNameSet = new Set<string | undefined>();
+    private readonly rockMeshNameSet = new Set<string | undefined>();
+    private readonly pickaxeMeshNameSet = new Set<string | undefined>();
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
     constructor(private readonly gl: OGLRenderingContext) {
@@ -187,7 +189,12 @@ export default class TiledLevel implements Level {
             this.current = (this.current + 1) % this.collections.length;
         }
     }
-
+    checkNeedExit(collision: string): boolean {
+        return this.exitMeshNameSet.has(collision);
+    }
+    checkGetPickaxe(collision: string): boolean {
+        return this.pickaxeMeshNameSet.has(collision);
+    }
     init(scene: Transform) {
         const gl = this.gl;
         const tiledData = this.tiledData;
@@ -220,7 +227,6 @@ export default class TiledLevel implements Level {
             }, new Vec2);
             const width = (max.x - min.x) * gridSize;
             const height = (max.y - min.y) * gridSize;
-            console.log(min, max, width, height)
             const renderTarget = new RenderTarget(gl, {
                 width,
                 height,
@@ -320,7 +326,7 @@ export default class TiledLevel implements Level {
                                 w: (tileset.tilewidth + tileset.spacing),
                                 h: (tileset.tileheight + tileset.spacing)
                             }
-                            if (tile.name === "Exit") {
+                            if (tile.name === "Exit" || tile.name === "Rock" || tile.name === "Pickaxe") {
                                 const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.indexOf(this.internalIconName) !== -1)
 
                                 if (!texture) {
@@ -355,12 +361,19 @@ export default class TiledLevel implements Level {
                                 mesh.setParent(levelNode)
                                 mesh.position.x = x;
                                 mesh.position.y = -y;
-                                mesh.position.z = -radius + 0.01;
                                 mesh.rotation.x = Math.PI;
                                 mesh.updateMatrix();
                                 mesh.geometry.computeBoundingBox();
                                 mesh.geometry.computeBoundingSphere();
-                                this.entityIdSet.add(mesh.name);
+                                if (tile.name === "Exit") {
+                                    this.exitMeshNameSet.add(mesh.name);
+                                } else if (tile.name === "Pickaxe") {
+                                    this.pickaxeMeshNameSet.add(mesh.name);
+                                } else if (tile.name === "Rock") {
+                                    this.rockMeshNameSet.add(mesh.name);
+                                } else {
+                                    throw new Error("error tile name");
+                                }
                             }
                         }
 
@@ -504,7 +517,7 @@ export default class TiledLevel implements Level {
             const mesh = child as Mesh;
             const attributeData = mesh.geometry.getPosition().data;
             const indices = mesh.geometry.attributes.index?.data;
-            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], { entity: this.entityIdSet.has(mesh.name) })
+            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], { exit: this.exitMeshNameSet.has(mesh.name), rock: this.rockMeshNameSet.has(mesh.name), pickaxe: this.pickaxeMeshNameSet.has(mesh.name) })
             if (!(mesh.geometry instanceof Plane || mesh.geometry instanceof Sphere)) {
                 const meshMin = mesh.geometry.bounds.min;
                 const meshMax = mesh.geometry.bounds.max;

@@ -40,6 +40,9 @@ async function start(device: Device) {
             stage.handleCollision(message.data);
         }
     };
+    stage.ongetpickaxe = () => device.sendmessage({
+        type: "getPickaxe"
+    })
     stage.onpause = () => device.sendmessage({
         type: "pause"
     })

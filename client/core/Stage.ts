@@ -45,6 +45,7 @@ export default class Stage {
     onremovemesh?: (name: string) => void;
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
+    ongetpickaxe?: () => void;
 
     constructor(width: number, height: number, dpr: number, canvas: HTMLCanvasElement) {
         const renderer = this.renderer = new Renderer({ dpr, canvas });
@@ -78,12 +79,16 @@ export default class Stage {
         await this.ui.load();
         await this.level.load();
     }
-    handleCollision(data: [string, string, boolean]) {
-        if (data[0] === "Ball" && data[2]) {
+    handleCollision(data: [string, string]) {
+        if (data[0] === "Ball") {
             console.log("collision: ", ...data)
-            this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 0, 0);
-            this.level.updateLevel(false);
-            this.onresetworld && this.onresetworld();
+            if (this.level.checkNeedExit(data[1])) {
+                this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 0, 0);
+                this.level.updateLevel(false);
+                this.onresetworld && this.onresetworld();
+            } else if (this.level.checkGetPickaxe(data[1])){
+                this.ongetpickaxe && this.ongetpickaxe();
+            }
         }
     }
     start() {
@@ -130,8 +135,10 @@ export default class Stage {
         let child: Transform | undefined;
         if (name === "Ball") {
             child = scene.children.find(child => child.visible && (child instanceof Mesh))
-            child && (child.visible = false);
+        } else {
+            child = scene.children[this.level.getIndex() + 1].children.find(child => child.visible && child.name === name)
         }
+        child && (child.visible = false);
     }
 
     updateBody(message: WorkerMessage & { type: "update" }) {
