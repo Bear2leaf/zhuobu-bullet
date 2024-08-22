@@ -124,7 +124,6 @@ export default class TiledLevel implements Level {
                 near: 0,
                 far: -1
             })
-
             const scene = new Mesh(gl, {
                 geometry: new Geometry(gl, {
                     position: {
@@ -187,7 +186,6 @@ export default class TiledLevel implements Level {
         } else {
             this.current = (this.current + 1) % this.collections.length;
         }
-        console.log(this.current)
     }
 
     init(scene: Transform) {
@@ -200,9 +198,32 @@ export default class TiledLevel implements Level {
         const levels = tiledData.layers;
         for (let levelIndex = 0; levelIndex < levels.length; levelIndex++) {
             const level = levels[levelIndex];
+            const min = level.layers.reduce((lprev, lcurr) => {
+                const min = lcurr.chunks.reduce((prev, curr) => {
+                    prev.x = Math.min(curr.x, prev.x);
+                    prev.y = Math.min(curr.y, prev.y);
+                    return prev;
+                }, new Vec2);
+                lprev.x = Math.min(min.x, lprev.x);
+                lprev.y = Math.min(min.y, lprev.y);
+                return lprev;
+            }, new Vec2)
+            const max = level.layers.reduce((lprev, lcurr) => {
+                const max = lcurr.chunks.reduce((prev, curr) => {
+                    prev.x = Math.max(curr.x + curr.width, prev.x);
+                    prev.y = Math.max(curr.y + curr.height, prev.y);
+                    return prev;
+                }, new Vec2);
+                lprev.x = Math.max(max.x, lprev.x);
+                lprev.y = Math.max(max.y, lprev.y);
+                return lprev;
+            }, new Vec2);
+            const width = (max.x - min.x) * gridSize;
+            const height = (max.y - min.y) * gridSize;
+            console.log(min, max, width, height)
             const renderTarget = new RenderTarget(gl, {
-                width: level.layers[0].width * gridSize,
-                height: level.layers[0].height * gridSize,
+                width,
+                height,
                 minFilter: gl.NEAREST,
                 magFilter: gl.NEAREST,
                 depth: false
@@ -370,8 +391,8 @@ export default class TiledLevel implements Level {
                     prev.y = Math.min(curr.y, prev.y);
                     return prev;
                 }, new Vec2);
-                lprev.x = min.x;
-                lprev.y = min.y;
+                lprev.x = Math.min(min.x, lprev.x);
+                lprev.y = Math.min(min.y, lprev.y);
                 return lprev;
             }, new Vec2)
             const offsetX = (level.x + (min.x * gridSize) + renderTarget.width / 2);
@@ -493,8 +514,7 @@ export default class TiledLevel implements Level {
                 max.y = Math.max(max.y, meshMax.y);
             }
         }
-        this.radius = max.distance(min);
-        console.log(this.radius)
+        this.radius = max.distance(min) / 2;
         this.center.copy(max.add(min).multiply(0.5))
     }
     getRadius(): number {
