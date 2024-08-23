@@ -1,0 +1,110 @@
+import { Camera, Geometry, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Sphere, Texture, Transform, Vec2, Vec3 } from "ogl";
+import { System } from "./System.js";
+import { Tiled } from "../misc/TiledParser.js";
+import { initTiledData } from "../tile/initTiledData.js";
+import LevelSystem from "./LevelSystem.js";
+import { WorkerMessage } from "../../worker/ammo.worker.js";
+
+export class RenderSystem implements System {
+    readonly uiRoot = new Transform;
+    readonly levelRoot = new Transform;
+    private fragment: string = "";
+    private ballVertex: string = "";
+    private ballFragment: string = "";
+    private vertex: string = "";
+    private spriteFragment: string = "";
+    private spriteVertex: string = "";
+    private readonly textures: Texture[] = [];
+    private readonly renderTargets: RenderTarget[] = [];
+    private readonly internalIconName = "finalbossblues-icons_full_16";
+    constructor(private readonly gl: OGLRenderingContext, private readonly collections: Transform[]
+        , private readonly exitMeshNameSet: Set<string | undefined>
+        , private readonly pickaxeMeshNameSet: Set<string | undefined>
+        , private readonly rockMeshNameSet: Set<string | undefined>) {
+
+    }
+    tiledData?: Tiled;
+    async load(): Promise<void> {
+        if (!this.tiledData) {
+            throw new Error("tiledData is undefined");
+        }
+        this.ballVertex = await (await fetch("resources/glsl/simple.vert.sk")).text();
+        this.ballFragment = await (await fetch("resources/glsl/simple.frag.sk")).text();
+        this.vertex = await (await fetch("resources/glsl/level.vert.sk")).text();
+        this.fragment = await (await fetch("resources/glsl/level.frag.sk")).text();
+        this.spriteVertex = this.spriteVertex = await (await fetch("resources/glsl/sprite.vert.sk")).text();
+        this.spriteFragment = this.spriteFragment = await (await fetch("resources/glsl/sprite.frag.sk")).text();
+        const gl = this.gl;
+        for await (const tileset of this.tiledData.tilesets) {
+            if (tileset.image) {
+                await new Promise((resoive) => {
+                    const image = new Image();
+                    image.onload = () => {
+                        this.textures.push(new Texture(gl, {
+                            image,
+                            width: image.width,
+                            height: image.height,
+                            magFilter: gl.NEAREST,
+                            minFilter: gl.NEAREST
+                        }));
+                        resoive(void (0));
+                    };
+                    image.src = `resources/tiled/${tileset.image}`;
+                })
+            }
+        }
+    }
+    init(): void {
+        if (!this.tiledData) {
+            throw new Error("tiledData is undefined");
+        }
+        initTiledData(this.tiledData,
+            this.gl,
+            this.levelRoot,
+            this.vertex,
+            this.fragment,
+            this.spriteVertex,
+            this.spriteFragment,
+            this.ballVertex,
+            this.ballFragment,
+            this.renderTargets,
+            this.textures,
+            this.collections,
+            this.internalIconName,
+            this.exitMeshNameSet,
+            this.pickaxeMeshNameSet,
+            this.rockMeshNameSet
+        );
+    }
+    update(): void {
+        throw new Error("Method not implemented.");
+    }
+
+    hideMesh(name: string, levelSystem: LevelSystem) {
+        const scene = this.levelRoot;
+        let child: Transform | undefined;
+        if (name === "Ball") {
+            child = scene.children.find(child => child.visible && (child instanceof Mesh))
+        } else {
+            child = scene.children[levelSystem.current + 1].children.find(child => child.visible && child.name === name)
+        }
+        child && (child.visible = false);
+    }
+
+    updateMesh(message: WorkerMessage & { type: "update" }, levelSystem: LevelSystem) {
+        const scene = this.levelRoot;
+        for (let index = 0; index < message.objects.length; index++) {
+            let child: Transform | undefined;
+            const name = message.objects[index][7];
+            child = scene.children.find(child => child.name === name);
+            if (child === undefined) {
+                child = scene.children[levelSystem.current + 1].children.find(child => child.name === name);
+            }
+            if (child) {
+                const phyObject = message.objects[index];
+                child.position.fromArray(phyObject.slice(0, 3) as number[])
+                child.quaternion.fromArray(phyObject.slice(3, 7) as number[])
+            }
+        }
+    }
+}

@@ -1,8 +1,9 @@
 import Device from "../device/Device.js";
-import BgmAudio from "./BgmAudio.js";
-import BleepAudio from "./BleepAudio.js";
-import DemoAudio from "./DemoAudio.js";
-export default class AudioManager {
+import { System } from "./System.js";
+import BgmAudio from "../audio/BgmAudio.js";
+import BleepAudio from "../audio/BleepAudio.js";
+import DemoAudio from "../audio/DemoAudio.js";
+export default class AudioSystem implements System {
     private mute = false;
     private readonly demoAudio = new DemoAudio;
     private readonly bgmAudio = new BgmAudio;
@@ -28,7 +29,7 @@ export default class AudioManager {
             clip.setContext(context);
         });
     }
-    initAudio() {
+    init() {
         [
             this.demoAudio,
             this.bgmAudio,
@@ -42,7 +43,7 @@ export default class AudioManager {
     play(tag?: string) {
         this.bleepAudio.playOnce();
     }
-    process() {
+    update() {
         [
             this.demoAudio,
             this.bleepAudio,

@@ -1,6 +1,6 @@
 import Device from "./device/Device.js";
-import Stage from "./core/Stage.js";
-import AudioManager from "./audio/AudioManager.js";
+import Engine from "./core/Engine.js";
+import AudioSystem from "./system/AudioSystem.js";
 import { WorkerMessage } from "../worker/ammo.worker.js";
 
 export async function mainH5() {
@@ -16,50 +16,48 @@ export async function mainMinigame() {
     return device;
 }
 async function start(device: Device) {
-    const audio = new AudioManager(device);
+    const audio = new AudioSystem(device);
     audio.initAudioContext();
     const [width, height, dpr] = device.getWindowInfo();
 
-    const stage = new Stage(width, height, dpr, device.getCanvasGL());
+    const engine = new Engine(width, height, dpr, device.getCanvasGL());
     device.onmessage = (message: WorkerMessage) => {
         // console.log("message from worker", message);
-        if (message.type === "addBody") {
-            stage.addBody(message);
-        } else if (message.type === "requestLevel") {
+        if (message.type === "requestLevel") {
             audio.play();
-            stage.requestLevel();
+            engine.requestLevel();
         } else if (message.type === "ready") {
             device.sendmessage({
                 type: "resetWorld",
             });
         } else if (message.type === "removeBody") {
-            stage.removeBody(message.data);
+            engine.hideMesh(message.data);
         } else if (message.type === "update") {
-            stage.updateBody(message);
+            engine.updateMesh(message);
         } else if (message.type === "collision") {
-            stage.handleCollision(message.data);
+            engine.handleCollision(message.data);
         }
     };
-    stage.ongetpickaxe = () => device.sendmessage({
+    engine.ongetpickaxe = () => device.sendmessage({
         type: "getPickaxe"
     })
-    stage.onpause = () => device.sendmessage({
+    engine.onpause = () => device.sendmessage({
         type: "pause"
     })
-    stage.onrelease = () => device.sendmessage({
+    engine.onrelease = () => device.sendmessage({
         type: "release"
     })
-    stage.onaddmesh = (name, transform, vertices, indices, propertities) => device.sendmessage({
+    engine.onaddmesh = (name, transform, vertices, indices, propertities) => device.sendmessage({
         type: "addMesh",
         data: { vertices: [...vertices], indices: [...indices], propertities, name, transform }
     })
-    stage.onremovemesh = (name) => {
+    engine.onremovemesh = (name) => {
         device.sendmessage({
             type: "removeMesh",
             data: name
         })
     }
-    stage.onupdatevelocity = (name, x, y, z) => {
+    engine.onupdatevelocity = (name, x, y, z) => {
         device.sendmessage({
             type: "updateVelocity",
             data: {
@@ -70,35 +68,35 @@ async function start(device: Device) {
             }
         })
     }
-    stage.onaddball = (transform) => device.sendmessage({
+    engine.onaddball = (transform) => device.sendmessage({
         type: "addBall",
         data: { transform }
     })
-    stage.ontoggleaudio = () => {
+    engine.ontoggleaudio = () => {
         audio.toggle();
-        stage.updateSwitch("audio", audio.isOn())
+        engine.updateSwitch("audio", audio.isOn())
     }
-    stage.onresetworld = () => device.sendmessage({
+    engine.onresetworld = () => device.sendmessage({
         type: "resetWorld",
     })
     let delta = 0;
     let last = 0;
-    await stage.load();
+    await engine.load();
     await audio.load();
     device.createWorker("dist/worker/main.js");
     function update(t: number) {
         requestAnimationFrame((t) => update(t));
         delta = (t - last) / 1000;
         last = t;
-        stage.loop(delta);
-        audio.process();
-        const gravity = stage.gravity;
+        engine.loop(delta);
+        audio.update();
+        const gravity = engine.gravity;
         device.sendmessage({ type: "updateGravity", data: `${gravity[0]},${gravity[1]},${gravity[2]}` })
     }
     requestAnimationFrame((t) => {
         last = t;
-        audio.initAudio();
-        stage.start();
+        audio.init();
+        engine.start();
         update(t);
     });
 }

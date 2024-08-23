@@ -1,51 +1,27 @@
-import { Camera, Geometry, Mesh, Plane, Program, Raycast, Renderer, Text, Texture, Transform, Vec2, Vec3 } from "ogl";
-import Button from "../ui/Button.js";
-import Sprite from "../ui/Sprite.js";
-import Switch from "../ui/Switch.js";
-import ButtonStatus from "../ui/ButtonStatus.js";
+import { Camera, Mesh, Raycast, Transform, Vec2 } from "ogl";
+import { System } from "./System.js";
+import UIElement from "../ui/UIElement.js";
+import UISystem from "./UISystem.js";
 
-export default class UI {
-    private readonly camera: Camera;
-    private readonly scene: Transform;
+export class InputSystem implements System {
     private readonly mouse = new Vec2();
-    private readonly buttons: Button[] = [];
-    private readonly sprites: Sprite[] = [];
-    private readonly switches: Switch[] = [];
-    get all(): ButtonStatus[] {
-        return [...this.sprites, ...this.switches, ...this.buttons].filter(o => o.getMesh().visible && o.getMesh().geometry && o.getMesh().program);
+    constructor(private readonly width: number, private readonly  height: number, private readonly camera: Camera, private readonly uiSystem: UISystem) {
     }
     onclick?: (tag?: string) => void;
     onswipe?: (direction: "left" | "right" | "up" | "down") => void;
-    constructor(private readonly renderer: Renderer) {
-        const gl = this.renderer.gl;
-        const { width, height, dpr } = this.renderer;
-        const ratio = width / height;
-
-        const camera = this.camera = new Camera(gl, {
-            left: ratio * -5 * dpr,
-            right: ratio * 5 * dpr,
-            top: 0,
-            bottom: -10 * dpr
-        })
-        this.camera.position.z = 1;
-        this.scene = new Transform();
-
-        this.buttons.push(new Button(gl, "help", new Vec3(0, -7, 0), true));
-        this.buttons.push(new Button(gl, "continue", new Vec3(0, -6 * dpr, 0), true, 1));
-        this.switches.push(new Switch(gl, "pause", new Vec3(0, -9 * dpr, 0)));
-        this.switches.push(new Switch(gl, "zoom", new Vec3(3, -5, 0)));
-        this.switches.push(new Switch(gl, "audio", new Vec3(-3, -5, 0)));
-        this.buttons.push(new Button(gl, "info", new Vec3(0, 0, 0)));
-        this.buttons.push(new Button(gl, "level", new Vec3(0, -2, 0)));
-        this.sprites.push(new Sprite(gl, "prev", new Vec3(-3, -2.6, 0)));
-        this.sprites.push(new Sprite(gl, "next", new Vec3(3, -2.6, 0)));
-        this.sprites.push(new Sprite(gl, "information", new Vec3(0, -5, 0)));
-
+    load(): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+    init(): void {
         const mouse = this.mouse;
+        const width = this.width;
+        const height = this.height;
+        const camera = this.camera;
+        const all = this.uiSystem.all;
         // Create a raycast object
         const raycast = new Raycast();
         const move = (e: { x: number, y: number }) => {
-            mouse.set(2.0 * (e.x / renderer.width) - 1.0, 2.0 * (1.0 - e.y / renderer.height) - 1.0);
+            mouse.set(2.0 * (e.x / width) - 1.0, 2.0 * (1.0 - e.y / height) - 1.0);
 
             // Update the ray's origin and direction using the camera and mouse
             raycast.castMouse(camera, mouse);
@@ -53,10 +29,10 @@ export default class UI {
 
             // raycast.intersectBounds will test against the bounds of each mesh, and
             // return an array of intersected meshes in order of closest to farthest
-            const hits = raycast.intersectBounds(this.all.map(node => node.getMesh() as Mesh));
+            const hits = raycast.intersectBounds(all.map(node => node.getMesh() as Mesh));
 
             // Update our feedback using this array
-            this.all.forEach(item => {
+            all.forEach(item => {
                 item.release();
                 hits.forEach(hit => {
                     if (item.getMesh().name === hit.name || item.getMesh().name === hit.parent?.name) {
@@ -66,8 +42,12 @@ export default class UI {
             })
         }
         const start = (e: { x: number, y: number }) => {
-            this.getButton("help").getMesh().visible = false;
-            mouse.set(2.0 * (e.x / renderer.width) - 1.0, 2.0 * (1.0 - e.y / renderer.height) - 1.0);
+
+            const help = all.find(node => node.getMesh().name === "help");
+            if (help) {
+                help.getMesh().visible = false;
+            }
+            mouse.set(2.0 * (e.x / width) - 1.0, 2.0 * (1.0 - e.y / height) - 1.0);
 
             // Update the ray's origin and direction using the camera and mouse
             raycast.castMouse(camera, mouse);
@@ -75,10 +55,10 @@ export default class UI {
 
             // raycast.intersectBounds will test against the bounds of each mesh, and
             // return an array of intersected meshes in order of closest to farthest
-            const hits = raycast.intersectBounds(this.all.map(node => node.getMesh() as Mesh));
+            const hits = raycast.intersectBounds(all.map(node => node.getMesh() as Mesh));
 
             // Update our feedback using this array
-            this.all.forEach(item => {
+            all.forEach(item => {
                 item.release();
                 hits.forEach(hit => {
                     if (item.getMesh().name === hit.name || item.getMesh().name === hit.parent?.name) {
@@ -91,13 +71,12 @@ export default class UI {
             // Update the ray's origin and direction using the camera and mouse
             raycast.castMouse(camera, mouse);
 
-
             // raycast.intersectBounds will test against the bounds of each mesh, and
             // return an array of intersected meshes in order of closest to farthest
-            const hits = raycast.intersectBounds(this.all.map(node => node.getMesh() as Mesh));
+            const hits = raycast.intersectBounds(all.map(node => node.getMesh() as Mesh));
 
             // Update our feedback using this array
-            this.all.forEach(item => {
+            all.forEach(item => {
                 hits.forEach(hit => {
                     if (item.getMesh().name === hit.name || item.getMesh().name === hit.parent?.name) {
                         if (item.isDown()) {
@@ -117,68 +96,6 @@ export default class UI {
         document.addEventListener("mousemove", (e) => move({ x: e.pageX, y: e.pageY }))
         document.addEventListener("mouseup", () => end())
     }
-    async load() {
-        for await (const button of this.buttons) {
-            await button.load();
-        }
-        for await (const sprite of this.sprites) {
-            await sprite.load();
-        }
-        for await (const s of this.switches) {
-            await s.load();
-        }
-    }
-    getButton(name: string) {
-        const button = this.buttons.find(button => button?.getMesh().name === name);
-        if (!button) {
-            throw new Error("button not found: " + name);
-        }
-        return button;
-    }
-    getSprite(name: string) {
-        const sprite = this.sprites.find(sprite => sprite?.getMesh().name === name);
-        if (!sprite) {
-            throw new Error("sprite not found: " + name);
-        }
-        return sprite;
-    }
-    getSwitch(name: string) {
-        const button = this.switches.find(button => button?.getMesh().name === name);
-        if (!button) {
-            throw new Error("switch not found: " + name);
-        }
-        return button;
-    }
-    init() {
-        for (const button of this.buttons) {
-            button.init();
-            button.setParent(this.scene);
-            if (button.getMesh().name === "help") {
-                button.getMesh().scale.multiply(0.5);
-                button.getMesh().visible = false;
-            }
-        }
-        for (const sprite of this.sprites) {
-            sprite.init();
-            sprite.setParent(this.scene);
-        }
-        for (const s of this.switches) {
-            s.init();
-            s.setParent(this.scene);
-        }
-    }
-    updateInfo(data: string) {
-        this.buttons.find(button => button.getMesh().name === "info")?.updateText(data);
-    }
-    updateHelp(data: string) {
-        this.buttons.find(button => button.getMesh().name === "help")?.updateText(data);
-    }
-    updateLevel(data: string) {
-        this.buttons.find(button => button.getMesh().name === "level")?.updateText(data);
-    }
-    render() {
-        this.renderer.render({ scene: this.scene, camera: this.camera, clear: false })
-    }
     initTouchEvents() {
         const ui = this;
         let xDown: number | null = null;
@@ -189,7 +106,7 @@ export default class UI {
             xDown = x;
             yDown = y;
         };
-        
+
         function handleTouchMove(x: number, y: number) {
             if (!xDown || !yDown) {
                 return;
@@ -245,4 +162,8 @@ export default class UI {
             }
         })
     }
+    update(): void {
+        throw new Error("Method not implemented.");
+    }
+    
 }

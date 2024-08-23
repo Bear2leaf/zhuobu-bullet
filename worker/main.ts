@@ -60,10 +60,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         body.setUserPointer(v)
         dynamicsWorld.addRigidBody(body);
         bodies.push(body);
-        handler.postMessage({
-            type: "addBody",
-            data: 0
-        })
     };
     const transform = new Ammo.btTransform(); // taking this out of readBulletObject reduces the leaking
 

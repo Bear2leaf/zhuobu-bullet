@@ -1,7 +1,7 @@
 import { Geometry, Mesh, OGLRenderingContext, Plane, Program, Text, Texture, Transform, Vec3 } from "ogl";
-import ButtonStatus from "./ButtonStatus.js";
+import UIElement from "./UIElement.js";
 
-export default class Button implements ButtonStatus {
+export default class Button implements UIElement {
     private readonly font: string = "NotoSansSC-Bold";
     private readonly texture: Texture;
     private readonly bgTexture: Texture;

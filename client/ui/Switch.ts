@@ -1,7 +1,7 @@
 import { Geometry, Mesh, OGLRenderingContext, Plane, Program, Text, Texture, Transform, Vec3 } from "ogl";
-import ButtonStatus from "./ButtonStatus.js";
+import UIElement from "./UIElement.js";
 
-export default class Switch implements ButtonStatus {
+export default class Switch implements UIElement {
     private readonly textureOn: Texture;
     private readonly textureOff: Texture;
     private readonly textureOnDown: Texture;
