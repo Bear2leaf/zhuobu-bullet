@@ -21,6 +21,7 @@ export default class TiledLevel implements Level {
     private readonly renderTargets: RenderTarget[] = [];
     private readonly collections: Transform[] = [];
     private readonly exitMeshNameSet = new Set<string | undefined>();
+    private readonly dirDownMeshNameSet = new Set<string | undefined>();
     private readonly rockMeshNameSet = new Set<string | undefined>();
     private readonly pickaxeMeshNameSet = new Set<string | undefined>();
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
@@ -326,7 +327,7 @@ export default class TiledLevel implements Level {
                                 w: (tileset.tilewidth + tileset.spacing),
                                 h: (tileset.tileheight + tileset.spacing)
                             }
-                            if (tile.name === "Exit" || tile.name === "Rock" || tile.name === "Pickaxe") {
+                            if (tile.name === "Exit" || tile.name === "Rock" || tile.name === "Pickaxe" || tile.name === "DirDown") {
                                 const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.indexOf(this.internalIconName) !== -1)
 
                                 if (!texture) {
@@ -370,6 +371,8 @@ export default class TiledLevel implements Level {
                                 } else if (tile.name === "Pickaxe") {
                                     this.pickaxeMeshNameSet.add(mesh.name);
                                 } else if (tile.name === "Rock") {
+                                    this.rockMeshNameSet.add(mesh.name);
+                                } else if (tile.name === "DirDown") {
                                     this.rockMeshNameSet.add(mesh.name);
                                 } else {
                                     throw new Error("error tile name");
@@ -517,7 +520,7 @@ export default class TiledLevel implements Level {
             const mesh = child as Mesh;
             const attributeData = mesh.geometry.getPosition().data;
             const indices = mesh.geometry.attributes.index?.data;
-            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], { exit: this.exitMeshNameSet.has(mesh.name), rock: this.rockMeshNameSet.has(mesh.name), pickaxe: this.pickaxeMeshNameSet.has(mesh.name) })
+            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], { exit: this.exitMeshNameSet.has(mesh.name), rock: this.rockMeshNameSet.has(mesh.name), pickaxe: this.pickaxeMeshNameSet.has(mesh.name), dirDown: this.dirDownMeshNameSet.has(mesh.name) })
             if (!(mesh.geometry instanceof Plane || mesh.geometry instanceof Sphere)) {
                 const meshMin = mesh.geometry.bounds.min;
                 const meshMax = mesh.geometry.bounds.max;
@@ -525,7 +528,7 @@ export default class TiledLevel implements Level {
                 min.y = Math.min(min.y, meshMin.y);
                 max.x = Math.max(max.x, meshMax.x);
                 max.y = Math.max(max.y, meshMax.y);
-            } else if (this.exitMeshNameSet.has(mesh.name) ||this.rockMeshNameSet.has(mesh.name) || this.pickaxeMeshNameSet.has(mesh.name)) {
+            } else if (this.exitMeshNameSet.has(mesh.name) ||this.rockMeshNameSet.has(mesh.name) || this.pickaxeMeshNameSet.has(mesh.name) || this.dirDownMeshNameSet.has(mesh.name)) {
                 mesh.visible = true;
             }
         }

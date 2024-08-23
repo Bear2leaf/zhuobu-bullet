@@ -238,7 +238,7 @@ export default class UI {
                     ui.onswipe && ui.onswipe("right");
                     break;
                 case " ":
-                    ui.onclick && ui.onclick("pause");
+                    ui.onclick && (ui.onclick("pause"), ui.onclick("continue"));
                     break;
                 default:
                     break;

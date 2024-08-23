@@ -23,7 +23,7 @@ export default class Stage {
     private readonly gravityScale = 100;
     private readonly tempPosition = new Vec3();
     private readonly acc = new Vec3(0, -this.gravityScale, 0);
-    readonly availableLevels: Set<number> = new Set();
+    private readonly availableLevels: Set<number> = new Set();
     readonly gravity = new Vec3;
     private readonly center = new Vec3();
     private charset: string = "";
@@ -291,11 +291,11 @@ export default class Stage {
         } else {
             this.updateSprite("next", false);
         }
-        if (this.availableLevels.has(this.level.getIndex() - 1)) {
-            this.updateSprite("prev", true);
-        } else {
-            this.updateSprite("prev", false);
-        }
+        // if (this.availableLevels.has(this.level.getIndex() - 1)) {
+        //     this.updateSprite("prev", true);
+        // } else {
+        //     this.updateSprite("prev", false);
+        // }
         this.center.copy(this.level.getCenter());
     }
     private checkCharset() {
