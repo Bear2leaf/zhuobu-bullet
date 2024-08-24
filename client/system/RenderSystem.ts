@@ -79,8 +79,11 @@ export class RenderSystem implements System {
                 depth: false
             });
             this.renderTargets.push(renderTarget);
-            level.initTiledData(tilesets, this.levelRoot, this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget, this.textures, this.internalIconName)
-            level.initLevelGraphic(renderTarget, tilesets, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
+            level.node.setParent(this.levelRoot);
+            level.init()
+            level.initRenderTarget(tilesets, renderTarget)
+            level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget, this.textures, this.internalIconName, tilesets)
+            level.initGraphics(renderTarget, tilesets, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
         }
     }
     update(): void {

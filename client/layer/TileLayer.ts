@@ -1,14 +1,20 @@
 import { Camera, Geometry, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Texture, Transform, Vec2, Vec3 } from "ogl";
 import { Layer } from "./Layer.js";
+import { LayerLayer, Tileset, Chunk as _Chunk } from "../misc/TiledParser.js";
 import { Chunk } from "./Chunk.js";
-import { LayerLayer, Tileset } from "../misc/TiledParser.js";
 export class TileLayer implements Layer {
+    readonly chunks: Chunk[];
     constructor(
         readonly name: string,
-        readonly chunks: Chunk[],
+        chunks: _Chunk[],
         readonly node: Transform = new Transform,
     ) {
-        chunks.forEach(chunk => chunk.node.setParent(this.node));
+        this.chunks = [];
+        chunks.forEach(chunk => {
+            const c = new Chunk(chunk.data, chunk.x, chunk.y, chunk.width, chunk.height);
+            c.node.setParent(this.node)
+            this.chunks.push(c)
+        })
     }
     drawLayer(tilesets: Tileset[], textures: Texture[], renderTarget: RenderTarget, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string) {
         const chunks = this.chunks;
@@ -33,7 +39,37 @@ export class TileLayer implements Layer {
         const max = new Vec2();
         for (let i = 0; i < chunks.length; i++) {
             const chunk = chunks[i];
-            chunk.initDrawData(w, h, gridSize, min, max, tileset, position, uv);
+            min.x = Math.min(chunk.x, min.x);
+            min.y = Math.min(chunk.y, min.y);
+            max.x = Math.max(chunk.x + chunk.width, max.x);
+            max.y = Math.max(chunk.y + chunk.height, max.y);
+            for (let j = 0; j < chunk.data.length; j++) {
+                const gid = chunk.data[j];
+                if (gid === 0) {
+                    continue;
+                }
+                const ux = ((gid - tileset.firstgid) % tileset.columns) * (tileset.tilewidth + tileset.spacing);
+                const uy = Math.floor((gid - tileset.firstgid) / tileset.columns) * (tileset.tileheight + tileset.spacing);
+                const x = ((j % chunk.width) + chunk.x) * gridSize;
+                const y = (Math.floor(j / chunk.width) + chunk.y) * gridSize;
+
+                position.push(
+                    (x), ((y)), (0),
+                    (x + gridSize), ((y)), (0),
+                    (x + gridSize), ((y + gridSize)), (0),
+                    (x + gridSize), ((y + gridSize)), (0),
+                    (x), ((y + gridSize)), (0),
+                    (x), ((y)), (0)
+                );
+                uv.push(
+                    (ux) / w, 1 - (uy) / h,
+                    (ux + gridSize) / w, 1 - (uy) / h,
+                    (ux + gridSize) / w, 1 - (uy + gridSize) / h,
+                    (ux + gridSize) / w, 1 - (uy + gridSize) / h,
+                    (ux) / w, 1 - (uy + gridSize) / h,
+                    (ux) / w, 1 - (uy) / h
+                )
+            }
         }
         //MAGIC!!! this 0.1 offset make REAL PIXEL PERFECT
         const camera = new Camera(gl, {

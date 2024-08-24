@@ -88,7 +88,6 @@ export class Chunk implements Layer {
                     throw new Error("error tile name");
                 }
 
-            console.log(mesh.name, gid)
             }
         }
     }
@@ -138,54 +137,6 @@ export class Chunk implements Layer {
             mesh.setParent(levelNode);
             mesh.geometry.computeBoundingBox();
             mesh.geometry.computeBoundingSphere();
-        }
-    }
-    initDrawData(w: number, h: number, gridSize: number, min: Vec2, max: Vec2, tileset: Tileset, position: number[], uv: number[]) {
-        const chunk = this;
-        min.x = Math.min(chunk.x, min.x);
-        min.y = Math.min(chunk.y, min.y);
-        max.x = Math.max(chunk.x + chunk.width, max.x);
-        max.y = Math.max(chunk.y + chunk.height, max.y);
-        for (let j = 0; j < chunk.data.length; j++) {
-            const gid = chunk.data[j];
-            if (gid === 0) {
-                continue;
-            }
-            const ux = ((gid - tileset.firstgid) % tileset.columns) * (tileset.tilewidth + tileset.spacing);
-            const uy = Math.floor((gid - tileset.firstgid) / tileset.columns) * (tileset.tileheight + tileset.spacing);
-            const x = ((j % chunk.width) + chunk.x) * gridSize;
-            const y = (Math.floor(j / chunk.width) + chunk.y) * gridSize;
-
-            position.push(x);
-            position.push((y));
-            position.push(0);
-            position.push(x + gridSize);
-            position.push((y));
-            position.push(0);
-            position.push(x + gridSize);
-            position.push((y + gridSize));
-            position.push(0);
-            position.push(x + gridSize);
-            position.push((y + gridSize));
-            position.push(0);
-            position.push(x);
-            position.push((y + gridSize));
-            position.push(0);
-            position.push(x);
-            position.push((y));
-            position.push(0);
-            uv.push((ux) / w);
-            uv.push(1 - (uy) / h);
-            uv.push((ux + gridSize) / w);
-            uv.push(1 - (uy) / h);
-            uv.push((ux + gridSize) / w);
-            uv.push(1 - (uy + gridSize) / h);
-            uv.push((ux + gridSize) / w);
-            uv.push(1 - (uy + gridSize) / h);
-            uv.push((ux) / w);
-            uv.push(1 - (uy + gridSize) / h);
-            uv.push((ux) / w);
-            uv.push(1 - (uy) / h);
         }
     }
     readonly node: Transform = new Transform;

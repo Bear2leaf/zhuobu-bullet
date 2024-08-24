@@ -97,7 +97,7 @@ export default class LevelSystem implements System {
         scene.children.forEach((child, index) => (index === 0 || index === (this.current + 1)) ? (child.visible = true) : (child.visible = false))
         const min = new Vec3(Infinity, Infinity, 0)
         const max = new Vec3(-Infinity, -Infinity, 0);
-        for (const child of scene.children[this.current + 1].children) {
+        for (const child of scene.children[this.current + 1].children.filter(child => child instanceof Mesh)) {
             const mesh = child as Mesh;
             const attributeData = mesh.geometry.getPosition().data;
             const indices = mesh.geometry.attributes.index?.data;
