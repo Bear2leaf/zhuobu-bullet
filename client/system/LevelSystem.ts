@@ -10,10 +10,6 @@ export default class LevelSystem implements System {
     isMazeMode = true;
     readonly center = new Vec3();
     readonly collections: Level[] = [];
-    readonly exitMeshNameSet = new Set<string | undefined>();
-    readonly dirDownMeshNameSet = new Set<string | undefined>();
-    readonly rockMeshNameSet = new Set<string | undefined>();
-    readonly pickaxeMeshNameSet = new Set<string | undefined>();
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
     update(): void {
@@ -32,11 +28,20 @@ export default class LevelSystem implements System {
             this.current = (this.current + 1) % this.collections.length;
         }
     }
+    getPickaxe() {
+        this.collections[this.current].hidePickaxe();
+    }
+    removeRock() {
+        this.collections[this.current].hideRock();
+    }
     checkNeedExit(collision: string): boolean {
-        return this.exitMeshNameSet.has(collision);
+        return this.collections[this.current].checkNeedExit(collision);
     }
     checkGetPickaxe(collision: string): boolean {
-        return this.pickaxeMeshNameSet.has(collision);
+        return this.collections[this.current].checkGetPickaxe(collision);
+    }
+    checkRock(collision: string) {
+        return this.collections[this.current].checkRock(collision);
     }
     init() {
         const tiledData = this.tiledData;
@@ -48,9 +53,6 @@ export default class LevelSystem implements System {
                 layer.name,
                 layer.x,
                 layer.y,
-                this.exitMeshNameSet,
-                this.pickaxeMeshNameSet,
-                this.rockMeshNameSet,
                 layer.layers
             );
             level.node.name = layer.name;
@@ -101,7 +103,7 @@ export default class LevelSystem implements System {
             const mesh = child as Mesh;
             const attributeData = mesh.geometry.getPosition().data;
             const indices = mesh.geometry.attributes.index?.data;
-            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []], { exit: this.exitMeshNameSet.has(mesh.name), rock: this.rockMeshNameSet.has(mesh.name), pickaxe: this.pickaxeMeshNameSet.has(mesh.name), dirDown: this.dirDownMeshNameSet.has(mesh.name) })
+            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []])
             if (!(mesh.geometry instanceof Plane || mesh.geometry instanceof Sphere)) {
                 const meshMin = mesh.geometry.bounds.min;
                 const meshMax = mesh.geometry.bounds.max;
@@ -109,11 +111,10 @@ export default class LevelSystem implements System {
                 min.y = Math.min(min.y, meshMin.y);
                 max.x = Math.max(max.x, meshMax.x);
                 max.y = Math.max(max.y, meshMax.y);
-            } else if (this.exitMeshNameSet.has(mesh.name) || this.rockMeshNameSet.has(mesh.name) || this.pickaxeMeshNameSet.has(mesh.name) || this.dirDownMeshNameSet.has(mesh.name)) {
-                mesh.visible = true;
             }
         }
+        this.collections[this.current].resetVisibility()
         this.radius = max.distance(min) / 2;
-        this.center.copy(max.add(min).multiply(0.5))
+        this.center.copy(max.add(min).multiply(0.5));
     }
 }

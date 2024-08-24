@@ -3,16 +3,61 @@ import { Geometry, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Sphe
 import { LayerLayer, Tiled, TiledLayer, Tileset } from "../misc/TiledParser.js";
 import { counterHandler, radius } from "../misc/radius.js";
 export class Level extends GroupLayer {
+    private readonly exitMeshNameSet: Set<string | undefined> = new Set();
+    private readonly pickaxeMeshNameSet: Set<string | undefined> = new Set();
+    private readonly rockMeshNameSet: Set<string | undefined> = new Set();
     constructor(
         name: string,
         x: number,
         y: number,
-        private readonly exitMeshNameSet: Set<string | undefined>,
-        private readonly pickaxeMeshNameSet: Set<string | undefined>,
-        private readonly rockMeshNameSet: Set<string | undefined>,
         tileLayersData: LayerLayer[]
     ) {
         super(name, x, y, tileLayersData);
+    }
+    resetVisibility(): void {
+        this.node.traverse(child => {
+            if (this.pickaxeMeshNameSet.has(child.name) || this.rockMeshNameSet.has(child.name)) {
+                child.visible = true
+            }
+        });
+    }
+    checkNeedExit(collision: string): boolean {
+        return this.exitMeshNameSet.has(collision);
+    }
+    checkGetPickaxe(collision: string): boolean {
+        return this.pickaxeMeshNameSet.has(collision);
+    }
+    checkRock(collision: string): boolean {
+        if (this.rockMeshNameSet.has(collision)) {
+            let hasPickaxe = false;
+            this.node.traverse(node => {
+                const find = this.pickaxeMeshNameSet.has(node.name);
+                if (find) {
+                    hasPickaxe = !node.visible;
+                }
+                return find;
+            });
+            return hasPickaxe;
+        }
+        return false;
+    }
+    hidePickaxe() {
+        this.node.traverse(node => {
+            const find = this.pickaxeMeshNameSet.has(node.name);
+            if (find) {
+                node.visible = false;
+            }
+            return find;
+        })
+    }
+    hideRock() {
+        this.node.traverse(node => {
+            const find = this.rockMeshNameSet.has(node.name);
+            if (find) {
+                node.visible = false;
+            }
+            return find;
+        })
     }
     initRenderTarget(tilesets: Tileset[], renderTarget: RenderTarget) {
         const gridSize = tilesets[0].tilewidth;

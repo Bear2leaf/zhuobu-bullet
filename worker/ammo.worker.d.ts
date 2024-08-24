@@ -32,8 +32,6 @@ export type MainMessage = {
     type: "release",
 } | {
     type: "pause",
-} | {
-    type: "getPickaxe",
 }
 export type WorkerMessage = {
     type: "update"
