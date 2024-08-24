@@ -188,7 +188,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     function updateVelocity({ name, x, y, z }: (MainMessage & { type: "updateVelocity" })["data"]) {
         const body = bodies.find(body => Ammo.castObject(body.getUserPointer(), UserData).name === name);
         if (body === undefined) {
-            throw new Error("body not found");
+            return
         }
         tempVec.setValue(x, y, z);
         body.setLinearVelocity(tempVec);
@@ -220,7 +220,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     function updateBodyCollision(name: string, enable: boolean) {
         const body = bodies.find(body => Ammo.castObject(body.getUserPointer(), UserData).name === name);
         if (body === undefined) {
-            throw new Error("body not found");
+            return
         }
         if (enable) {
             body.setCollisionFlags(CollisionFlags.CF_STATIC_OBJECT);
