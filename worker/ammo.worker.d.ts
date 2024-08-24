@@ -21,6 +21,12 @@ export type MainMessage = {
     type: "removeMesh",
     data: string
 } | {
+    type: "enableMesh",
+    data: string
+} | {
+    type: "disableMesh",
+    data: string
+} | {
     type: "addBall",
     data: { transform: number[] }
 } | {

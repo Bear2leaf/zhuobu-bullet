@@ -11,6 +11,8 @@ export default class LevelSystem implements System {
     readonly center = new Vec3();
     readonly collections: Level[] = [];
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
+    ondisablemesh?: (name: string | undefined) => void;
+    onenablemesh?: (name: string | undefined) => void;
     onaddball?: (transform: number[]) => void;
     update(): void {
         throw new Error("Method not implemented.");
@@ -42,6 +44,20 @@ export default class LevelSystem implements System {
     }
     checkRock(collision: string) {
         return this.collections[this.current].checkRock(collision);
+    }
+    hideDirDown() {
+        this.collections[this.current].hideDirDown();
+        const names = this.collections[this.current].getDirDownNames();
+        for (const name of names) {
+            this.ondisablemesh && this.ondisablemesh(name)
+        }
+    }
+    showDirDown() {
+        this.collections[this.current].showDirDown();
+        const names = this.collections[this.current].getDirDownNames();
+        for (const name of names) {
+            this.onenablemesh && this.onenablemesh(name)
+        }
     }
     init() {
         const tiledData = this.tiledData;

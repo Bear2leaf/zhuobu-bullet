@@ -179,6 +179,10 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 bodies.splice(bodies.indexOf(body), 1);
                 dynamicsWorld.removeRigidBody(body);
             }
+        } else if(message.type === "enableMesh") {
+            updateBodyCollision(message.data, true);
+        } else if(message.type === "disableMesh") {
+            updateBodyCollision(message.data, false);
         }
     }
     function updateVelocity({ name, x, y, z }: (MainMessage & { type: "updateVelocity" })["data"]) {
@@ -213,6 +217,17 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     let meanDt = 0, meanDt2 = 0, frame = 1;
     const result: WorkerMessage & { type: "update" } = { type: "update", objects: [] };
     const tempVec = new Ammo.btVector3;
+    function updateBodyCollision(name: string, enable: boolean) {
+        const body = bodies.find(body => Ammo.castObject(body.getUserPointer(), UserData).name === name);
+        if (body === undefined) {
+            throw new Error("body not found");
+        }
+        if (enable) {
+            body.setCollisionFlags(CollisionFlags.CF_STATIC_OBJECT);
+        } else {
+            body.setCollisionFlags(CollisionFlags.CF_NO_CONTACT_RESPONSE);
+        }
+    } 
     function simulate(dt: number) {
         if (pause) {
 

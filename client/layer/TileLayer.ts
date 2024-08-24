@@ -107,7 +107,7 @@ export class TileLayer implements Layer {
             clear: false
         })
     }
-    initTileChunks(tilesets: Tileset[], levelNode: Transform, gl: OGLRenderingContext, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string, textures: Texture[], internalIconName: string, exitMeshNameSet: Set<string | undefined>, pickaxeMeshNameSet: Set<string | undefined>, rockMeshNameSet: Set<string | undefined>) {
+    initTileChunks(tilesets: Tileset[], levelNode: Transform, gl: OGLRenderingContext, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string, textures: Texture[], internalIconName: string, exitMeshNameSet: Set<string | undefined>, pickaxeMeshNameSet: Set<string | undefined>, rockMeshNameSet: Set<string | undefined>, dirDownMeshNameSet: Set<string | undefined>) {
 
         const layer = this;
         const gid = layer.chunks[0].data.find(gid => gid);
@@ -128,7 +128,7 @@ export class TileLayer implements Layer {
         else if (layer.name === "Entities") {
             for (let i = 0; i < layer.chunks.length; i++) {
                 const chunk = layer.chunks[i];
-                chunk.initEntities(levelNode, tilesets, textures, gl, internalIconName, spriteVertex, spriteFragment, exitMeshNameSet, pickaxeMeshNameSet, rockMeshNameSet);
+                chunk.initEntities(levelNode, tilesets, textures, gl, internalIconName, spriteVertex, spriteFragment, exitMeshNameSet, pickaxeMeshNameSet, rockMeshNameSet, dirDownMeshNameSet);
             }
         }
     }

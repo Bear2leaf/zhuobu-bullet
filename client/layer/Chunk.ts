@@ -6,7 +6,7 @@ import ndarray from "../misc/ndarray/ndarray.js";
 import { counterHandler, radius } from "../misc/radius.js";
 
 export class Chunk implements Layer {
-    initEntities(levelNode: Transform, tilesets: Tileset[], textures: Texture[], gl: OGLRenderingContext, internalIconName: string, spriteVertex: string, spriteFragment: string, exitMeshNameSet: Set<string | undefined>, pickaxeMeshNameSet: Set<string | undefined>, rockMeshNameSet: Set<string | undefined>) {
+    initEntities(levelNode: Transform, tilesets: Tileset[], textures: Texture[], gl: OGLRenderingContext, internalIconName: string, spriteVertex: string, spriteFragment: string, exitMeshNameSet: Set<string | undefined>, pickaxeMeshNameSet: Set<string | undefined>, rockMeshNameSet: Set<string | undefined>, dirDownMeshNameSet: Set<string | undefined>) {
         const chunk = this;
         for (let j = 0; j < chunk.data.length; j++) {
             const gid = chunk.data[j];
@@ -83,7 +83,7 @@ export class Chunk implements Layer {
                 } else if (tile.name === "Rock") {
                     rockMeshNameSet.add(mesh.name);
                 } else if (tile.name === "DirDown") {
-                    // rockMeshNameSet.add(mesh.name);
+                    dirDownMeshNameSet.add(mesh.name);
                 } else {
                     throw new Error("error tile name");
                 }

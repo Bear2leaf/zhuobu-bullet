@@ -6,6 +6,7 @@ import { CameraSystem } from "./CameraSystem.js";
 import LevelSystem from "./LevelSystem.js";
 import { RenderSystem } from "./RenderSystem.js";
 import UISystem from "./UISystem.js";
+import { Quat, Vec2, Vec3 } from "ogl";
 
 export class EventSystem implements System {
     private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
@@ -15,6 +16,9 @@ export class EventSystem implements System {
     private pause = true;
     private isContinue: boolean = false;
     private freezeUI = false;
+    private readonly gravityScale = 100;
+    private readonly gravity = new Vec3();
+    private readonly acc = new Vec3(0, -this.gravityScale, 0);
     private continueButtonResolve?: (value: unknown) => void;
     constructor(
         private readonly inputSystem: InputSystem,
@@ -24,7 +28,7 @@ export class EventSystem implements System {
         private readonly uiSystem: UISystem,
         private readonly audio: AudioSystem
 
-    ) {}
+    ) { }
     onmessage(message: WorkerMessage): void {
         const audio = this.audio;
         const sendmessage = this.sendmessage;
@@ -46,7 +50,7 @@ export class EventSystem implements System {
         } else if (message.type === "collision") {
             this.handleCollision(message.data);
         }
-    } 
+    }
     init(): void {
         this.availableLevels.add(0);
         const audio = this.audio;
@@ -54,15 +58,35 @@ export class EventSystem implements System {
         if (!sendmessage) {
             throw new Error("sendmessage is undefined");
         }
+        this.levelSystem.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
+            sendmessage({
+                type: "addMesh",
+                data: { vertices: [...vertices], indices: [...indices], propertities, name, transform }
+            })
+        }
+        this.levelSystem.onaddball = (transform) => {
+            sendmessage({
+                type: "addBall",
+                data: { transform }
+            })
+        }
+        this.levelSystem.onenablemesh = (name: string | undefined) =>{
+            sendmessage({
+                type: "enableMesh",
+                data: name || ""
+            })
+        }
+        this.levelSystem.ondisablemesh = (name: string | undefined) =>{
+            sendmessage({
+                type: "disableMesh",
+                data: name || ""
+            })
+        }
         this.onpause = () => sendmessage({
             type: "pause"
         })
         this.onrelease = () => sendmessage({
             type: "release"
-        })
-        this.onaddmesh = (name, transform, vertices, indices, propertities) => sendmessage({
-            type: "addMesh",
-            data: { vertices: [...vertices], indices: [...indices], propertities, name, transform }
         })
         this.onremovemesh = (name) => {
             sendmessage({
@@ -81,10 +105,6 @@ export class EventSystem implements System {
                 }
             })
         }
-        this.onaddball = (transform) => sendmessage({
-            type: "addBall",
-            data: { transform }
-        })
         this.ontoggleaudio = () => {
             audio.toggle();
             this.updateSwitch("audio", audio.isOn())
@@ -155,6 +175,7 @@ export class EventSystem implements System {
         this.checkCharset();
         this.isContinue = true;
         this.freezeUI = false;
+        this.dirDown = false;
         if (this.availableLevels.has(this.levelSystem.current + 1)) {
             this.updateSprite("next", true);
         } else {
@@ -257,12 +278,32 @@ export class EventSystem implements System {
     ontoggleaudio?: VoidFunction;
     onresetworld?: VoidFunction;
     onremovemesh?: (name: string) => void;
-    onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
-    onaddball?: (transform: number[]) => void;
     ongetpickaxe?: () => void;
+    updateQuat(quat: Quat) {
+        this.gravity.copy(this.acc).applyQuaternion(quat.inverse()).normalize().scale(this.gravityScale)
+    }
+    dirDown = false;
+    updateDirObjects() {
+        const sendmessage = this.sendmessage;
+        if (!sendmessage) {
+            throw new Error("sendmessage is undefined");
+        }
+        if (this.gravity.y === -this.gravityScale) {
+            if (this.dirDown) {
+                return;
+            }
+            this.dirDown = true;
+            this.levelSystem.hideDirDown();
 
+        } else {
+            this.dirDown = false;
+            this.levelSystem.showDirDown();
+        }
+    }
     update(timeStamp: number): void {
-        throw new Error("Method not implemented.");
+        this.updateDirObjects()
+        this.sendmessage && this.sendmessage({ type: "updateGravity", data: `${this.gravity[0]},${this.gravity[1]},${this.gravity[2]}` })
+
     }
 
 }

@@ -16,9 +16,6 @@ export default class Engine {
     readonly eventSystem: EventSystem;
     private readonly quat = new Quat()
     private readonly matrix = new Mat4();
-    private readonly gravityScale = 100;
-    private readonly acc = new Vec3(0, -this.gravityScale, 0);
-    readonly gravity = new Vec3;
     constructor(width: number, height: number, dpr: number, canvas: HTMLCanvasElement, private readonly audio: AudioSystem) {
         const renderer = this.renderer = new Renderer({ dpr, canvas });
         const gl = renderer.gl;
@@ -26,12 +23,6 @@ export default class Engine {
         renderer.setSize(width, height);
         this.cameraSystem = new CameraSystem(gl, [width, height, dpr]);
         this.levelSystem = new LevelSystem();
-        this.levelSystem.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
-            this.eventSystem.onaddmesh && this.eventSystem.onaddmesh(name, transform, vertices, indices, propertities);
-        }
-        this.levelSystem.onaddball = (transform) => {
-            this.eventSystem.onaddball && this.eventSystem.onaddball(transform);
-        }
         this.renderSystem = new RenderSystem(gl, this.levelSystem);
         this.uiSystem = new UISystem(renderer, this.renderSystem.uiRoot);
         this.inputSystem = new InputSystem(width, height, this.cameraSystem.uiCamera, this.uiSystem);
@@ -80,9 +71,9 @@ export default class Engine {
         this.matrix.fromArray(camera.viewMatrix.multiply(scene.worldMatrix));
         this.matrix.getRotation(this.quat);
 
-        this.gravity.copy(this.acc).applyQuaternion(this.quat.inverse()).normalize().scale(this.gravityScale);
+        this.eventSystem.updateQuat(this.quat);
 
-        this.eventSystem.sendmessage && this.eventSystem.sendmessage({ type: "updateGravity", data: `${this.gravity[0]},${this.gravity[1]},${this.gravity[2]}` })
+        this.eventSystem.update(timeStamp);
     }
 
 }

@@ -100,6 +100,16 @@ export class RenderSystem implements System {
         }
         child && (child.visible = false);
     }
+    showMesh(name: string, levelSystem: LevelSystem) {
+        const scene = this.levelRoot;
+        let child: Transform | undefined;
+        if (name === "Ball") {
+            child = scene.children.find(child => child.visible && (child instanceof Mesh))
+        } else {
+            child = scene.children[levelSystem.current + 1].children.find(child => child.visible && child.name === name)
+        }
+        child && (child.visible = true);
+    }
 
     updateMesh(message: WorkerMessage & { type: "update" }, levelSystem: LevelSystem) {
         const scene = this.levelRoot;
