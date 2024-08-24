@@ -40,14 +40,14 @@ export default class Engine {
         gl.clearColor(0.3, 0.3, 0.6, 1);
         renderer.setSize(width, height);
         this.cameraSystem = new CameraSystem(gl, [width, height, dpr]);
-        this.levelSystem = new LevelSystem(renderer.gl);
+        this.levelSystem = new LevelSystem();
         this.levelSystem.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
             this.onaddmesh && this.onaddmesh(name, transform, vertices, indices, propertities);
         }
         this.levelSystem.onaddball = (transform) => {
             this.onaddball && this.onaddball(transform);
         }
-        this.renderSystem = new RenderSystem(gl, this.levelSystem.collections, this.levelSystem.exitMeshNameSet, this.levelSystem.pickaxeMeshNameSet, this.levelSystem.rockMeshNameSet,);
+        this.renderSystem = new RenderSystem(gl, this.levelSystem);
         this.uiSystem = new UISystem(renderer, this.renderSystem.uiRoot);
 
         this.inputSystem = new InputSystem(width, height, this.cameraSystem.uiCamera, this.uiSystem);
@@ -74,6 +74,7 @@ export default class Engine {
         }
     }
     start() {
+        this.levelSystem.init();
         this.uiSystem.init();
         this.inputSystem.init();
         this.inputSystem.initTouchEvents();

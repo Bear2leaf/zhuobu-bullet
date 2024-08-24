@@ -1,6 +1,7 @@
 import { Box, Camera, Geometry, Mat4, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Sphere, Texture, Transform, Triangle, Vec2, Vec3, Vec4 } from "ogl";
 import { Convert, Tiled } from "../misc/TiledParser.js";
 import { System } from "./System.js";
+import { Level } from "../layer/Level.js";
 
 export default class LevelSystem implements System {
     tiledData?: Tiled;
@@ -8,15 +9,13 @@ export default class LevelSystem implements System {
     current = 0;
     isMazeMode = true;
     readonly center = new Vec3();
-    readonly collections: Transform[] = [];
+    readonly collections: Level[] = [];
     readonly exitMeshNameSet = new Set<string | undefined>();
     readonly dirDownMeshNameSet = new Set<string | undefined>();
     readonly rockMeshNameSet = new Set<string | undefined>();
     readonly pickaxeMeshNameSet = new Set<string | undefined>();
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
     onaddball?: (transform: number[]) => void;
-    constructor(private readonly gl: OGLRenderingContext) {
-    }
     update(): void {
         throw new Error("Method not implemented.");
     }
@@ -40,6 +39,23 @@ export default class LevelSystem implements System {
         return this.pickaxeMeshNameSet.has(collision);
     }
     init() {
+        const tiledData = this.tiledData;
+        if (!tiledData) {
+            throw new Error("tiledData is undefined");
+        }
+        tiledData.layers.forEach(layer => {
+            const level = new Level(
+                layer.name,
+                layer.x,
+                layer.y,
+                this.exitMeshNameSet,
+                this.pickaxeMeshNameSet,
+                this.rockMeshNameSet,
+                layer.layers
+            );
+            level.node.name = layer.name;
+            this.collections.push(level);
+        })
     }
     request(scene: Transform) {
         const tiledData = this.tiledData;

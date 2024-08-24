@@ -1,9 +1,9 @@
 import { Camera, Geometry, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Sphere, Texture, Transform, Vec2, Vec3 } from "ogl";
 import { System } from "./System.js";
 import { Tiled } from "../misc/TiledParser.js";
-import { initTiledData } from "../tile/initTiledData.js";
 import LevelSystem from "./LevelSystem.js";
 import { WorkerMessage } from "../../worker/ammo.worker.js";
+import { radius } from "../misc/radius.js";
 
 export class RenderSystem implements System {
     readonly uiRoot = new Transform;
@@ -17,11 +17,10 @@ export class RenderSystem implements System {
     private readonly textures: Texture[] = [];
     private readonly renderTargets: RenderTarget[] = [];
     private readonly internalIconName = "finalbossblues-icons_full_16";
-    constructor(private readonly gl: OGLRenderingContext, private readonly collections: Transform[]
-        , private readonly exitMeshNameSet: Set<string | undefined>
-        , private readonly pickaxeMeshNameSet: Set<string | undefined>
-        , private readonly rockMeshNameSet: Set<string | undefined>) {
-
+    constructor(private readonly gl: OGLRenderingContext
+        , private readonly levelSystem: LevelSystem
+    ) {
+        console.log(this.levelRoot)
     }
     tiledData?: Tiled;
     async load(): Promise<void> {
@@ -55,26 +54,34 @@ export class RenderSystem implements System {
         }
     }
     init(): void {
-        if (!this.tiledData) {
-            throw new Error("tiledData is undefined");
+
+        const program = new Program(this.gl, {
+            vertex: this.ballVertex,
+            fragment: this.ballFragment,
+            uniforms: {
+                uColor: {
+                    value: new Vec3(0.7, 0.2, 0.7)
+                }
+            }
+        });
+        const geometry = new Sphere(this.gl, { radius });
+        const mesh = new Mesh(this.gl, {
+            geometry,
+            program,
+        });
+        mesh.setParent(this.levelRoot);
+        mesh.name = "Ball"
+        const tilesets = this.tiledData?.tilesets || [];
+        for (const level of this.levelSystem.collections) {
+            const renderTarget = new RenderTarget(this.gl, {
+                minFilter: this.gl.NEAREST,
+                magFilter: this.gl.NEAREST,
+                depth: false
+            });
+            this.renderTargets.push(renderTarget);
+            level.initTiledData(tilesets, this.levelRoot, this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget, this.textures, this.internalIconName)
+            level.initLevelGraphic(renderTarget, tilesets, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
         }
-        initTiledData(this.tiledData,
-            this.gl,
-            this.levelRoot,
-            this.vertex,
-            this.fragment,
-            this.spriteVertex,
-            this.spriteFragment,
-            this.ballVertex,
-            this.ballFragment,
-            this.renderTargets,
-            this.textures,
-            this.collections,
-            this.internalIconName,
-            this.exitMeshNameSet,
-            this.pickaxeMeshNameSet,
-            this.rockMeshNameSet
-        );
     }
     update(): void {
         throw new Error("Method not implemented.");
