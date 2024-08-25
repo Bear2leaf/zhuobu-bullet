@@ -76,6 +76,12 @@ export class EventSystem implements System {
                 data: name || ""
             })
         }
+        this.onteleport = (from: string, to: string) =>{
+            sendmessage({
+                type: "teleport",
+                data: [from, to]
+            })
+        }
         this.levelSystem.ondisablemesh = (name: string | undefined) =>{
             sendmessage({
                 type: "disableMesh",
@@ -101,7 +107,7 @@ export class EventSystem implements System {
                     name,
                     x,
                     y,
-                    z
+                    z,
                 }
             })
         }
@@ -201,6 +207,9 @@ export class EventSystem implements System {
             } else if (this.levelSystem.checkRock(data[1])) {
                 this.levelSystem.removeRock();
                 this.onremovemesh && this.onremovemesh(data[1])
+            } else if (this.levelSystem.checkTeleport(data[1])) {
+                const to = this.levelSystem.getTeleportDestinationName();
+                this.onteleport && this.onteleport(data[0], to);
             }
         }
     }
@@ -274,6 +283,7 @@ export class EventSystem implements System {
     onpause?: () => void;
     onrelease?: () => void;
     onclick?: (tag?: string) => void;
+    onteleport?: (from: string, to: string) => void;
     onupdatevelocity?: (name: string, x: number, y: number, z: number) => void;
     ontoggleaudio?: VoidFunction;
     onresetworld?: VoidFunction;

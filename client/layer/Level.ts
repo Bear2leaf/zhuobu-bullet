@@ -7,6 +7,8 @@ export class Level extends GroupLayer {
     private readonly pickaxeMeshNameSet: Set<string | undefined> = new Set();
     private readonly rockMeshNameSet: Set<string | undefined> = new Set();
     private readonly dirDownMeshNameSet: Set<string | undefined> = new Set();
+    private readonly teleportMeshNameSet: Set<string | undefined> = new Set();
+    private readonly teleportDestinationMeshNameSet: Set<string | undefined> = new Set();
     constructor(
         name: string,
         x: number,
@@ -17,7 +19,7 @@ export class Level extends GroupLayer {
     }
     resetVisibility(): void {
         this.node.traverse(child => {
-            if (this.pickaxeMeshNameSet.has(child.name) || this.rockMeshNameSet.has(child.name) || this.dirDownMeshNameSet.has(child.name)) {
+            if (this.pickaxeMeshNameSet.has(child.name) || this.rockMeshNameSet.has(child.name) || this.dirDownMeshNameSet.has(child.name) || this.teleportMeshNameSet.has(child.name)) {
                 child.visible = true
             }
         });
@@ -43,8 +45,19 @@ export class Level extends GroupLayer {
             return find;
         })
     }
+    getTeleportDestinationName() {
+        const names = [...this.teleportDestinationMeshNameSet];
+        const name = names[0]
+        if (names.length !== 1 || !name) {
+            throw new Error("wrong teleportDestinationMeshNameSet");
+        }
+        return name;
+    }
     checkNeedExit(collision: string): boolean {
         return this.exitMeshNameSet.has(collision);
+    }
+    checkTeleport(collision: string) {
+        return this.teleportMeshNameSet.has(collision);
     }
     checkGetPickaxe(collision: string): boolean {
         return this.pickaxeMeshNameSet.has(collision);
@@ -102,7 +115,7 @@ export class Level extends GroupLayer {
             if (tileLayer.name !== "Entities") {
                 tileLayer.drawLayer(tilesets, textures, renderTarget, gl, spriteVertex, spriteFragment);
             }
-            tileLayer.initTileChunks(tilesets, this.node, gl, vertex, fragment, spriteVertex, spriteFragment, textures, internalIconName, this.exitMeshNameSet, this.pickaxeMeshNameSet, this.rockMeshNameSet, this.dirDownMeshNameSet)
+            tileLayer.initTileChunks(tilesets, this.node, gl, vertex, fragment, spriteVertex, spriteFragment, textures, internalIconName, this.exitMeshNameSet, this.pickaxeMeshNameSet, this.rockMeshNameSet, this.dirDownMeshNameSet, this.teleportMeshNameSet, this.teleportDestinationMeshNameSet)
         }
     }
     initGraphics(renderTarget: RenderTarget, tilesets: Tileset[], gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, vertex: string, fragment: string) {

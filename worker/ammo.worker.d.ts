@@ -33,6 +33,9 @@ export type MainMessage = {
     type: "updateVelocity",
     data: { x: number, y: number, z: number, name: string }
 } | {
+    type: "teleport",
+    data: [string, string]
+} | {
     type: "resetWorld",
 } | {
     type: "release",

@@ -30,11 +30,17 @@ export default class LevelSystem implements System {
             this.current = (this.current + 1) % this.collections.length;
         }
     }
+    getTeleportDestinationName() {
+        return this.collections[this.current].getTeleportDestinationName();
+    }
     getPickaxe() {
         this.collections[this.current].hidePickaxe();
     }
     removeRock() {
         this.collections[this.current].hideRock();
+    }
+    checkTeleport(collision: string) {
+        return this.collections[this.current].checkTeleport(collision);
     }
     checkNeedExit(collision: string): boolean {
         return this.collections[this.current].checkNeedExit(collision);

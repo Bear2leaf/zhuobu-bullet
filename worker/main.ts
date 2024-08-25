@@ -159,9 +159,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             if (v.propertities?.dynamic) {
                 body.setCollisionFlags(body.getCollisionFlags() | CollisionFlags.CF_KINEMATIC_OBJECT)
             }
-            if (v.propertities?.exit || v.propertities?.pickaxe) {
-                body.setCollisionFlags(body.getCollisionFlags() | CollisionFlags.CF_NO_CONTACT_RESPONSE)
-            }
             body.setUserPointer(v)
             dynamicsWorld.addRigidBody(body);
             bodies.push(body);
@@ -173,15 +170,28 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             pause = true;
         } else if (message.type === "updateVelocity") {
             updateVelocity(message.data)
+        } else if (message.type === "teleport") {
+            const [from, to] = message.data;
+            const bodyFrom = bodies.find(body => Ammo.castObject(body.getUserPointer(), UserData).name === from)
+            const bodyTo = bodies.find(body => Ammo.castObject(body.getUserPointer(), UserData).name === to)
+            if (bodyFrom && bodyTo) {
+                bodyTo.setCollisionFlags(CollisionFlags.CF_NO_CONTACT_RESPONSE);
+
+                const transform = new Ammo.btTransform;
+                bodyTo.getMotionState().getWorldTransform(transform);
+                const state = bodyFrom.getMotionState();
+                state.setWorldTransform(transform);
+                bodyFrom.setMotionState(state);
+            }
         } else if (message.type === "removeMesh") {
             const body = bodies.find(body => Ammo.castObject(body.getUserPointer(), UserData).name === message.data)
             if (body) {
                 bodies.splice(bodies.indexOf(body), 1);
                 dynamicsWorld.removeRigidBody(body);
             }
-        } else if(message.type === "enableMesh") {
+        } else if (message.type === "enableMesh") {
             updateBodyCollision(message.data, true);
-        } else if(message.type === "disableMesh") {
+        } else if (message.type === "disableMesh") {
             updateBodyCollision(message.data, false);
         }
     }
@@ -227,7 +237,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         } else {
             body.setCollisionFlags(CollisionFlags.CF_NO_CONTACT_RESPONSE);
         }
-    } 
+    }
     function simulate(dt: number) {
         if (pause) {
 
