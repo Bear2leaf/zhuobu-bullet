@@ -181,11 +181,11 @@ export class EventSystem implements System {
         } else {
             this.updateSprite("next", false);
         }
-        if (this.availableLevels.has(this.levelSystem.current - 1)) {
-            this.updateSprite("prev", true);
-        } else {
-            this.updateSprite("prev", false);
-        }
+        // if (this.availableLevels.has(this.levelSystem.current - 1)) {
+        //     this.updateSprite("prev", true);
+        // } else {
+        //     this.updateSprite("prev", false);
+        // }
         this.cameraSystem.resetRotation();
     }
     handleCollision(data: [string, string]) {
