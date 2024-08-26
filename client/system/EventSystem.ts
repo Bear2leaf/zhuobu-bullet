@@ -205,7 +205,7 @@ export class EventSystem implements System {
                 this.levelSystem.getPickaxe();
                 this.onremovemesh && this.onremovemesh(data[1])
             } else if (this.levelSystem.checkRock(data[1])) {
-                this.levelSystem.removeRock();
+                this.levelSystem.removeRock(data[1]);
                 this.onremovemesh && this.onremovemesh(data[1])
             } else if (this.levelSystem.checkTeleport(data[1])) {
                 const to = this.levelSystem.getTeleportDestinationName();

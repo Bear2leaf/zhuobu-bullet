@@ -36,8 +36,8 @@ export default class LevelSystem implements System {
     getPickaxe() {
         this.collections[this.current].hidePickaxe();
     }
-    removeRock() {
-        this.collections[this.current].hideRock();
+    removeRock(name: string) {
+        this.collections[this.current].hideRock(name);
     }
     checkTeleport(collision: string) {
         return this.collections[this.current].checkTeleport(collision);

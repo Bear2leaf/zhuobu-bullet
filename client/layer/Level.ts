@@ -72,10 +72,10 @@ export class Level extends GroupLayer {
             return find;
         })
     }
-    hideRock() {
+    hideRock(name: string) {
         this.node?.traverse(node => {
             const find = this.namesMap.get("Rock")?.has(node.name);
-            if (find) {
+            if (find && name === node.name) {
                 node.visible = false;
             }
             return find;
