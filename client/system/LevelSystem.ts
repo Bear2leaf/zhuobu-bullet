@@ -77,7 +77,6 @@ export default class LevelSystem implements System {
                 layer.y,
                 layer.layers
             );
-            level.node.name = layer.name;
             this.collections.push(level);
         })
     }
@@ -88,8 +87,8 @@ export default class LevelSystem implements System {
         }
         const gridSize = tiledData.tilewidth;
         const levels = tiledData.layers;
-        const level = levels[this.current];
-        const layerInstances = level.layers;
+        const tiledLayer = levels[this.current];
+        const layerInstances = tiledLayer.layers;
         for (const layerInstance of layerInstances) {
             if (layerInstance.name === "Entities") {
                 for (const chunk of layerInstance.chunks) {
@@ -121,22 +120,36 @@ export default class LevelSystem implements System {
         scene.children.forEach((child, index) => (index === 0 || index === (this.current + 1)) ? (child.visible = true) : (child.visible = false))
         const min = new Vec3(Infinity, Infinity, 0)
         const max = new Vec3(-Infinity, -Infinity, 0);
-        for (const child of scene.children[this.current + 1].children.filter(child => child instanceof Mesh)) {
-            const mesh = child as Mesh;
-            const attributeData = mesh.geometry.getPosition().data;
-            const indices = mesh.geometry.attributes.index?.data;
-            this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []])
-            if (!(mesh.geometry instanceof Plane || mesh.geometry instanceof Sphere)) {
-                const meshMin = mesh.geometry.bounds.min;
-                const meshMax = mesh.geometry.bounds.max;
-                min.x = Math.min(min.x, meshMin.x);
-                min.y = Math.min(min.y, meshMin.y);
-                max.x = Math.max(max.x, meshMax.x);
-                max.y = Math.max(max.y, meshMax.y);
+        const level = this.collections[this.current];
+        for (const child of level.node.children) {
+            if (child instanceof Mesh) {
+                this.buildChildCollision(child, min, max);
+            }
+        }
+        for (const tileLayer of level.tileLayers) {
+            for (const child of tileLayer.node.children) {
+                if (child instanceof Mesh) {
+                    this.buildChildCollision(child, min, max);
+                }
             }
         }
         this.collections[this.current].resetVisibility()
         this.radius = max.distance(min) / 2;
         this.center.copy(max.add(min).multiply(0.5));
+    }
+    private buildChildCollision(child: Mesh, min: Vec3, max: Vec3) {
+
+        const mesh = child;
+        const attributeData = mesh.geometry.getPosition().data;
+        const indices = mesh.geometry.attributes.index?.data;
+        this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []])
+        if (!(mesh.geometry instanceof Plane || mesh.geometry instanceof Sphere)) {
+            const meshMin = mesh.geometry.bounds.min;
+            const meshMax = mesh.geometry.bounds.max;
+            min.x = Math.min(min.x, meshMin.x);
+            min.y = Math.min(min.y, meshMin.y);
+            max.x = Math.max(max.x, meshMax.x);
+            max.y = Math.max(max.y, meshMax.y);
+        }
     }
 }

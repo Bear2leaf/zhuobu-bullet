@@ -4,15 +4,14 @@ import { LayerLayer, Tileset, Chunk as _Chunk } from "../misc/TiledParser.js";
 import { Chunk } from "./Chunk.js";
 export class TileLayer implements Layer {
     readonly chunks: Chunk[];
+    readonly node: Transform = new Transform;
     constructor(
         readonly name: string,
         chunks: _Chunk[],
-        readonly node: Transform = new Transform,
     ) {
         this.chunks = [];
         chunks.forEach(chunk => {
             const c = new Chunk(chunk.data, chunk.x, chunk.y, chunk.width, chunk.height);
-            c.node.setParent(this.node)
             this.chunks.push(c)
         })
     }
@@ -107,7 +106,7 @@ export class TileLayer implements Layer {
             clear: false
         })
     }
-    initTileChunks(tilesets: Tileset[], levelNode: Transform, gl: OGLRenderingContext, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string, textures: Texture[], internalIconName: string, exitMeshNameSet: Set<string | undefined>, pickaxeMeshNameSet: Set<string | undefined>, rockMeshNameSet: Set<string | undefined>, dirDownMeshNameSet: Set<string | undefined>, teleportMeshNameSet: Set<string | undefined>, teleportDestinationMeshNameSet: Set<string | undefined>) {
+    initTileChunks(tilesets: Tileset[], gl: OGLRenderingContext, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string, textures: Texture[], internalIconName: string, namesMap: Map<string, Set<string | undefined>>) {
 
         const layer = this;
         const gid = layer.chunks[0].data.find(gid => gid);
@@ -122,13 +121,13 @@ export class TileLayer implements Layer {
         if (layer.name === "Collisions") {
             for (let i = 0; i < layer.chunks.length; i++) {
                 const chunk = layer.chunks[i];
-                chunk.initCollisions(gridSize, levelNode, gl, vertex, fragment)
+                chunk.initCollisions(gridSize, this.node, gl, vertex, fragment)
             }
         }
         else if (layer.name === "Entities") {
             for (let i = 0; i < layer.chunks.length; i++) {
                 const chunk = layer.chunks[i];
-                chunk.initEntities(levelNode, tilesets, textures, gl, internalIconName, spriteVertex, spriteFragment, exitMeshNameSet, pickaxeMeshNameSet, rockMeshNameSet, dirDownMeshNameSet, teleportMeshNameSet, teleportDestinationMeshNameSet);
+                chunk.initEntities(this.node, tilesets, textures, gl, internalIconName, spriteVertex, spriteFragment, namesMap);
             }
         }
     }

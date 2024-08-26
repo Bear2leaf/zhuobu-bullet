@@ -6,7 +6,8 @@ import ndarray from "../misc/ndarray/ndarray.js";
 import { counterHandler, radius } from "../misc/radius.js";
 
 export class Chunk implements Layer {
-    initEntities(levelNode: Transform, tilesets: Tileset[], textures: Texture[], gl: OGLRenderingContext, internalIconName: string, spriteVertex: string, spriteFragment: string, exitMeshNameSet: Set<string | undefined>, pickaxeMeshNameSet: Set<string | undefined>, rockMeshNameSet: Set<string | undefined>, dirDownMeshNameSet: Set<string | undefined>, teleportMeshNameSet: Set<string | undefined>, teleportDestinationMeshNameSet: Set<string | undefined>) {
+    readonly node = new Transform
+    initEntities(levelNode: Transform, tilesets: Tileset[], textures: Texture[], gl: OGLRenderingContext, internalIconName: string, spriteVertex: string, spriteFragment: string, namesMap: Map<string, Set<string | undefined>>) {
         const chunk = this;
         for (let j = 0; j < chunk.data.length; j++) {
             const gid = chunk.data[j];
@@ -37,12 +38,12 @@ export class Chunk implements Layer {
                 w: (tileset.tilewidth + tileset.spacing),
                 h: (tileset.tileheight + tileset.spacing)
             };
-            if (tile.name === "Exit" || tile.name === "Rock" || tile.name === "Pickaxe" || tile.name === "DirDown" || tile.name === "Teleport" || tile.name === "TeleportDestination") {
-                const texture = textures.find(texture => (texture.image as HTMLImageElement).src.indexOf(internalIconName) !== -1);
+            const texture = textures.find(texture => (texture.image as HTMLImageElement).src.indexOf(internalIconName) !== -1);
 
-                if (!texture) {
-                    throw new Error("texture is undefined");
-                }
+            if (!texture) {
+                throw new Error("texture is undefined");
+            }
+            if (tile.name !== "Player") {
                 const w = texture.width;
                 const h = texture.height;
                 const mesh = new Mesh(gl, {
@@ -76,22 +77,15 @@ export class Chunk implements Layer {
                 mesh.updateMatrix();
                 mesh.geometry.computeBoundingBox();
                 mesh.geometry.computeBoundingSphere();
-                if (tile.name === "Exit") {
-                    exitMeshNameSet.add(mesh.name);
-                } else if (tile.name === "Pickaxe") {
-                    pickaxeMeshNameSet.add(mesh.name);
-                } else if (tile.name === "Rock") {
-                    rockMeshNameSet.add(mesh.name);
-                } else if (tile.name === "DirDown") {
-                    dirDownMeshNameSet.add(mesh.name);
-                }  else if (tile.name === "Teleport") {
-                    teleportMeshNameSet.add(mesh.name);
-                }  else if (tile.name === "TeleportDestination") {
-                    teleportDestinationMeshNameSet.add(mesh.name);
-                } else {
-                    throw new Error("error tile name");
-                }
 
+                const tileNameSet = namesMap.get(tile.name);
+                if (tileNameSet) {
+                    tileNameSet.add(mesh.name);
+                } else {
+                    const newNameSet = new Set<string>();
+                    newNameSet.add(mesh.name);
+                    namesMap.set(tile.name, newNameSet);
+                }
             }
         }
     }
@@ -143,7 +137,6 @@ export class Chunk implements Layer {
             mesh.geometry.computeBoundingSphere();
         }
     }
-    readonly node: Transform = new Transform;
     constructor(
         readonly data: number[],
         readonly x: number,

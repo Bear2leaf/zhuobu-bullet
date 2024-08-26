@@ -3,12 +3,6 @@ import { Geometry, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Sphe
 import { LayerLayer, Tiled, TiledLayer, Tileset } from "../misc/TiledParser.js";
 import { counterHandler, radius } from "../misc/radius.js";
 export class Level extends GroupLayer {
-    private readonly exitMeshNameSet: Set<string | undefined> = new Set();
-    private readonly pickaxeMeshNameSet: Set<string | undefined> = new Set();
-    private readonly rockMeshNameSet: Set<string | undefined> = new Set();
-    private readonly dirDownMeshNameSet: Set<string | undefined> = new Set();
-    private readonly teleportMeshNameSet: Set<string | undefined> = new Set();
-    private readonly teleportDestinationMeshNameSet: Set<string | undefined> = new Set();
     constructor(
         name: string,
         x: number,
@@ -18,18 +12,22 @@ export class Level extends GroupLayer {
         super(name, x, y, tileLayersData);
     }
     resetVisibility(): void {
-        this.node.traverse(child => {
-            if (this.pickaxeMeshNameSet.has(child.name) || this.rockMeshNameSet.has(child.name) || this.dirDownMeshNameSet.has(child.name) || this.teleportMeshNameSet.has(child.name)) {
+        const names = [...this.namesMap.values()].reduce<Set<string | undefined>>((prev, curr) => {
+            curr.forEach(o => prev.add(o));
+            return prev;
+        }, new Set())
+        this.node?.traverse(child => {
+            if (names.has(child.name)) {
                 child.visible = true
             }
         });
     }
     getDirDownNames() {
-        return this.dirDownMeshNameSet.values()
+        return [...this.namesMap.get("DirDown") || []]
     }
     showDirDown() {
-        this.node.traverse(node => {
-            const find = this.dirDownMeshNameSet.has(node.name);
+        this.node?.traverse(node => {
+            const find = this.namesMap.get("DirDown")?.has(node.name);
             if (find) {
                 node.visible = true;
             }
@@ -37,8 +35,8 @@ export class Level extends GroupLayer {
         })
     }
     hideDirDown() {
-        this.node.traverse(node => {
-            const find = this.dirDownMeshNameSet.has(node.name);
+        this.node?.traverse(node => {
+            const find = this.namesMap.get("DirDown")?.has(node.name);
             if (find) {
                 node.visible = false;
             }
@@ -46,7 +44,7 @@ export class Level extends GroupLayer {
         })
     }
     getTeleportDestinationName() {
-        const names = [...this.teleportDestinationMeshNameSet];
+        const names = [...this.namesMap.get("TeleportDestination") || []];
         const name = names[0]
         if (names.length !== 1 || !name) {
             throw new Error("wrong teleportDestinationMeshNameSet");
@@ -54,19 +52,19 @@ export class Level extends GroupLayer {
         return name;
     }
     checkNeedExit(collision: string): boolean {
-        return this.exitMeshNameSet.has(collision);
+        return this.namesMap.get("Exit")?.has(collision) || false;
     }
     checkTeleport(collision: string) {
-        return this.teleportMeshNameSet.has(collision);
+        return this.namesMap.get("Teleport")?.has(collision);
     }
     checkGetPickaxe(collision: string): boolean {
-        return this.pickaxeMeshNameSet.has(collision);
+        return this.namesMap.get("Pickaxe")?.has(collision) || false;
     }
     checkRock(collision: string): boolean {
-        if (this.rockMeshNameSet.has(collision)) {
+        if (this.namesMap.get("Rock")?.has(collision)) {
             let hasPickaxe = false;
-            this.node.traverse(node => {
-                const find = this.pickaxeMeshNameSet.has(node.name);
+            this.node?.traverse(node => {
+                const find = this.namesMap.get("Pickaxe")?.has(node.name);
                 if (find) {
                     hasPickaxe = !node.visible;
                 }
@@ -77,8 +75,8 @@ export class Level extends GroupLayer {
         return false;
     }
     hidePickaxe() {
-        this.node.traverse(node => {
-            const find = this.pickaxeMeshNameSet.has(node.name);
+        this.node?.traverse(node => {
+            const find = this.namesMap.get("Pickaxe")?.has(node.name);
             if (find) {
                 node.visible = false;
             }
@@ -86,8 +84,8 @@ export class Level extends GroupLayer {
         })
     }
     hideRock() {
-        this.node.traverse(node => {
-            const find = this.rockMeshNameSet.has(node.name);
+        this.node?.traverse(node => {
+            const find = this.namesMap.get("Rock")?.has(node.name);
             if (find) {
                 node.visible = false;
             }
@@ -115,48 +113,39 @@ export class Level extends GroupLayer {
             if (tileLayer.name !== "Entities") {
                 tileLayer.drawLayer(tilesets, textures, renderTarget, gl, spriteVertex, spriteFragment);
             }
-            tileLayer.initTileChunks(tilesets, this.node, gl, vertex, fragment, spriteVertex, spriteFragment, textures, internalIconName, this.exitMeshNameSet, this.pickaxeMeshNameSet, this.rockMeshNameSet, this.dirDownMeshNameSet, this.teleportMeshNameSet, this.teleportDestinationMeshNameSet)
+            tileLayer.initTileChunks(tilesets, gl, vertex, fragment, spriteVertex, spriteFragment, textures, internalIconName, this.namesMap)
         }
     }
     initGraphics(renderTarget: RenderTarget, tilesets: Tileset[], gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, vertex: string, fragment: string) {
-
         const gridSize = tilesets[0].tilewidth;
-        const mesh = new Mesh(gl, {
-            geometry: new Plane(gl, {
-                width: renderTarget.width,
-                height: renderTarget.height,
-            }),
-            program: new Program(gl, {
-                vertex: spriteVertex,
-                fragment: spriteFragment,
-                uniforms: {
-                    tMap: { value: renderTarget.texture }
-                },
-                frontFace: gl.CW,
-                transparent: true
-            })
-        });
-        mesh.name = "test" + counterHandler.counter++;
-        const min = this.tileLayers.reduce((lprev, lcurr) => {
-            const min = lcurr.chunks.reduce((prev, curr) => {
-                prev.x = Math.min(curr.x, prev.x);
-                prev.y = Math.min(curr.y, prev.y);
-                return prev;
-            }, new Vec2);
-            lprev.x = Math.min(min.x, lprev.x);
-            lprev.y = Math.min(min.y, lprev.y);
-            return lprev;
-        }, new Vec2);
-        const offsetX = (this.x + (min.x * gridSize) + renderTarget.width / 2);
-        const offsetY = -(this.y + (min.y * gridSize) + renderTarget.height / 2);
-        mesh.position.x = offsetX;
-        mesh.position.y = offsetY;
-        mesh.rotation.x = Math.PI;
-        mesh.position.z = -radius;
-        mesh.updateMatrix();
-        mesh.setParent(this.node);
-        mesh.geometry.computeBoundingBox();
-        mesh.geometry.computeBoundingSphere();
+        const offsetX = (this.x + (this.min.x * gridSize) + renderTarget.width / 2);
+        const offsetY = -(this.y + (this.min.y * gridSize) + renderTarget.height / 2);
+        {
+            const mesh = new Mesh(gl, {
+                geometry: new Plane(gl, {
+                    width: renderTarget.width,
+                    height: renderTarget.height,
+                }),
+                program: new Program(gl, {
+                    vertex: spriteVertex,
+                    fragment: spriteFragment,
+                    uniforms: {
+                        tMap: { value: renderTarget.texture }
+                    },
+                    frontFace: gl.CW,
+                    transparent: true
+                })
+            });
+            mesh.name = "test" + counterHandler.counter++;
+            mesh.position.x = offsetX;
+            mesh.position.y = offsetY;
+            mesh.rotation.x = Math.PI;
+            mesh.position.z = -radius;
+            mesh.updateMatrix();
+            mesh.setParent(this.node);
+            mesh.geometry.computeBoundingBox();
+            mesh.geometry.computeBoundingSphere();
+        }
         {
             const mesh = new Mesh(gl, {
                 geometry: new Plane(gl, {

@@ -1,5 +1,5 @@
-import { Transform } from "ogl";
+import {  Transform } from "ogl";
 
 export interface Layer {
-    readonly node: Transform;
+     readonly node: Transform;
 }

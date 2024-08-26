@@ -20,7 +20,6 @@ export class RenderSystem implements System {
     constructor(private readonly gl: OGLRenderingContext
         , private readonly levelSystem: LevelSystem
     ) {
-        console.log(this.levelRoot)
     }
     tiledData?: Tiled;
     async load(): Promise<void> {
@@ -79,11 +78,11 @@ export class RenderSystem implements System {
                 depth: false
             });
             this.renderTargets.push(renderTarget);
-            level.node.setParent(this.levelRoot);
             level.init()
             level.initRenderTarget(tilesets, renderTarget)
             level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget, this.textures, this.internalIconName, tilesets)
             level.initGraphics(renderTarget, tilesets, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
+            level.node.setParent(this.levelRoot);
         }
     }
     update(): void {
