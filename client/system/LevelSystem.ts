@@ -51,16 +51,16 @@ export default class LevelSystem implements System {
     checkRock(collision: string) {
         return this.collections[this.current].checkRock(collision);
     }
-    hideDirDown() {
-        this.collections[this.current].updateVisible("DirDown", false);
-        const names = this.collections[this.current].getMeshNames("DirDown");
+    hideDirEntity(dir: "Down" | "Up" | "Left" | "Right") {
+        this.collections[this.current].updateVisible("Dir" + dir, false);
+        const names = this.collections[this.current].getMeshNames("Dir" + dir);
         for (const name of names) {
             this.ondisablemesh && this.ondisablemesh(name)
         }
     }
-    showDirDown() {
-        this.collections[this.current].updateVisible("DirDown", true);
-        const names = this.collections[this.current].getMeshNames("DirDown");
+    showDirEntity(dir: "Down" | "Up" | "Left" | "Right") {
+        this.collections[this.current].updateVisible("Dir" + dir, true);
+        const names = this.collections[this.current].getMeshNames("Dir" + dir);
         for (const name of names) {
             this.onenablemesh && this.onenablemesh(name)
         }

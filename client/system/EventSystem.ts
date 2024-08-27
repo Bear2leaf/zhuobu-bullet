@@ -16,6 +16,7 @@ export class EventSystem implements System {
     private pause = true;
     private isContinue: boolean = false;
     private freezeUI = false;
+    private readonly dirSet = new Set<"Down" | "Up" | "Left" | "Right">();
     private readonly gravityScale = 100;
     private readonly gravity = new Vec3();
     private readonly acc = new Vec3(0, -this.gravityScale, 0);
@@ -181,7 +182,7 @@ export class EventSystem implements System {
         this.checkCharset();
         this.isContinue = true;
         this.freezeUI = false;
-        this.dirDown = false;
+        this.dirSet.clear();
         if (this.availableLevels.has(this.levelSystem.current + 1)) {
             this.updateSprite("next", true);
         } else {
@@ -292,22 +293,62 @@ export class EventSystem implements System {
     updateQuat(quat: Quat) {
         this.gravity.copy(this.acc).applyQuaternion(quat.inverse()).normalize().scale(this.gravityScale)
     }
-    dirDown = false;
     updateDirObjects() {
         const sendmessage = this.sendmessage;
         if (!sendmessage) {
             throw new Error("sendmessage is undefined");
         }
-        if (this.gravity.y === -this.gravityScale) {
-            if (this.dirDown) {
-                return;
+        {
+            const dir = "Down";
+            if (this.gravity.y === -this.gravityScale) {
+                if (this.dirSet.has(dir)) {
+                    return;
+                }
+                this.dirSet.add(dir);
+                this.levelSystem.hideDirEntity(dir);
+            } else {
+                this.dirSet.delete(dir);
+                this.levelSystem.showDirEntity(dir);
             }
-            this.dirDown = true;
-            this.levelSystem.hideDirDown();
-
-        } else {
-            this.dirDown = false;
-            this.levelSystem.showDirDown();
+        }
+        {
+            const dir = "Up";
+            if (this.gravity.y === this.gravityScale) {
+                if (this.dirSet.has(dir)) {
+                    return;
+                }
+                this.dirSet.add(dir);
+                this.levelSystem.hideDirEntity(dir);
+            } else {
+                this.dirSet.delete(dir);
+                this.levelSystem.showDirEntity(dir);
+            }
+        }
+        {
+            const dir = "Left";
+            if (this.gravity.x === -this.gravityScale) {
+                if (this.dirSet.has(dir)) {
+                    return;
+                }
+                this.dirSet.add(dir);
+                this.levelSystem.hideDirEntity(dir);
+            } else {
+                this.dirSet.delete(dir);
+                this.levelSystem.showDirEntity(dir);
+            }
+        }
+        {
+            const dir = "Right";
+            if (this.gravity.x === this.gravityScale) {
+                if (this.dirSet.has(dir)) {
+                    return;
+                }
+                this.dirSet.add(dir);
+                this.levelSystem.hideDirEntity(dir);
+            } else {
+                this.dirSet.delete(dir);
+                this.levelSystem.showDirEntity(dir);
+            }
         }
     }
     update(timeStamp: number): void {
