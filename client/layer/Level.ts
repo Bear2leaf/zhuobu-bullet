@@ -1,15 +1,16 @@
 import { GroupLayer } from "./GroupLayer.js";
 import { Geometry, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Sphere, Texture, Transform, Vec2, Vec3 } from "ogl";
-import { LayerLayer, Tiled, TiledLayer, Tileset } from "../misc/TiledParser.js";
+import { LayerLayer, Tiled, Tileset } from "../misc/TiledParser.js";
 import { counterHandler, radius } from "../misc/radius.js";
 export class Level extends GroupLayer {
     constructor(
         name: string,
         x: number,
         y: number,
-        tileLayersData: LayerLayer[]
+        tileLayersData: LayerLayer[],
+        tilesets: Tileset[],
     ) {
-        super(name, x, y, tileLayersData);
+        super(name, x, y, tileLayersData, tilesets);
     }
     getDirDownNames() {
         return [...this.namesMap.get("DirDown") || []]

@@ -116,7 +116,7 @@
          "name":"Intro",
          "opacity":1,
          "type":"group",
-         "visible":false,
+         "visible":true,
          "x":0,
          "y":0
         }, 
@@ -1313,11 +1313,11 @@
                  "id":26,
                  "name":"Background",
                  "opacity":1,
-                 "startx":-16,
+                 "startx":0,
                  "starty":-16,
                  "type":"tilelayer",
                  "visible":true,
-                 "width":32,
+                 "width":16,
                  "x":0,
                  "y":0
                 }, 
@@ -1334,8 +1334,8 @@
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 1734, 0, 499, 0, 0, 0, 0, 0, 0, 0, 0,
-                            0, 0, 0, 242, 0, 1772, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                            0, 0, 0, 1934, 0, 1772, 1772, 1772, 0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                            0, 0, 0, 1934, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 242, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 0, 0, 0, 545, 0, 0, 0, 0, 0, 0, 0,
@@ -1371,11 +1371,11 @@
                  "id":27,
                  "name":"Entities",
                  "opacity":1,
-                 "startx":-16,
+                 "startx":0,
                  "starty":-16,
                  "type":"tilelayer",
                  "visible":true,
-                 "width":32,
+                 "width":16,
                  "x":0,
                  "y":0
                 }, 
@@ -1429,18 +1429,18 @@
                  "id":28,
                  "name":"Collisions",
                  "opacity":1,
-                 "startx":-16,
+                 "startx":0,
                  "starty":-16,
                  "type":"tilelayer",
                  "visible":true,
-                 "width":32,
+                 "width":16,
                  "x":0,
                  "y":0
                 }],
          "name":"RockQuiz",
          "opacity":1,
          "type":"group",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         }],
@@ -1462,6 +1462,48 @@
          "spacing":1,
          "tilecount":64,
          "tileheight":16,
+         "tiles":[
+                {
+                 "id":31,
+                 "objectgroup":
+                    {
+                     "draworder":"index",
+                     "id":2,
+                     "name":"",
+                     "objects":[
+                            {
+                             "height":0,
+                             "id":2,
+                             "name":"Collider",
+                             "polyline":[
+                                    {
+                                     "x":0,
+                                     "y":0
+                                    }, 
+                                    {
+                                     "x":16,
+                                     "y":-16
+                                    }],
+                             "rotation":0,
+                             "type":"",
+                             "visible":true,
+                             "width":0,
+                             "x":0,
+                             "y":16
+                            }],
+                     "opacity":1,
+                     "type":"objectgroup",
+                     "visible":true,
+                     "x":0,
+                     "y":0
+                    },
+                 "properties":[
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"Brick"
+                        }]
+                }],
          "tilewidth":16
         }, 
         {
@@ -1478,6 +1520,37 @@
          "tiles":[
                 {
                  "id":177,
+                 "objectgroup":
+                    {
+                     "draworder":"index",
+                     "name":"",
+                     "objects":[
+                            {
+                             "height":0,
+                             "id":1,
+                             "name":"Entity",
+                             "polyline":[
+                                    {
+                                     "x":0,
+                                     "y":0
+                                    }, 
+                                    {
+                                     "x":16,
+                                     "y":-16
+                                    }],
+                             "rotation":0,
+                             "type":"",
+                             "visible":true,
+                             "width":0,
+                             "x":0,
+                             "y":16
+                            }],
+                     "opacity":1,
+                     "type":"objectgroup",
+                     "visible":true,
+                     "x":0,
+                     "y":0
+                    },
                  "properties":[
                         {
                          "name":"name",
@@ -1487,6 +1560,37 @@
                 }, 
                 {
                  "id":370,
+                 "objectgroup":
+                    {
+                     "draworder":"index",
+                     "name":"",
+                     "objects":[
+                            {
+                             "height":0,
+                             "id":5,
+                             "name":"Entity",
+                             "polyline":[
+                                    {
+                                     "x":0,
+                                     "y":0
+                                    }, 
+                                    {
+                                     "x":16,
+                                     "y":-16
+                                    }],
+                             "rotation":0,
+                             "type":"",
+                             "visible":true,
+                             "width":0,
+                             "x":0,
+                             "y":16
+                            }],
+                     "opacity":1,
+                     "type":"objectgroup",
+                     "visible":true,
+                     "x":0,
+                     "y":0
+                    },
                  "properties":[
                         {
                          "name":"name",
@@ -1496,6 +1600,37 @@
                 }, 
                 {
                  "id":434,
+                 "objectgroup":
+                    {
+                     "draworder":"index",
+                     "name":"",
+                     "objects":[
+                            {
+                             "height":0,
+                             "id":3,
+                             "name":"Entity",
+                             "polyline":[
+                                    {
+                                     "x":0,
+                                     "y":0
+                                    }, 
+                                    {
+                                     "x":16,
+                                     "y":-16
+                                    }],
+                             "rotation":0,
+                             "type":"",
+                             "visible":true,
+                             "width":0,
+                             "x":0,
+                             "y":16
+                            }],
+                     "opacity":1,
+                     "type":"objectgroup",
+                     "visible":true,
+                     "x":0,
+                     "y":0
+                    },
                  "properties":[
                         {
                          "name":"name",
@@ -1505,6 +1640,37 @@
                 }, 
                 {
                  "id":480,
+                 "objectgroup":
+                    {
+                     "draworder":"index",
+                     "name":"",
+                     "objects":[
+                            {
+                             "height":0,
+                             "id":2,
+                             "name":"Entity",
+                             "polyline":[
+                                    {
+                                     "x":0,
+                                     "y":0
+                                    }, 
+                                    {
+                                     "x":16,
+                                     "y":-16
+                                    }],
+                             "rotation":0,
+                             "type":"",
+                             "visible":true,
+                             "width":0,
+                             "x":0,
+                             "y":16
+                            }],
+                     "opacity":1,
+                     "type":"objectgroup",
+                     "visible":true,
+                     "x":0,
+                     "y":0
+                    },
                  "properties":[
                         {
                          "name":"name",
@@ -1514,6 +1680,37 @@
                 }, 
                 {
                  "id":1669,
+                 "objectgroup":
+                    {
+                     "draworder":"index",
+                     "name":"",
+                     "objects":[
+                            {
+                             "height":0,
+                             "id":2,
+                             "name":"Entity",
+                             "polyline":[
+                                    {
+                                     "x":0,
+                                     "y":0
+                                    }, 
+                                    {
+                                     "x":16,
+                                     "y":-16
+                                    }],
+                             "rotation":0,
+                             "type":"",
+                             "visible":true,
+                             "width":0,
+                             "x":0,
+                             "y":16
+                            }],
+                     "opacity":1,
+                     "type":"objectgroup",
+                     "visible":true,
+                     "x":0,
+                     "y":0
+                    },
                  "properties":[
                         {
                          "name":"name",
@@ -1523,6 +1720,37 @@
                 }, 
                 {
                  "id":1707,
+                 "objectgroup":
+                    {
+                     "draworder":"index",
+                     "name":"",
+                     "objects":[
+                            {
+                             "height":0,
+                             "id":1,
+                             "name":"Entity",
+                             "polyline":[
+                                    {
+                                     "x":0,
+                                     "y":0
+                                    }, 
+                                    {
+                                     "x":16,
+                                     "y":-16
+                                    }],
+                             "rotation":0,
+                             "type":"",
+                             "visible":true,
+                             "width":0,
+                             "x":0,
+                             "y":16
+                            }],
+                     "opacity":1,
+                     "type":"objectgroup",
+                     "visible":true,
+                     "x":0,
+                     "y":0
+                    },
                  "properties":[
                         {
                          "name":"name",
@@ -1532,6 +1760,37 @@
                 }, 
                 {
                  "id":1869,
+                 "objectgroup":
+                    {
+                     "draworder":"index",
+                     "name":"",
+                     "objects":[
+                            {
+                             "height":0,
+                             "id":2,
+                             "name":"Entity",
+                             "polyline":[
+                                    {
+                                     "x":0,
+                                     "y":0
+                                    }, 
+                                    {
+                                     "x":16,
+                                     "y":-16
+                                    }],
+                             "rotation":0,
+                             "type":"",
+                             "visible":true,
+                             "width":0,
+                             "x":0,
+                             "y":16
+                            }],
+                     "opacity":1,
+                     "type":"objectgroup",
+                     "visible":true,
+                     "x":0,
+                     "y":0
+                    },
                  "properties":[
                         {
                          "name":"name",

@@ -2,7 +2,7 @@ import { Plane, Transform, Vec3 } from "ogl";
 import { Layer } from "./Layer.js";
 
 import { Vec2, Camera, Mesh, Geometry, Program, Texture, RenderTarget, OGLRenderingContext } from "ogl";
-import { LayerLayer, Tiled, TiledLayer, Tileset } from "../misc/TiledParser.js";
+import { LayerLayer, Tiled, Tileset } from "../misc/TiledParser.js";
 import { counterHandler, radius } from "../misc/radius.js";
 import { TileLayer } from "./TileLayer.js";
 
@@ -12,18 +12,20 @@ export class GroupLayer implements Layer {
     readonly min: Vec2 = new Vec2;
     readonly max: Vec2 = new Vec2;
     readonly properties: Record<string, string | number | boolean> = {};
-    readonly namesMap = new Map<string, Set<string| undefined>>();
+    readonly namesMap = new Map<string, Set<string | undefined>>();
+    private readonly textures: Texture[] = [];
     constructor(
         readonly name: string,
         readonly x: number,
         readonly y: number,
-        private readonly tileLayersData: LayerLayer[]
+        private readonly tileLayersData: LayerLayer[],
+        private readonly tilesets: Tileset[],
     ) { }
     init() {
         const layerInstances = this.tileLayersData;
         for (let layerIndex = 0; layerIndex < layerInstances.length; layerIndex++) {
             const layerLayer = layerInstances[layerIndex];
-            const tileLayer = new TileLayer(layerLayer.name, layerLayer.chunks);
+            const tileLayer = new TileLayer(layerLayer.name, layerLayer.chunks, this.tilesets, this.textures);
             this.tileLayers.push(tileLayer);
             tileLayer.node.setParent(this.node);
         }
@@ -63,8 +65,11 @@ export class GroupLayer implements Layer {
             }
         });
     }
-    initRenderTarget(tilesets: Tileset[], renderTarget: RenderTarget) {
-        const gridSize = tilesets[0].tilewidth;
+    setTextures(textures: Texture[]) {
+        this.textures.push(...textures);
+    }
+    initRenderTarget(renderTarget: RenderTarget) {
+        const gridSize = this.tilesets[0].tilewidth;
         const width = (this.max.x - this.min.x) * gridSize;
         const height = (this.max.y - this.min.y) * gridSize;
         renderTarget.setSize(width, height)
@@ -75,20 +80,16 @@ export class GroupLayer implements Layer {
         fragment: string,
         spriteVertex: string,
         spriteFragment: string,
-        renderTarget: RenderTarget,
-        textures: Texture[],
         internalIconName: string,
-        tilesets: Tileset[]
+        renderTarget: RenderTarget,
     ) {
         for (const tileLayer of this.tileLayers) {
-            if (tileLayer.name !== "Entities") {
-                tileLayer.drawLayer(tilesets, textures, renderTarget, gl, spriteVertex, spriteFragment);
-            }
-            tileLayer.initTileChunks(tilesets, gl, vertex, fragment, spriteVertex, spriteFragment, textures, internalIconName, this.namesMap)
+            tileLayer.drawLayer(renderTarget, gl, spriteVertex, spriteFragment);
+            tileLayer.initTileChunks(gl, vertex, fragment, spriteVertex, spriteFragment, internalIconName, this.namesMap)
         }
     }
-    initGraphics(renderTarget: RenderTarget, tilesets: Tileset[], gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, vertex: string, fragment: string) {
-        const gridSize = tilesets[0].tilewidth;
+    initGraphics(renderTarget: RenderTarget, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, vertex: string, fragment: string) {
+        const gridSize = this.tilesets[0].tilewidth;
         const offsetX = (this.x + (this.min.x * gridSize) + renderTarget.width / 2);
         const offsetY = -(this.y + (this.min.y * gridSize) + renderTarget.height / 2);
         {

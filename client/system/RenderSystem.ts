@@ -70,7 +70,6 @@ export class RenderSystem implements System {
         });
         mesh.setParent(this.levelRoot);
         mesh.name = "Ball"
-        const tilesets = this.tiledData?.tilesets || [];
         for (const level of this.levelSystem.collections) {
             const renderTarget = new RenderTarget(this.gl, {
                 minFilter: this.gl.NEAREST,
@@ -78,10 +77,11 @@ export class RenderSystem implements System {
                 depth: false
             });
             this.renderTargets.push(renderTarget);
+            level.setTextures(this.textures);
             level.init()
-            level.initRenderTarget(tilesets, renderTarget)
-            level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget, this.textures, this.internalIconName, tilesets)
-            level.initGraphics(renderTarget, tilesets, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
+            level.initRenderTarget(renderTarget)
+            level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, this.internalIconName, renderTarget)
+            level.initGraphics(renderTarget, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
             level.node.setParent(this.levelRoot);
         }
     }

@@ -11,7 +11,7 @@ export interface Tiled {
     compressionlevel: number;
     height:           number;
     infinite:         boolean;
-    layers:           TiledLayer[];
+    layers:           ObjectgroupElement[];
     nextlayerid:      number;
     nextobjectid:     number;
     orientation:      string;
@@ -25,26 +25,28 @@ export interface Tiled {
     width:            number;
 }
 
-export interface TiledLayer {
-    id:      number;
-    layers:  LayerLayer[];
-    name:    string;
-    opacity: number;
-    type:    string;
-    visible: boolean;
-    x:       number;
-    y:       number;
+export interface ObjectgroupElement {
+    id?:        number;
+    layers?:    LayerLayer[];
+    name:       string;
+    opacity:    number;
+    type:       ObjectgroupType;
+    visible:    boolean;
+    x:          number;
+    y:          number;
+    draworder?: string;
+    objects?:   Object[];
 }
 
 export interface LayerLayer {
     chunks:  Chunk[];
     height:  number;
     id:      number;
-    name:    string;
+    name:    Name;
     opacity: number;
     startx:  number;
     starty:  number;
-    type:    string;
+    type:    PurpleType;
     visible: boolean;
     width:   number;
     x:       number;
@@ -59,6 +61,39 @@ export interface Chunk {
     y:      number;
 }
 
+export enum Name {
+    Background = "Background",
+    Collisions = "Collisions",
+    Entities = "Entities",
+}
+
+export enum PurpleType {
+    Tilelayer = "tilelayer",
+}
+
+export interface Object {
+    height:   number;
+    id:       number;
+    name:     string;
+    polyline: Polyline[];
+    rotation: number;
+    type:     string;
+    visible:  boolean;
+    width:    number;
+    x:        number;
+    y:        number;
+}
+
+export interface Polyline {
+    x: number;
+    y: number;
+}
+
+export enum ObjectgroupType {
+    Group = "group",
+    Objectgroup = "objectgroup",
+}
+
 export interface Tileset {
     columns:     number;
     firstgid:    number;
@@ -70,13 +105,14 @@ export interface Tileset {
     spacing:     number;
     tilecount:   number;
     tileheight:  number;
+    tiles:       Tile[];
     tilewidth:   number;
-    tiles?:      Tile[];
 }
 
 export interface Tile {
-    id:         number;
-    properties: Property[];
+    id:          number;
+    objectgroup: ObjectgroupElement;
+    properties?: Property[];
 }
 
 export interface Property {
@@ -254,7 +290,7 @@ const typeMap: any = {
         { json: "compressionlevel", js: "compressionlevel", typ: 0 },
         { json: "height", js: "height", typ: 0 },
         { json: "infinite", js: "infinite", typ: true },
-        { json: "layers", js: "layers", typ: a(r("TiledLayer")) },
+        { json: "layers", js: "layers", typ: a(r("ObjectgroupElement")) },
         { json: "nextlayerid", js: "nextlayerid", typ: 0 },
         { json: "nextobjectid", js: "nextobjectid", typ: 0 },
         { json: "orientation", js: "orientation", typ: "" },
@@ -267,25 +303,27 @@ const typeMap: any = {
         { json: "version", js: "version", typ: "" },
         { json: "width", js: "width", typ: 0 },
     ], false),
-    "TiledLayer": o([
-        { json: "id", js: "id", typ: 0 },
-        { json: "layers", js: "layers", typ: a(r("LayerLayer")) },
+    "ObjectgroupElement": o([
+        { json: "id", js: "id", typ: u(undefined, 0) },
+        { json: "layers", js: "layers", typ: u(undefined, a(r("LayerLayer"))) },
         { json: "name", js: "name", typ: "" },
         { json: "opacity", js: "opacity", typ: 0 },
-        { json: "type", js: "type", typ: "" },
+        { json: "type", js: "type", typ: r("ObjectgroupType") },
         { json: "visible", js: "visible", typ: true },
         { json: "x", js: "x", typ: 0 },
         { json: "y", js: "y", typ: 0 },
+        { json: "draworder", js: "draworder", typ: u(undefined, "") },
+        { json: "objects", js: "objects", typ: u(undefined, a(r("Object"))) },
     ], false),
     "LayerLayer": o([
         { json: "chunks", js: "chunks", typ: a(r("Chunk")) },
         { json: "height", js: "height", typ: 0 },
         { json: "id", js: "id", typ: 0 },
-        { json: "name", js: "name", typ: "" },
+        { json: "name", js: "name", typ: r("Name") },
         { json: "opacity", js: "opacity", typ: 0 },
         { json: "startx", js: "startx", typ: 0 },
         { json: "starty", js: "starty", typ: 0 },
-        { json: "type", js: "type", typ: "" },
+        { json: "type", js: "type", typ: r("PurpleType") },
         { json: "visible", js: "visible", typ: true },
         { json: "width", js: "width", typ: 0 },
         { json: "x", js: "x", typ: 0 },
@@ -295,6 +333,22 @@ const typeMap: any = {
         { json: "data", js: "data", typ: a(0) },
         { json: "height", js: "height", typ: 0 },
         { json: "width", js: "width", typ: 0 },
+        { json: "x", js: "x", typ: 0 },
+        { json: "y", js: "y", typ: 0 },
+    ], false),
+    "Object": o([
+        { json: "height", js: "height", typ: 0 },
+        { json: "id", js: "id", typ: 0 },
+        { json: "name", js: "name", typ: "" },
+        { json: "polyline", js: "polyline", typ: a(r("Polyline")) },
+        { json: "rotation", js: "rotation", typ: 0 },
+        { json: "type", js: "type", typ: "" },
+        { json: "visible", js: "visible", typ: true },
+        { json: "width", js: "width", typ: 0 },
+        { json: "x", js: "x", typ: 0 },
+        { json: "y", js: "y", typ: 0 },
+    ], false),
+    "Polyline": o([
         { json: "x", js: "x", typ: 0 },
         { json: "y", js: "y", typ: 0 },
     ], false),
@@ -309,16 +363,29 @@ const typeMap: any = {
         { json: "spacing", js: "spacing", typ: 0 },
         { json: "tilecount", js: "tilecount", typ: 0 },
         { json: "tileheight", js: "tileheight", typ: 0 },
+        { json: "tiles", js: "tiles", typ: a(r("Tile")) },
         { json: "tilewidth", js: "tilewidth", typ: 0 },
-        { json: "tiles", js: "tiles", typ: u(undefined, a(r("Tile"))) },
     ], false),
     "Tile": o([
         { json: "id", js: "id", typ: 0 },
-        { json: "properties", js: "properties", typ: a(r("Property")) },
+        { json: "objectgroup", js: "objectgroup", typ: r("ObjectgroupElement") },
+        { json: "properties", js: "properties", typ: u(undefined, a(r("Property"))) },
     ], false),
     "Property": o([
         { json: "name", js: "name", typ: "" },
         { json: "type", js: "type", typ: "" },
         { json: "value", js: "value", typ: "" },
     ], false),
+    "Name": [
+        "Background",
+        "Collisions",
+        "Entities",
+    ],
+    "PurpleType": [
+        "tilelayer",
+    ],
+    "ObjectgroupType": [
+        "group",
+        "objectgroup",
+    ],
 };

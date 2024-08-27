@@ -75,7 +75,8 @@ export default class LevelSystem implements System {
                 layer.name,
                 layer.x,
                 layer.y,
-                layer.layers
+                layer.layers || [],
+                tiledData.tilesets
             );
             this.collections.push(level);
         })
@@ -88,7 +89,7 @@ export default class LevelSystem implements System {
         const gridSize = tiledData.tilewidth;
         const levels = tiledData.layers;
         const tiledLayer = levels[this.current];
-        const layerInstances = tiledLayer.layers;
+        const layerInstances = tiledLayer.layers || [];
         for (const layerInstance of layerInstances) {
             if (layerInstance.name === "Entities") {
                 for (const chunk of layerInstance.chunks) {
@@ -107,7 +108,7 @@ export default class LevelSystem implements System {
                         if (!tileDef) {
                             throw new Error("tileDef is undefined");
                         }
-                        const name = tileDef.properties.find(prop => prop.name === "name")?.value;
+                        const name = tileDef.properties?.find(prop => prop.name === "name")?.value;
                         const entityWorldX = x + chunk.width * 0.5;
                         const entityWorldY = -y - chunk.height * 0.5;
                         if (name === "Player") {

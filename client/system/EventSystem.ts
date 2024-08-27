@@ -70,19 +70,19 @@ export class EventSystem implements System {
                 data: { transform }
             })
         }
-        this.levelSystem.onenablemesh = (name: string | undefined) =>{
+        this.levelSystem.onenablemesh = (name: string | undefined) => {
             sendmessage({
                 type: "enableMesh",
                 data: name || ""
             })
         }
-        this.onteleport = (from: string, to: string) =>{
+        this.onteleport = (from: string, to: string) => {
             sendmessage({
                 type: "teleport",
                 data: [from, to]
             })
         }
-        this.levelSystem.ondisablemesh = (name: string | undefined) =>{
+        this.levelSystem.ondisablemesh = (name: string | undefined) => {
             sendmessage({
                 type: "disableMesh",
                 data: name || ""
