@@ -34,33 +34,33 @@ export default class LevelSystem implements System {
         return this.collections[this.current].getTeleportDestinationName();
     }
     getPickaxe() {
-        this.collections[this.current].hidePickaxe();
+        this.collections[this.current].updateVisible("Pickaxe", false);
     }
     removeRock(name: string) {
-        this.collections[this.current].hideRock(name);
+        this.collections[this.current].updateVisible("Rock", false);
     }
     checkTeleport(collision: string) {
-        return this.collections[this.current].checkTeleport(collision);
+        return this.collections[this.current].check(collision, "Teleport");
     }
     checkNeedExit(collision: string): boolean {
-        return this.collections[this.current].checkNeedExit(collision);
+        return this.collections[this.current].check(collision, "Exit");
     }
     checkGetPickaxe(collision: string): boolean {
-        return this.collections[this.current].checkGetPickaxe(collision);
+        return this.collections[this.current].check(collision, "Pickaxe");
     }
     checkRock(collision: string) {
         return this.collections[this.current].checkRock(collision);
     }
     hideDirDown() {
-        this.collections[this.current].hideDirDown();
-        const names = this.collections[this.current].getDirDownNames();
+        this.collections[this.current].updateVisible("DirDown", false);
+        const names = this.collections[this.current].getMeshNames("DirDown");
         for (const name of names) {
             this.ondisablemesh && this.ondisablemesh(name)
         }
     }
     showDirDown() {
-        this.collections[this.current].showDirDown();
-        const names = this.collections[this.current].getDirDownNames();
+        this.collections[this.current].updateVisible("DirDown", true);
+        const names = this.collections[this.current].getMeshNames("DirDown");
         for (const name of names) {
             this.onenablemesh && this.onenablemesh(name)
         }

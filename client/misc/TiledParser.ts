@@ -122,7 +122,7 @@ export interface Polyline {
 export interface Property {
     name:  string;
     type:  string;
-    value: string;
+    value: boolean | string;
 }
 
 // Converts JSON strings to/from your types
@@ -387,7 +387,7 @@ const typeMap: any = {
     "Property": o([
         { json: "name", js: "name", typ: "" },
         { json: "type", js: "type", typ: "" },
-        { json: "value", js: "value", typ: "" },
+        { json: "value", js: "value", typ: u(true, "") },
     ], false),
     "Name": [
         "Background",

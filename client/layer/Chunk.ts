@@ -1,6 +1,6 @@
 import { Geometry, Mesh, OGLRenderingContext, Plane, Program, Texture, Transform, Vec2, Vec3 } from "ogl";
 import { Layer } from "./Layer.js";
-import { Tileset } from "../misc/TiledParser.js";
+import { Property, Tileset } from "../misc/TiledParser.js";
 import { getContours } from "../misc/contour2d.js";
 import ndarray from "../misc/ndarray/ndarray.js";
 import { counterHandler, radius } from "../misc/radius.js";
@@ -12,10 +12,59 @@ type TileInfo = {
     w: number,
     h: number,
     entity?: boolean,
-    collider?: boolean
+    collider?: boolean,
+    properties: Property[]
 }
 
+
 export class Chunk implements Layer {
+    private readonly tileInfoMap = new Map<number, TileInfo>();
+    private readonly meshNameEntityTileMap = new Map<string, number>();
+    readonly node = new Transform;
+    constructor(
+        private readonly tilesets: Tileset[],
+        private readonly textures: Texture[],
+        readonly data: number[],
+        readonly x: number,
+        readonly y: number,
+        readonly width: number,
+        readonly height: number,
+    ) {
+        this.buildTileInfoMap();
+    }
+    checkEntity(name: string, propName?: string, propValue?: Property["value"]) {
+        const gid = this.meshNameEntityTileMap.get(name);
+        if (gid === undefined) {
+            return false;
+        }
+        if (propName === undefined) {
+            return true;
+        }
+        if (propValue === undefined) {
+            for (const prop of this.tileInfoMap.get(gid)?.properties || []) {
+                if (prop.name === propName) {
+                    return true;
+                }
+            }
+        } else {
+            for (const prop of this.tileInfoMap.get(gid)?.properties || []) {
+                if (prop.name === propName && prop.value === propValue) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    getEntitiesByPropertyCondition(propName: string, propValue: Property["value"]) {
+        const entities = [];
+            for (const [key, gid] of this.meshNameEntityTileMap.entries()) {
+                const tileInfo = this.tileInfoMap.get(gid);
+                if (tileInfo?.properties.some(prop => prop.name === propName && prop.value === propValue)) {
+                    entities.push(key)
+                }
+            }
+        return entities;
+    }
     drawChunk(min: Vec2, max: Vec2, position: number[], uv: number[], tMap: { value: Texture }) {
         const chunk = this;
         const gid = this.data.find(gid => gid);
@@ -67,20 +116,7 @@ export class Chunk implements Layer {
             )
         }
     }
-    private readonly tileInfoMap = new Map<number, TileInfo>();
-    readonly node = new Transform;
-    constructor(
-        private readonly tilesets: Tileset[],
-        private readonly textures: Texture[],
-        readonly data: number[],
-        readonly x: number,
-        readonly y: number,
-        readonly width: number,
-        readonly height: number,
-    ) {
-        this.buildTileInfoMap();
-    }
-    initEntities(levelNode: Transform, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, internalIconName: string, namesMap: Map<string, Set<string | undefined>>) {
+    initEntities(levelNode: Transform, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, internalIconName: string) {
         const chunk = this;
         for (let j = 0; j < chunk.data.length; j++) {
             const gid = chunk.data[j];
@@ -127,15 +163,7 @@ export class Chunk implements Layer {
                     mesh.updateMatrix();
                     mesh.geometry.computeBoundingBox();
                     mesh.geometry.computeBoundingSphere();
-
-                    const tileNameSet = namesMap.get(tile.name);
-                    if (tileNameSet) {
-                        tileNameSet.add(mesh.name);
-                    } else {
-                        const newNameSet = new Set<string>();
-                        newNameSet.add(mesh.name);
-                        namesMap.set(tile.name, newNameSet);
-                    }
+                    this.meshNameEntityTileMap.set(mesh.name, gid);
                 }
             }
         }
@@ -207,7 +235,7 @@ export class Chunk implements Layer {
             if (!tileDef) {
                 continue;
             }
-            const name = tileDef.properties?.find(prop => prop.name === "name")?.value;
+            const name = tileDef.properties?.find(prop => prop.name === "name")?.value as string;
             if (!name) {
                 throw new Error("name is undefined");
             }
@@ -219,6 +247,7 @@ export class Chunk implements Layer {
                 h: (tileset.tileheight),
                 entity: tileDef.objectgroup.objects?.find(o => o.name === "Entity") ? true : false,
                 collider: tileDef.objectgroup.objects?.find(o => o.name === "Collider") ? true : false,
+                properties: tileDef.properties
             });
         }
     }

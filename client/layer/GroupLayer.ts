@@ -12,7 +12,6 @@ export class GroupLayer implements Layer {
     readonly min: Vec2 = new Vec2;
     readonly max: Vec2 = new Vec2;
     readonly properties: Record<string, string | number | boolean> = {};
-    readonly namesMap = new Map<string, Set<string | undefined>>();
     private readonly textures: Texture[] = [];
     constructor(
         readonly name: string,
@@ -55,12 +54,8 @@ export class GroupLayer implements Layer {
         }, this.max);
     }
     resetVisibility(): void {
-        const names = [...this.namesMap.values()].reduce<Set<string | undefined>>((prev, curr) => {
-            curr.forEach(o => prev.add(o));
-            return prev;
-        }, new Set())
         this.node?.traverse(child => {
-            if (names.has(child.name)) {
+            if (this.tileLayers.some(layer => child.name && layer.checkEntity(child.name))) {
                 child.visible = true
             }
         });
@@ -85,7 +80,7 @@ export class GroupLayer implements Layer {
     ) {
         for (const tileLayer of this.tileLayers) {
             tileLayer.drawLayer(renderTarget, gl, spriteVertex, spriteFragment);
-            tileLayer.initTileChunks(gl, vertex, fragment, spriteVertex, spriteFragment, internalIconName, this.namesMap)
+            tileLayer.initTileChunks(gl, vertex, fragment, spriteVertex, spriteFragment, internalIconName)
         }
     }
     initGraphics(renderTarget: RenderTarget, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, vertex: string, fragment: string) {

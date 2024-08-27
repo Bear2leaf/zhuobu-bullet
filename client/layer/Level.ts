@@ -12,49 +12,43 @@ export class Level extends GroupLayer {
     ) {
         super(name, x, y, tileLayersData, tilesets);
     }
-    getDirDownNames() {
-        return [...this.namesMap.get("DirDown") || []]
+    checkNodeEntity(node: Transform, name: string | undefined) {
+        return this.tileLayers.some(layer => node.name && layer.checkEntity(node.name, "name", name))
     }
-    showDirDown() {
-        this.node?.traverse(node => {
-            const find = this.namesMap.get("DirDown")?.has(node.name);
-            if (find) {
-                node.visible = true;
-            }
-            return find;
-        })
-    }
-    hideDirDown() {
-        this.node?.traverse(node => {
-            const find = this.namesMap.get("DirDown")?.has(node.name);
-            if (find) {
-                node.visible = false;
-            }
-            return find;
-        })
+    checkEntityName(meshName: string, name: string) {
+        return this.tileLayers.some(layer => layer.checkEntity(meshName, "name", name))
     }
     getTeleportDestinationName() {
-        const names = [...this.namesMap.get("TeleportDestination") || []];
+        const names = this.getMeshNames("TeleportDestination")
         const name = names[0]
         if (names.length !== 1 || !name) {
             throw new Error("wrong teleportDestinationMeshNameSet");
         }
         return name;
     }
-    checkNeedExit(collision: string): boolean {
-        return this.namesMap.get("Exit")?.has(collision) || false;
+    check(meshName: string, name: string) {
+        return this.checkEntityName(meshName, name)
     }
-    checkTeleport(collision: string) {
-        return this.namesMap.get("Teleport")?.has(collision);
+    getMeshNames(name: string) {
+        return this.tileLayers.reduce<string[]>((prev, curr) => {
+            prev.push(...curr.getEntitiesByPropertyCondition("name", name))
+            return prev;
+        }, [])
     }
-    checkGetPickaxe(collision: string): boolean {
-        return this.namesMap.get("Pickaxe")?.has(collision) || false;
+    updateVisible(name: string, visible: boolean) {
+        this.node?.traverse(node => {
+            const find = this.checkNodeEntity(node, name);
+            if (find) {
+                node.visible = visible;
+            }
+            return find;
+        })
     }
     checkRock(collision: string): boolean {
-        if (this.namesMap.get("Rock")?.has(collision)) {
+        if (this.checkEntityName(collision, "Rock")) {
             let hasPickaxe = false;
             this.node?.traverse(node => {
-                const find = this.namesMap.get("Pickaxe")?.has(node.name);
+                const find = this.checkNodeEntity(node, "Pickaxe");
                 if (find) {
                     hasPickaxe = !node.visible;
                 }
@@ -63,24 +57,6 @@ export class Level extends GroupLayer {
             return hasPickaxe;
         }
         return false;
-    }
-    hidePickaxe() {
-        this.node?.traverse(node => {
-            const find = this.namesMap.get("Pickaxe")?.has(node.name);
-            if (find) {
-                node.visible = false;
-            }
-            return find;
-        })
-    }
-    hideRock(name: string) {
-        this.node?.traverse(node => {
-            const find = this.namesMap.get("Rock")?.has(node.name);
-            if (find && name === node.name) {
-                node.visible = false;
-            }
-            return find;
-        })
     }
 
 

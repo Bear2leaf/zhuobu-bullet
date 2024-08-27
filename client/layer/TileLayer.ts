@@ -1,6 +1,6 @@
 import { Camera, Geometry, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Texture, Transform, Vec2, Vec3 } from "ogl";
 import { Layer } from "./Layer.js";
-import { LayerLayer, Tileset, Chunk as _Chunk } from "../misc/TiledParser.js";
+import { LayerLayer, Property, Tileset, Chunk as _Chunk } from "../misc/TiledParser.js";
 import { Chunk } from "./Chunk.js";
 export class TileLayer implements Layer {
     readonly chunks: Chunk[];
@@ -8,14 +8,24 @@ export class TileLayer implements Layer {
     constructor(
         readonly name: string,
         chunks: _Chunk[],
-        private readonly tilesets: Tileset[],
-        private readonly textures: Texture[],
+        tilesets: Tileset[],
+        textures: Texture[],
     ) {
         this.chunks = [];
         chunks.forEach(chunk => {
             const c = new Chunk(tilesets, textures, chunk.data, chunk.x, chunk.y, chunk.width, chunk.height);
             this.chunks.push(c)
         })
+    }
+    checkEntity(name: string, propName?: string, propValue?: Property["value"]): boolean {
+        return this.chunks.some(chunk => chunk.checkEntity(name, propName, propValue));
+    }
+    getEntitiesByPropertyCondition(propName: string, propValue: Property["value"]) {
+        const entities = [];
+        for (const chunk of this.chunks) {
+            entities.push(...chunk.getEntitiesByPropertyCondition(propName, propValue));
+        }
+        return entities;
     }
     drawLayer(renderTarget: RenderTarget, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string) {
         const chunks = this.chunks;
@@ -65,12 +75,12 @@ export class TileLayer implements Layer {
             clear: false
         })
     }
-    initTileChunks(gl: OGLRenderingContext, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string, internalIconName: string, namesMap: Map<string, Set<string | undefined>>) {
+    initTileChunks(gl: OGLRenderingContext, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string, internalIconName: string) {
         const layer = this;
         for (let i = 0; i < layer.chunks.length; i++) {
             const chunk = layer.chunks[i];
             chunk.initCollisions(this.node, gl, vertex, fragment)
-            chunk.initEntities(this.node, gl, spriteVertex, spriteFragment, internalIconName, namesMap);
+            chunk.initEntities(this.node, gl, spriteVertex, spriteFragment, internalIconName);
         }
     }
 }
