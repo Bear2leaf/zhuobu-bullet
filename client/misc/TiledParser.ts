@@ -11,7 +11,7 @@ export interface Tiled {
     compressionlevel: number;
     height:           number;
     infinite:         boolean;
-    layers:           ObjectgroupElement[];
+    layers:           TiledLayer[];
     nextlayerid:      number;
     nextobjectid:     number;
     orientation:      string;
@@ -25,17 +25,16 @@ export interface Tiled {
     width:            number;
 }
 
-export interface ObjectgroupElement {
-    id?:        number;
-    layers?:    LayerLayer[];
-    name:       string;
-    opacity:    number;
-    type:       ObjectgroupType;
-    visible:    boolean;
-    x:          number;
-    y:          number;
-    draworder?: string;
-    objects?:   Object[];
+export interface TiledLayer {
+    id:      number;
+    layers:  LayerLayer[];
+    locked?: boolean;
+    name:    string;
+    opacity: number;
+    type:    string;
+    visible: boolean;
+    x:       number;
+    y:       number;
 }
 
 export interface LayerLayer {
@@ -46,7 +45,7 @@ export interface LayerLayer {
     opacity: number;
     startx:  number;
     starty:  number;
-    type:    PurpleType;
+    type:    Type;
     visible: boolean;
     width:   number;
     x:       number;
@@ -63,35 +62,11 @@ export interface Chunk {
 
 export enum Name {
     Background = "Background",
-    Collisions = "Collisions",
     Entities = "Entities",
 }
 
-export enum PurpleType {
+export enum Type {
     Tilelayer = "tilelayer",
-}
-
-export interface Object {
-    height:   number;
-    id:       number;
-    name:     string;
-    polyline: Polyline[];
-    rotation: number;
-    type:     string;
-    visible:  boolean;
-    width:    number;
-    x:        number;
-    y:        number;
-}
-
-export interface Polyline {
-    x: number;
-    y: number;
-}
-
-export enum ObjectgroupType {
-    Group = "group",
-    Objectgroup = "objectgroup",
 }
 
 export interface Tileset {
@@ -111,8 +86,37 @@ export interface Tileset {
 
 export interface Tile {
     id:          number;
-    objectgroup: ObjectgroupElement;
-    properties?: Property[];
+    objectgroup: Objectgroup;
+    properties:  Property[];
+}
+
+export interface Objectgroup {
+    draworder: string;
+    name:      string;
+    objects:   Object[];
+    opacity:   number;
+    type:      string;
+    visible:   boolean;
+    x:         number;
+    y:         number;
+}
+
+export interface Object {
+    height:   number;
+    id:       number;
+    name:     string;
+    polyline: Polyline[];
+    rotation: number;
+    type:     string;
+    visible:  boolean;
+    width:    number;
+    x:        number;
+    y:        number;
+}
+
+export interface Polyline {
+    x: number;
+    y: number;
 }
 
 export interface Property {
@@ -290,7 +294,7 @@ const typeMap: any = {
         { json: "compressionlevel", js: "compressionlevel", typ: 0 },
         { json: "height", js: "height", typ: 0 },
         { json: "infinite", js: "infinite", typ: true },
-        { json: "layers", js: "layers", typ: a(r("ObjectgroupElement")) },
+        { json: "layers", js: "layers", typ: a(r("TiledLayer")) },
         { json: "nextlayerid", js: "nextlayerid", typ: 0 },
         { json: "nextobjectid", js: "nextobjectid", typ: 0 },
         { json: "orientation", js: "orientation", typ: "" },
@@ -303,17 +307,16 @@ const typeMap: any = {
         { json: "version", js: "version", typ: "" },
         { json: "width", js: "width", typ: 0 },
     ], false),
-    "ObjectgroupElement": o([
-        { json: "id", js: "id", typ: u(undefined, 0) },
-        { json: "layers", js: "layers", typ: u(undefined, a(r("LayerLayer"))) },
+    "TiledLayer": o([
+        { json: "id", js: "id", typ: 0 },
+        { json: "layers", js: "layers", typ: a(r("LayerLayer")) },
+        { json: "locked", js: "locked", typ: u(undefined, true) },
         { json: "name", js: "name", typ: "" },
         { json: "opacity", js: "opacity", typ: 0 },
-        { json: "type", js: "type", typ: r("ObjectgroupType") },
+        { json: "type", js: "type", typ: "" },
         { json: "visible", js: "visible", typ: true },
         { json: "x", js: "x", typ: 0 },
         { json: "y", js: "y", typ: 0 },
-        { json: "draworder", js: "draworder", typ: u(undefined, "") },
-        { json: "objects", js: "objects", typ: u(undefined, a(r("Object"))) },
     ], false),
     "LayerLayer": o([
         { json: "chunks", js: "chunks", typ: a(r("Chunk")) },
@@ -323,7 +326,7 @@ const typeMap: any = {
         { json: "opacity", js: "opacity", typ: 0 },
         { json: "startx", js: "startx", typ: 0 },
         { json: "starty", js: "starty", typ: 0 },
-        { json: "type", js: "type", typ: r("PurpleType") },
+        { json: "type", js: "type", typ: r("Type") },
         { json: "visible", js: "visible", typ: true },
         { json: "width", js: "width", typ: 0 },
         { json: "x", js: "x", typ: 0 },
@@ -333,22 +336,6 @@ const typeMap: any = {
         { json: "data", js: "data", typ: a(0) },
         { json: "height", js: "height", typ: 0 },
         { json: "width", js: "width", typ: 0 },
-        { json: "x", js: "x", typ: 0 },
-        { json: "y", js: "y", typ: 0 },
-    ], false),
-    "Object": o([
-        { json: "height", js: "height", typ: 0 },
-        { json: "id", js: "id", typ: 0 },
-        { json: "name", js: "name", typ: "" },
-        { json: "polyline", js: "polyline", typ: a(r("Polyline")) },
-        { json: "rotation", js: "rotation", typ: 0 },
-        { json: "type", js: "type", typ: "" },
-        { json: "visible", js: "visible", typ: true },
-        { json: "width", js: "width", typ: 0 },
-        { json: "x", js: "x", typ: 0 },
-        { json: "y", js: "y", typ: 0 },
-    ], false),
-    "Polyline": o([
         { json: "x", js: "x", typ: 0 },
         { json: "y", js: "y", typ: 0 },
     ], false),
@@ -368,8 +355,34 @@ const typeMap: any = {
     ], false),
     "Tile": o([
         { json: "id", js: "id", typ: 0 },
-        { json: "objectgroup", js: "objectgroup", typ: r("ObjectgroupElement") },
-        { json: "properties", js: "properties", typ: u(undefined, a(r("Property"))) },
+        { json: "objectgroup", js: "objectgroup", typ: r("Objectgroup") },
+        { json: "properties", js: "properties", typ: a(r("Property")) },
+    ], false),
+    "Objectgroup": o([
+        { json: "draworder", js: "draworder", typ: "" },
+        { json: "name", js: "name", typ: "" },
+        { json: "objects", js: "objects", typ: a(r("Object")) },
+        { json: "opacity", js: "opacity", typ: 0 },
+        { json: "type", js: "type", typ: "" },
+        { json: "visible", js: "visible", typ: true },
+        { json: "x", js: "x", typ: 0 },
+        { json: "y", js: "y", typ: 0 },
+    ], false),
+    "Object": o([
+        { json: "height", js: "height", typ: 0 },
+        { json: "id", js: "id", typ: 0 },
+        { json: "name", js: "name", typ: "" },
+        { json: "polyline", js: "polyline", typ: a(r("Polyline")) },
+        { json: "rotation", js: "rotation", typ: 0 },
+        { json: "type", js: "type", typ: "" },
+        { json: "visible", js: "visible", typ: true },
+        { json: "width", js: "width", typ: 0 },
+        { json: "x", js: "x", typ: 0 },
+        { json: "y", js: "y", typ: 0 },
+    ], false),
+    "Polyline": o([
+        { json: "x", js: "x", typ: 0 },
+        { json: "y", js: "y", typ: 0 },
     ], false),
     "Property": o([
         { json: "name", js: "name", typ: "" },
@@ -378,14 +391,9 @@ const typeMap: any = {
     ], false),
     "Name": [
         "Background",
-        "Collisions",
         "Entities",
     ],
-    "PurpleType": [
+    "Type": [
         "tilelayer",
-    ],
-    "ObjectgroupType": [
-        "group",
-        "objectgroup",
     ],
 };
