@@ -53,7 +53,13 @@ export type WorkerMessage = {
     type: "removeBody",
     data: string
 } | {
-    type: "collision",
+    type: "collisionEnter",
+    data: [string, string]
+} | {
+    type: "collisionUpdate",
+    data: [string, string]
+} | {
+    type: "collisionExit",
     data: [string, string]
 }
 

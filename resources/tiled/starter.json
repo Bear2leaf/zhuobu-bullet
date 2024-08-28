@@ -580,6 +580,7 @@
                  "x":0,
                  "y":0
                 }],
+         "locked":true,
          "name":"Belt",
          "opacity":1,
          "type":"group",

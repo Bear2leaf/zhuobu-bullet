@@ -29,6 +29,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     const dynamicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
     dynamicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
 
+    const collisionSetPrev = new Set<string>();
+    const collisionSet = new Set<string>();
     let pause = true;
     // the worldState on the server
     const worldState: {
@@ -208,8 +210,12 @@ Ammo.bind(Module)(config).then(function (Ammo) {
     handler.onmessage = function (message) {
         messageHandler(message);
     }
-    function checkCollision() {
-
+    function prepareCollision() {
+        collisionSetPrev.clear();
+        for (const element of collisionSet) {
+            collisionSetPrev.add(element);
+        }
+        collisionSet.clear();
         const collisionNum = dispatcher.getNumManifolds();
         for (let index = 0; index < collisionNum; index++) {
             // UserData
@@ -218,10 +224,33 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const body1 = mainfold.getBody1();
             const data0 = Ammo.castObject(body0.getUserPointer(), UserData);
             const data1 = Ammo.castObject(body1.getUserPointer(), UserData);
-            handler.postMessage({
-                type: "collision",
-                data: [data0.name || "", data1.name || ""]
-            });
+            if (!collisionSet.has(`${data0.name}###${data1.name}`)) {
+                collisionSet.add(`${data0.name}###${data1.name}`);
+            }
+        }
+    }
+    function handleCollision() {
+        const largestSet = collisionSet.size > collisionSetPrev.size ? collisionSet : collisionSetPrev;
+        for (const element of largestSet) {
+            const [data0, data1] = element.split("###");
+            const prev = collisionSetPrev.has(element);
+            const curr = collisionSet.has(element);
+            if (!prev) {
+                handler.postMessage({
+                    type: "collisionEnter",
+                    data: [data0, data1]
+                });
+            } else if (curr){
+                handler.postMessage({
+                    type: "collisionUpdate",
+                    data: [data0, data1]
+                });
+            } else {
+                handler.postMessage({
+                    type: "collisionExit",
+                    data: [data0, data1]
+                });
+            }
         }
     }
     let meanDt = 0, meanDt2 = 0, frame = 1;
@@ -311,7 +340,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
 
         }
         handler.postMessage(result);
-        checkCollision()
+        prepareCollision();
+        handleCollision();
     }
     frame = 1;
     meanDt = meanDt2 = 0;

@@ -71,6 +71,8 @@ export default class UISystem implements System {
             if (button.getMesh().name === "help") {
                 button.getMesh().scale.multiply(0.5);
                 button.getMesh().visible = false;
+            } else if (button.getMesh().name === "level") {
+                button.getMesh().visible = true;
             }
         }
         for (const sprite of this.sprites) {

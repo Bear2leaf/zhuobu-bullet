@@ -12,7 +12,6 @@ export class EventSystem implements System {
     private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关";
     private readonly availableLevels: Set<number> = new Set();
-    private readonly collisionCooldown = 1;
     private charset: string = "";
     private pause = true;
     private isContinue: boolean = false;
@@ -21,7 +20,6 @@ export class EventSystem implements System {
     private readonly gravityScale = 100;
     private readonly gravity = new Vec3();
     private readonly acc = new Vec3(0, -this.gravityScale, 0);
-    private readonly collisionSet = new Set<string>();
     private continueButtonResolve?: (value: unknown) => void;
     constructor(
         private readonly inputSystem: InputSystem,
@@ -50,7 +48,7 @@ export class EventSystem implements System {
             this.hideMesh(message.data);
         } else if (message.type === "update") {
             this.updateMesh(message);
-        } else if (message.type === "collision") {
+        } else if (message.type === "collisionEnter") {
             this.handleCollision(message.data);
         }
     }
@@ -220,15 +218,12 @@ export class EventSystem implements System {
                 const to = this.levelSystem.getTeleportDestinationName();
                 this.onteleport && this.onteleport(data[0], to);
             } else if (this.levelSystem.checkBeltUp(data[1])) {
-                if (!this.collisionSet.has(data[1])) {
                     const node = this.levelSystem.getCurrentLevelNode(data[1]);
                     const transform = node?.matrix || new Mat4().identity();
                     this.addBall(transform)
                     this.disableMesh(data[1]);
                     this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 100, 0);
-                }
             }
-            this.collisionSet.add(data[1]);
         }
     }
 
@@ -368,13 +363,7 @@ export class EventSystem implements System {
             }
         }
     }
-    elpased = 0;
     update(timeStamp: number): void {
-        this.elpased += timeStamp;
-        if (this.elpased > this.collisionCooldown) {
-            this.elpased = 0;
-            this.collisionSet.clear();
-        }
         this.updateDirObjects();
         this.sendmessage && this.sendmessage({ type: "updateGravity", data: `${this.gravity[0]},${this.gravity[1]},${this.gravity[2]}` })
     }
