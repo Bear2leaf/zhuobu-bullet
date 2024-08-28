@@ -231,8 +231,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         }
     }
     function handleCollision() {
-        const largestSet = collisionSet.size > collisionSetPrev.size ? collisionSet : collisionSetPrev;
-        for (const element of largestSet) {
+        const combinedSet = new Set([...collisionSet, ...collisionSetPrev]);
+        for (const element of combinedSet) {
             const [data0, data1] = element.split("###");
             const prev = collisionSetPrev.has(element);
             const curr = collisionSet.has(element);
@@ -241,7 +241,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                     type: "collisionEnter",
                     data: [data0, data1]
                 });
-            } else if (curr){
+            } else if (curr) {
                 handler.postMessage({
                     type: "collisionUpdate",
                     data: [data0, data1]
