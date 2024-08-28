@@ -58,7 +58,7 @@ export default class Engine {
     }
 
     // Game loop
-    loop = (timeStamp: number) => {
+    loop(timeStamp: number) {
         const scene = this.renderSystem.levelRoot;
         const camera = this.cameraSystem.camera;
         this.cameraSystem.radius = this.levelSystem.radius;

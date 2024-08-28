@@ -6,20 +6,22 @@ import { CameraSystem } from "./CameraSystem.js";
 import LevelSystem from "./LevelSystem.js";
 import { RenderSystem } from "./RenderSystem.js";
 import UISystem from "./UISystem.js";
-import { Quat, Vec2, Vec3 } from "ogl";
-
+import { Mat4, Quat, Vec2, Vec3 } from "ogl";
+type Direction = "Down" | "Up" | "Left" | "Right";
 export class EventSystem implements System {
     private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关";
     private readonly availableLevels: Set<number> = new Set();
+    private readonly collisionCooldown = 1;
     private charset: string = "";
     private pause = true;
     private isContinue: boolean = false;
     private freezeUI = false;
-    private readonly dirSet = new Set<"Down" | "Up" | "Left" | "Right">();
+    private readonly dirSet = new Set<Direction>();
     private readonly gravityScale = 100;
     private readonly gravity = new Vec3();
     private readonly acc = new Vec3(0, -this.gravityScale, 0);
+    private readonly collisionSet = new Set<string>();
     private continueButtonResolve?: (value: unknown) => void;
     constructor(
         private readonly inputSystem: InputSystem,
@@ -66,10 +68,7 @@ export class EventSystem implements System {
             })
         }
         this.levelSystem.onaddball = (transform) => {
-            sendmessage({
-                type: "addBall",
-                data: { transform }
-            })
+            this.addBall(transform)
         }
         this.levelSystem.onenablemesh = (name: string | undefined) => {
             sendmessage({
@@ -83,12 +82,7 @@ export class EventSystem implements System {
                 data: [from, to]
             })
         }
-        this.levelSystem.ondisablemesh = (name: string | undefined) => {
-            sendmessage({
-                type: "disableMesh",
-                data: name || ""
-            })
-        }
+        this.levelSystem.ondisablemesh = this.disableMesh.bind(this);
         this.onpause = () => sendmessage({
             type: "pause"
         })
@@ -154,6 +148,20 @@ export class EventSystem implements System {
             this.cameraSystem.rollCamera(dir, this.levelSystem.isMazeMode)
         }
     }
+    disableMesh(name: string | undefined) {
+        this.sendmessage && this.sendmessage({
+            type: "disableMesh",
+            data: name || ""
+        })
+    }
+    addBall(transform: number[]) {
+        this.sendmessage && this.sendmessage({
+            type: "addBall",
+            data: {
+                transform
+            }
+        })
+    }
     updateLevelUI() {
         const root = this.renderSystem.levelRoot.children[this.levelSystem.current + 1];
         if (root) {
@@ -211,7 +219,16 @@ export class EventSystem implements System {
             } else if (this.levelSystem.checkTeleport(data[1])) {
                 const to = this.levelSystem.getTeleportDestinationName();
                 this.onteleport && this.onteleport(data[0], to);
+            } else if (this.levelSystem.checkBeltUp(data[1])) {
+                if (!this.collisionSet.has(data[1])) {
+                    const node = this.levelSystem.getCurrentLevelNode(data[1]);
+                    const transform = node?.matrix || new Mat4().identity();
+                    this.addBall(transform)
+                    this.disableMesh(data[1]);
+                    this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 100, 0);
+                }
             }
+            this.collisionSet.add(data[1]);
         }
     }
 
@@ -298,8 +315,8 @@ export class EventSystem implements System {
         if (!sendmessage) {
             throw new Error("sendmessage is undefined");
         }
+        let dir: Direction = "Down";
         {
-            const dir = "Down";
             if (this.gravity.y === -this.gravityScale) {
                 if (this.dirSet.has(dir)) {
                     return;
@@ -311,8 +328,8 @@ export class EventSystem implements System {
                 this.levelSystem.showDirEntity(dir);
             }
         }
+        dir = "Up";
         {
-            const dir = "Up";
             if (this.gravity.y === this.gravityScale) {
                 if (this.dirSet.has(dir)) {
                     return;
@@ -324,8 +341,8 @@ export class EventSystem implements System {
                 this.levelSystem.showDirEntity(dir);
             }
         }
+        dir = "Left";
         {
-            const dir = "Left";
             if (this.gravity.x === -this.gravityScale) {
                 if (this.dirSet.has(dir)) {
                     return;
@@ -337,8 +354,8 @@ export class EventSystem implements System {
                 this.levelSystem.showDirEntity(dir);
             }
         }
+        dir = "Right";
         {
-            const dir = "Right";
             if (this.gravity.x === this.gravityScale) {
                 if (this.dirSet.has(dir)) {
                     return;
@@ -351,10 +368,15 @@ export class EventSystem implements System {
             }
         }
     }
+    elpased = 0;
     update(timeStamp: number): void {
-        this.updateDirObjects()
+        this.elpased += timeStamp;
+        if (this.elpased > this.collisionCooldown) {
+            this.elpased = 0;
+            this.collisionSet.clear();
+        }
+        this.updateDirObjects();
         this.sendmessage && this.sendmessage({ type: "updateGravity", data: `${this.gravity[0]},${this.gravity[1]},${this.gravity[2]}` })
-
     }
 
 }

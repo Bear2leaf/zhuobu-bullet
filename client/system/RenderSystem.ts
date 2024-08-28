@@ -20,6 +20,7 @@ export class RenderSystem implements System {
     constructor(private readonly gl: OGLRenderingContext
         , private readonly levelSystem: LevelSystem
     ) {
+        this.levelRoot.visible = false;
     }
     tiledData?: Tiled;
     async load(): Promise<void> {
@@ -112,6 +113,7 @@ export class RenderSystem implements System {
 
     updateMesh(message: WorkerMessage & { type: "update" }, levelSystem: LevelSystem) {
         const scene = this.levelRoot;
+        scene.visible = true;
         for (let index = 0; index < message.objects.length; index++) {
             let child: Transform | undefined;
             const name = message.objects[index][7];

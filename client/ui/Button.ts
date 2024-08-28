@@ -88,6 +88,7 @@ export default class Button implements UIElement {
             uniforms: { tMap: { value: this.texture }, uColor: { value: color } },
 
         });
+        this.getMesh().visible = false;
         this.getMesh().program = program;
         this.getBgMesh().program = new Program(gl, {
             vertex: this.bgVertex,

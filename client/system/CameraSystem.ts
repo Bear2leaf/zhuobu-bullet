@@ -58,7 +58,8 @@ export class CameraSystem implements System {
             this.center.z = cameraZ * 2;
         }
         this.camera.position = this.tempPosition.lerp(this.center.sub(this.levelPosition), this.scaleT);
-        this.camera.orthographic({ zoom: 50 / this.camera.position.z })
+        this.camera.position.z = Math.max(this.camera.position.z, 0.0001);
+        this.camera.orthographic({ zoom: 50 / this.camera.position.z });
     }
     rollCamera(tag: "right" | "left" | "up" | "down", isMazeMode: boolean) {
         const rotation = this.rotation;

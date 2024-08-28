@@ -51,6 +51,14 @@ export default class LevelSystem implements System {
     checkRock(collision: string) {
         return this.collections[this.current].checkRock(collision);
     }
+    checkBeltUp(name: string) {
+        return this.collections[this.current].check(name, "BeltUp");
+    }
+    getCurrentLevelNode(name: string) {
+        let node: Transform | undefined;
+        this.collections[this.current].node.traverse(n => !!(n.name === name && (node = n)))
+        return node;
+    }
     hideDirEntity(dir: "Down" | "Up" | "Left" | "Right") {
         this.collections[this.current].updateVisible("Dir" + dir, false);
         const names = this.collections[this.current].getMeshNames("Dir" + dir);
@@ -82,6 +90,7 @@ export default class LevelSystem implements System {
         })
     }
     request(scene: Transform) {
+        
         const tiledData = this.tiledData;
         if (!tiledData) {
             throw new Error("tiledData is undefined");
