@@ -13,10 +13,10 @@ export class Level extends GroupLayer {
         super(name, x, y, tileLayersData, tilesets);
     }
     checkNodeEntity(node: Transform, name: string | undefined) {
-        return this.tileLayers.some(layer => node.name && layer.checkEntity(node.name, "name", name))
+        return this.tileLayers.some(layer => node.name && layer.getTileInfo(node.name, "name", name))
     }
     checkEntityName(meshName: string, name: string) {
-        return this.tileLayers.some(layer => layer.checkEntity(meshName, "name", name))
+        return this.tileLayers.some(layer => layer.getTileInfo(meshName, "name", name))
     }
     getTeleportDestinationName() {
         const names = this.getMeshNames("TeleportDestination")
@@ -31,7 +31,7 @@ export class Level extends GroupLayer {
     }
     getMeshNames(name: string) {
         return this.tileLayers.reduce<string[]>((prev, curr) => {
-            prev.push(...curr.getEntitiesByPropertyCondition("name", name))
+            prev.push(...curr.getMeshNamesByPropertyCondition("name", name))
             return prev;
         }, [])
     }

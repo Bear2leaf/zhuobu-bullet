@@ -11,6 +11,7 @@ type TileInfo = {
     y: number,
     w: number,
     h: number,
+    shape: number[],
     entity?: boolean,
     collider?: boolean,
     properties: Property[]
@@ -32,37 +33,36 @@ export class Chunk implements Layer {
     ) {
         this.buildTileInfoMap();
     }
-    checkEntity(name: string, propName?: string, propValue?: Property["value"]) {
+    getTileInfo(name: string, propName?: string, propValue?: Property["value"]) {
         const gid = this.meshNameEntityTileMap.get(name);
         if (gid === undefined) {
-            return false;
+            return;
         }
         if (propName === undefined) {
-            return true;
+            return this.tileInfoMap.get(gid);
         }
         if (propValue === undefined) {
             for (const prop of this.tileInfoMap.get(gid)?.properties || []) {
                 if (prop.name === propName) {
-                    return true;
+                    return this.tileInfoMap.get(gid);
                 }
             }
         } else {
             for (const prop of this.tileInfoMap.get(gid)?.properties || []) {
                 if (prop.name === propName && prop.value === propValue) {
-                    return true;
+                    return this.tileInfoMap.get(gid);
                 }
             }
         }
-        return false;
     }
     getEntitiesByPropertyCondition(propName: string, propValue: Property["value"]) {
         const entities = [];
-            for (const [key, gid] of this.meshNameEntityTileMap.entries()) {
-                const tileInfo = this.tileInfoMap.get(gid);
-                if (tileInfo?.properties.some(prop => prop.name === propName && prop.value === propValue)) {
-                    entities.push(key)
-                }
+        for (const [key, gid] of this.meshNameEntityTileMap.entries()) {
+            const tileInfo = this.tileInfoMap.get(gid);
+            if (tileInfo?.properties.some(prop => prop.name === propName && prop.value === propValue)) {
+                entities.push(key)
             }
+        }
         return entities;
     }
     drawChunk(min: Vec2, max: Vec2, position: number[], uv: number[], tMap: { value: Texture }) {
@@ -116,7 +116,7 @@ export class Chunk implements Layer {
             )
         }
     }
-    initEntities(levelNode: Transform, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, internalIconName: string) {
+    initEntities(parent: Transform, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, internalIconName: string) {
         const chunk = this;
         for (let j = 0; j < chunk.data.length; j++) {
             const gid = chunk.data[j];
@@ -134,8 +134,9 @@ export class Chunk implements Layer {
                     const h = texture.height;
                     const mesh = new Mesh(gl, {
                         geometry: new Plane(gl, {
-                            width: chunk.width,
-                            height: chunk.height,
+                            width: tile.w,
+                            height: tile.h,
+
                         }),
                         program: new Program(gl, {
                             vertex: spriteVertex,
@@ -156,7 +157,7 @@ export class Chunk implements Layer {
                     ]);
                     mesh.geometry.updateAttribute(uvAttr);
                     mesh.name = "test" + counterHandler.counter++;
-                    mesh.setParent(levelNode);
+                    mesh.setParent(parent);
                     mesh.position.x = x;
                     mesh.position.y = -y;
                     mesh.rotation.x = Math.PI;
@@ -168,7 +169,7 @@ export class Chunk implements Layer {
             }
         }
     }
-    initCollisions(levelNode: Transform, gl: OGLRenderingContext, vertex: string, fragment: string) {
+    initCollisions(parent: Transform, gl: OGLRenderingContext, vertex: string, fragment: string) {
         let tilewidth = 0;
         let tileheight = 0;
         const rows = this.height;
@@ -214,7 +215,7 @@ export class Chunk implements Layer {
                 })
             });
             mesh.name = "test" + counterHandler.counter++;
-            mesh.setParent(levelNode);
+            mesh.setParent(parent);
             mesh.geometry.computeBoundingBox();
             mesh.geometry.computeBoundingSphere();
         }
@@ -239,16 +240,56 @@ export class Chunk implements Layer {
             if (!name) {
                 throw new Error("name is undefined");
             }
-            this.tileInfoMap.set(gid, {
+            const tile: TileInfo = {
                 name,
                 x: tx,
                 y: ty,
                 w: (tileset.tilewidth),
                 h: (tileset.tileheight),
+                shape: [],
                 entity: tileDef.objectgroup.objects?.find(o => o.name === "Entity") ? true : false,
                 collider: tileDef.objectgroup.objects?.find(o => o.name === "Collider") ? true : false,
                 properties: tileDef.properties
-            });
+            };
+            const tileDefObject = tileDef.objectgroup.objects?.find(o => o.name === "Entity");
+            if (tileDefObject) {
+                if (tileDefObject.polyline) {
+                    const min = [Infinity, Infinity];
+                    const max = [-Infinity, -Infinity];
+                    for (const point of tileDefObject.polyline) {
+                        min[0] = Math.min(min[0], point.x);
+                        min[1] = Math.min(min[1], point.y);
+                        max[0] = Math.max(max[0], point.x);
+                        max[1] = Math.max(max[1], point.y);
+                    }
+                    const hw = (max[0] - min[0]) / 2;
+                    const hh = (max[1] - min[1]) / 2;
+                    tile.shape = [
+                        -hw, -hh, 0,
+                        hw, -hh, 0,
+                        hw, hh, 0,
+                        hw, hh, 0,
+                        -hw, hh, 0,
+                        -hw, -hh, 0,
+                    ]
+                } else if (tileDefObject.polygon) {
+
+                    const min = [Infinity, Infinity];
+                    const max = [-Infinity, -Infinity];
+                    for (const point of tileDefObject.polygon) {
+                        min[0] = Math.min(min[0], point.x);
+                        min[1] = Math.min(min[1], point.y);
+                        max[0] = Math.max(max[0], point.x);
+                        max[1] = Math.max(max[1], point.y);
+                    }
+                    const hw = (max[0] - min[0]) / 2;
+                    const hh = (max[1] - min[1]) / 2;
+                    for (const point of tileDefObject.polygon) {
+                        tile.shape.push(point.x - hw, hh + point.y, 0);
+                    }
+                }
+            }
+            this.tileInfoMap.set(gid, tile);
         }
     }
 }

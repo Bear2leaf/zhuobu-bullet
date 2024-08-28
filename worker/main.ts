@@ -120,6 +120,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const transform = message.data.transform;
             const vertices = message.data.vertices;
             const indices = message.data.indices;
+            const convex = message.data.convex;
             const newVertices: number[] = [];
             if (indices.length) {
 
@@ -137,7 +138,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const v = new UserData;
             v.propertities = message.data.propertities;
             v.name = message.data.name;
-            if (v.propertities?.dynamic) {
+            if (v.propertities?.dynamic || convex) {
                 shape = new Ammo.btConvexHullShape();
                 for (let i = 0; i < newVertices.length / 3; i++) {
                     vertex0.setValue(newVertices[i * 3 + 0], newVertices[i * 3 + 1], newVertices[i * 3 + 2]);

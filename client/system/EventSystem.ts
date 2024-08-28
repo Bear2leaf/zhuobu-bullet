@@ -59,10 +59,10 @@ export class EventSystem implements System {
         if (!sendmessage) {
             throw new Error("sendmessage is undefined");
         }
-        this.levelSystem.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => {
+        this.levelSystem.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>, convex?: boolean) => {
             sendmessage({
                 type: "addMesh",
-                data: { vertices: [...vertices], indices: [...indices], propertities, name, transform }
+                data: { vertices: [...vertices], indices: [...indices], propertities, name, transform, convex }
             })
         }
         this.levelSystem.onaddball = (transform) => {

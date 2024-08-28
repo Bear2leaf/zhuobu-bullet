@@ -35,15 +35,19 @@ export interface ObjectgroupElement {
     visible:    boolean;
     x:          number;
     y:          number;
-    draworder?: string;
+    draworder?: Draworder;
     objects?:   Object[];
+}
+
+export enum Draworder {
+    Index = "index",
 }
 
 export interface LayerLayer {
     chunks:  Chunk[];
     height:  number;
     id:      number;
-    name:    Name;
+    name:    LayerName;
     opacity: number;
     startx:  number;
     starty:  number;
@@ -62,7 +66,7 @@ export interface Chunk {
     y:      number;
 }
 
-export enum Name {
+export enum LayerName {
     Background = "Background",
     Entities = "Entities",
 }
@@ -72,19 +76,25 @@ export enum PurpleType {
 }
 
 export interface Object {
-    height:   number;
-    id:       number;
-    name:     string;
-    polyline: Polyline[];
-    rotation: number;
-    type:     string;
-    visible:  boolean;
-    width:    number;
-    x:        number;
-    y:        number;
+    height:    number;
+    id:        number;
+    name:      ObjectName;
+    polyline?: Poly[];
+    rotation:  number;
+    type:      string;
+    visible:   boolean;
+    width:     number;
+    x:         number;
+    y:         number;
+    polygon?:  Poly[];
 }
 
-export interface Polyline {
+export enum ObjectName {
+    Collider = "Collider",
+    Entity = "Entity",
+}
+
+export interface Poly {
     x: number;
     y: number;
 }
@@ -116,9 +126,17 @@ export interface Tile {
 }
 
 export interface Property {
-    name:  string;
-    type:  string;
+    name:  PropertyName;
+    type:  PropertyType;
     value: string;
+}
+
+export enum PropertyName {
+    Name = "name",
+}
+
+export enum PropertyType {
+    String = "string",
 }
 
 // Converts JSON strings to/from your types
@@ -313,14 +331,14 @@ const typeMap: any = {
         { json: "visible", js: "visible", typ: true },
         { json: "x", js: "x", typ: 0 },
         { json: "y", js: "y", typ: 0 },
-        { json: "draworder", js: "draworder", typ: u(undefined, "") },
+        { json: "draworder", js: "draworder", typ: u(undefined, r("Draworder")) },
         { json: "objects", js: "objects", typ: u(undefined, a(r("Object"))) },
     ], false),
     "LayerLayer": o([
         { json: "chunks", js: "chunks", typ: a(r("Chunk")) },
         { json: "height", js: "height", typ: 0 },
         { json: "id", js: "id", typ: 0 },
-        { json: "name", js: "name", typ: r("Name") },
+        { json: "name", js: "name", typ: r("LayerName") },
         { json: "opacity", js: "opacity", typ: 0 },
         { json: "startx", js: "startx", typ: 0 },
         { json: "starty", js: "starty", typ: 0 },
@@ -340,18 +358,19 @@ const typeMap: any = {
     "Object": o([
         { json: "height", js: "height", typ: 0 },
         { json: "id", js: "id", typ: 0 },
-        { json: "name", js: "name", typ: "" },
-        { json: "polyline", js: "polyline", typ: a(r("Polyline")) },
+        { json: "name", js: "name", typ: r("ObjectName") },
+        { json: "polyline", js: "polyline", typ: u(undefined, a(r("Poly"))) },
         { json: "rotation", js: "rotation", typ: 0 },
         { json: "type", js: "type", typ: "" },
         { json: "visible", js: "visible", typ: true },
         { json: "width", js: "width", typ: 0 },
-        { json: "x", js: "x", typ: 0 },
-        { json: "y", js: "y", typ: 0 },
+        { json: "x", js: "x", typ: 3.14 },
+        { json: "y", js: "y", typ: 3.14 },
+        { json: "polygon", js: "polygon", typ: u(undefined, a(r("Poly"))) },
     ], false),
-    "Polyline": o([
-        { json: "x", js: "x", typ: 0 },
-        { json: "y", js: "y", typ: 0 },
+    "Poly": o([
+        { json: "x", js: "x", typ: 3.14 },
+        { json: "y", js: "y", typ: 3.14 },
     ], false),
     "Tileset": o([
         { json: "columns", js: "columns", typ: 0 },
@@ -373,19 +392,32 @@ const typeMap: any = {
         { json: "properties", js: "properties", typ: a(r("Property")) },
     ], false),
     "Property": o([
-        { json: "name", js: "name", typ: "" },
-        { json: "type", js: "type", typ: "" },
+        { json: "name", js: "name", typ: r("PropertyName") },
+        { json: "type", js: "type", typ: r("PropertyType") },
         { json: "value", js: "value", typ: "" },
     ], false),
-    "Name": [
+    "Draworder": [
+        "index",
+    ],
+    "LayerName": [
         "Background",
         "Entities",
     ],
     "PurpleType": [
         "tilelayer",
     ],
+    "ObjectName": [
+        "Collider",
+        "Entity",
+    ],
     "ObjectgroupType": [
         "group",
         "objectgroup",
+    ],
+    "PropertyName": [
+        "name",
+    ],
+    "PropertyType": [
+        "string",
     ],
 };

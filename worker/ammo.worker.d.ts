@@ -16,7 +16,7 @@ export type MainMessage = {
     data: string
 } | {
     type: "addMesh",
-    data: { vertices: number[], indices: number[], propertities?: Record<string, boolean>, name: string | undefined, transform: number[] }
+    data: { vertices: number[], indices: number[], propertities?: Record<string, boolean>, name: string | undefined, transform: number[], convex: boolean | undefined }
 } | {
     type: "removeMesh",
     data: string

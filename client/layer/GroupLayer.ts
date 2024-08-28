@@ -55,7 +55,7 @@ export class GroupLayer implements Layer {
     }
     resetVisibility(): void {
         this.node?.traverse(child => {
-            if (this.tileLayers.some(layer => child.name && layer.checkEntity(child.name))) {
+            if (this.tileLayers.some(layer => child.name && layer.getTileInfo(child.name))) {
                 child.visible = true
             }
         });

@@ -2,6 +2,7 @@ import { Box, Camera, Geometry, Mat4, Mesh, OGLRenderingContext, Plane, Program,
 import { Convert, Tiled } from "../misc/TiledParser.js";
 import { System } from "./System.js";
 import { Level } from "../layer/Level.js";
+import { TileLayer } from "../layer/TileLayer.js";
 
 export default class LevelSystem implements System {
     tiledData?: Tiled;
@@ -10,7 +11,7 @@ export default class LevelSystem implements System {
     isMazeMode = true;
     readonly center = new Vec3();
     readonly collections: Level[] = [];
-    onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>) => void;
+    onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>, convex?: boolean) => void;
     ondisablemesh?: (name: string | undefined) => void;
     onenablemesh?: (name: string | undefined) => void;
     onaddball?: (transform: number[]) => void;
@@ -90,7 +91,7 @@ export default class LevelSystem implements System {
         })
     }
     request(scene: Transform) {
-        
+
         const tiledData = this.tiledData;
         if (!tiledData) {
             throw new Error("tiledData is undefined");
@@ -133,13 +134,14 @@ export default class LevelSystem implements System {
         const level = this.collections[this.current];
         for (const child of level.node.children) {
             if (child instanceof Mesh) {
-                this.buildChildCollision(child, min, max);
+                this.buildCollision(child);
             }
         }
         for (const tileLayer of level.tileLayers) {
             for (const child of tileLayer.node.children) {
                 if (child instanceof Mesh) {
-                    this.buildChildCollision(child, min, max);
+                    this.buildCollision(child, tileLayer);
+                    this.buildMinMax(child, min, max)
                 }
             }
         }
@@ -147,13 +149,11 @@ export default class LevelSystem implements System {
         this.radius = max.distance(min) / 2;
         this.center.copy(max.add(min).multiply(0.5));
     }
-    private buildChildCollision(child: Mesh, min: Vec3, max: Vec3) {
-
+    private buildMinMax(child: Mesh, min: Vec3, max: Vec3) {
         const mesh = child;
-        const attributeData = mesh.geometry.getPosition().data;
-        const indices = mesh.geometry.attributes.index?.data;
-        this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []])
-        if (!(mesh.geometry instanceof Plane || mesh.geometry instanceof Sphere)) {
+        if (mesh.geometry instanceof Plane) {
+        } else if (mesh.geometry instanceof Sphere) {
+        } else {
             const meshMin = mesh.geometry.bounds.min;
             const meshMax = mesh.geometry.bounds.max;
             min.x = Math.min(min.x, meshMin.x);
@@ -161,5 +161,19 @@ export default class LevelSystem implements System {
             max.x = Math.max(max.x, meshMax.x);
             max.y = Math.max(max.y, meshMax.y);
         }
+    }
+    private buildCollision(child: Mesh, layer?: TileLayer) {
+        const mesh = child;
+        if (layer && child.name) {
+            const tile = layer.getTileInfo(child.name, "name");
+            if (tile) {
+                this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, tile.shape, [], {}, true);
+                return
+            }
+        }
+
+        const attributeData = mesh.geometry.getPosition().data;
+        const indices = mesh.geometry.attributes.index?.data;
+        this.onaddmesh && this.onaddmesh(mesh.name, mesh.matrix, [...attributeData || []], [...indices || []])
     }
 }

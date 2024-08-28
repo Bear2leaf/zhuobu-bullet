@@ -17,10 +17,15 @@ export class TileLayer implements Layer {
             this.chunks.push(c)
         })
     }
-    checkEntity(name: string, propName?: string, propValue?: Property["value"]): boolean {
-        return this.chunks.some(chunk => chunk.checkEntity(name, propName, propValue));
+    getTileInfo(name: string, propName?: string, propValue?: Property["value"]) {
+        for (const chunk of this.chunks) {
+            const tile = chunk.getTileInfo(name, propName, propValue);
+            if (tile) {
+                return tile;
+            }
+        }
     }
-    getEntitiesByPropertyCondition(propName: string, propValue: Property["value"]) {
+    getMeshNamesByPropertyCondition(propName: string, propValue: Property["value"]) {
         const entities = [];
         for (const chunk of this.chunks) {
             entities.push(...chunk.getEntitiesByPropertyCondition(propName, propValue));
