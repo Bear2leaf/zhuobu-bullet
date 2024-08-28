@@ -222,7 +222,7 @@ export class EventSystem implements System {
                     const transform = node?.matrix || new Mat4().identity();
                     this.addBall(transform)
                     this.disableMesh(data[1]);
-                    this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 100, 0);
+                    this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 200, 0);
             }
         }
     }
