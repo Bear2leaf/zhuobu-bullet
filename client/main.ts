@@ -1,7 +1,6 @@
 import Device from "./device/Device.js";
 import Engine from "./core/Engine.js";
 import AudioSystem from "./system/AudioSystem.js";
-import { WorkerMessage } from "../worker/ammo.worker.js";
 
 export async function mainH5() {
     const BrowserDevice = (await import("./device/BrowserDevice.js")).default;
