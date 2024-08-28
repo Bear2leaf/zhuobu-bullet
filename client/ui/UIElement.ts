@@ -5,4 +5,6 @@ export default interface UIElement {
     release(): void;
     getMesh(): Transform;
     isDown(): boolean;
+    load(): Promise<void>;
+    init(): void;
 }

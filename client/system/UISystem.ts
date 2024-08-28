@@ -10,10 +10,10 @@ export default class UISystem implements System {
     private readonly sprites: Sprite[] = [];
     private readonly switches: Switch[] = [];
     get all(): UIElement[] {
-        return [...this.sprites, ...this.switches, ...this.buttons].filter(o => o.getMesh().geometry && o.getMesh().program);
+        return [...this.sprites, ...this.switches, ...this.buttons].filter(o => o.getMesh());
     }
 
-    constructor(private readonly renderer: Renderer, private readonly scene: Transform) {
+    constructor(private readonly renderer: Renderer, private readonly scene: Transform, private readonly camera: Camera) {
         const gl = this.renderer.gl;
         const { dpr } = this.renderer;
 
@@ -30,70 +30,30 @@ export default class UISystem implements System {
 
     }
     update(): void {
-        throw new Error("Method not implemented.");
+        this.renderer.render({ scene: this.scene, camera: this.camera, clear: false })
     }
     async load() {
-        for await (const button of this.buttons) {
-            await button.load();
-        }
-        for await (const sprite of this.sprites) {
-            await sprite.load();
-        }
-        for await (const s of this.switches) {
-            await s.load();
+        for await (const item of this.all) {
+            await item.load();
         }
     }
-    getButton(name: string) {
-        const button = this.buttons.find(button => button?.getMesh().name === name);
+    getUIElement<T extends UIElement>(name: string): T {
+        const button = this.all.find(button => button?.getMesh().name === name);
         if (!button) {
             throw new Error("button not found: " + name);
         }
-        return button;
-    }
-    getSprite(name: string) {
-        const sprite = this.sprites.find(sprite => sprite?.getMesh().name === name);
-        if (!sprite) {
-            throw new Error("sprite not found: " + name);
-        }
-        return sprite;
-    }
-    getSwitch(name: string) {
-        const button = this.switches.find(button => button?.getMesh().name === name);
-        if (!button) {
-            throw new Error("switch not found: " + name);
-        }
-        return button;
+        return button as T;
     }
     init() {
-        for (const button of this.buttons) {
-            button.init();
-            button.setParent(this.scene);
-            if (button.getMesh().name === "help") {
-                button.getMesh().scale.multiply(0.5);
-                button.getMesh().visible = false;
-            } else if (button.getMesh().name === "level") {
-                button.getMesh().visible = true;
+        for (const item of this.all) {
+            item.init();
+            item.getMesh().setParent(this.scene);
+            if (item.getMesh().name === "help") {
+                item.getMesh().scale.multiply(0.5);
+                item.getMesh().visible = false;
+            } else if (item.getMesh().name === "level") {
+                item.getMesh().visible = true;
             }
         }
-        for (const sprite of this.sprites) {
-            sprite.init();
-            sprite.setParent(this.scene);
-        }
-        for (const s of this.switches) {
-            s.init();
-            s.setParent(this.scene);
-        }
-    }
-    updateInfo(data: string) {
-        this.buttons.find(button => button.getMesh().name === "info")?.updateText(data);
-    }
-    updateHelp(data: string) {
-        this.buttons.find(button => button.getMesh().name === "help")?.updateText(data);
-    }
-    updateLevel(data: string) {
-        this.buttons.find(button => button.getMesh().name === "level")?.updateText(data);
-    }
-    render(camera: Camera) {
-        this.renderer.render({ scene: this.scene, camera, clear: false })
     }
 }

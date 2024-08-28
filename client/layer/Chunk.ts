@@ -97,7 +97,6 @@ export class Chunk implements Layer {
             const uy = Math.floor((gid - tileset.firstgid) / tileset.columns) * (tileheight + tileset.spacing);
             const x = ((j % chunk.width) + chunk.x) * tilewidth;
             const y = (Math.floor(j / chunk.width) + chunk.y) * tileheight;
-
             position.push(
                 (x), ((y)), (0),
                 (x + tilewidth), ((y)), (0),
@@ -230,8 +229,8 @@ export class Chunk implements Layer {
             if (!tileset) {
                 throw new Error("tileset is undefined");
             }
-            const tx = (((gid - tileset.firstgid) % tileset.columns) + tileset.spacing) * tileset.tilewidth;
-            const ty = (Math.floor((gid - tileset.firstgid) / tileset.columns) + tileset.spacing) * tileset.tileheight;
+            const tx = (((gid - tileset.firstgid) % tileset.columns)) * tileset.tilewidth;
+            const ty = (Math.floor((gid - tileset.firstgid) / tileset.columns)) * tileset.tileheight;
             const tileDef = tileset.tiles?.find(t => t.id === (gid - tileset.firstgid));
             if (!tileDef) {
                 continue;

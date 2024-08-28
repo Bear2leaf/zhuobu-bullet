@@ -7,6 +7,9 @@ import LevelSystem from "./LevelSystem.js";
 import { RenderSystem } from "./RenderSystem.js";
 import UISystem from "./UISystem.js";
 import { Mat4, Quat, Vec2, Vec3 } from "ogl";
+import Button from "../ui/Button.js";
+import Switch from "../ui/Switch.js";
+import Sprite from "../ui/Sprite.js";
 type Direction = "Down" | "Up" | "Left" | "Right";
 export class EventSystem implements System {
     private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
@@ -166,12 +169,12 @@ export class EventSystem implements System {
             if (!root.name) {
                 throw new Error("Level name is undefined");
             }
-            this.uiSystem.updateLevel(root.name)
+            this.uiSystem.getUIElement<Button>("level").updateText(root.name);
         }
     }
     async requestLevel() {
         this.pause = true;
-        this.uiSystem.updateHelp(this.helpMsg);
+        this.uiSystem.getUIElement<Button>("help").updateText(this.helpMsg);
         if (this.isContinue) {
             this.freezeUI = true;
             await this.waitContinueButton();
@@ -189,11 +192,11 @@ export class EventSystem implements System {
         this.isContinue = true;
         this.freezeUI = false;
         this.dirSet.clear();
-        if (this.availableLevels.has(this.levelSystem.current + 1)) {
-            this.updateSprite("next", true);
-        } else {
-            this.updateSprite("next", false);
-        }
+        // if (this.availableLevels.has(this.levelSystem.current + 1)) {
+        //     this.updateSprite("next", true);
+        // } else {
+        //     this.updateSprite("next", false);
+        // }
         // if (this.availableLevels.has(this.levelSystem.current - 1)) {
         //     this.updateSprite("prev", true);
         // } else {
@@ -229,9 +232,9 @@ export class EventSystem implements System {
 
     updateSwitch(name: string, value: boolean) {
         if (value) {
-            this.uiSystem.getSwitch(name).on();
+            this.uiSystem.getUIElement<Switch>(name).on();
         } else {
-            this.uiSystem.getSwitch(name).off();
+            this.uiSystem.getUIElement<Switch>(name).off();
         }
     }
     hideMesh(data: string) {
@@ -242,21 +245,21 @@ export class EventSystem implements System {
     }
     private updateButton(name: string, visible?: boolean) {
         if (visible === undefined) {
-            this.uiSystem.getButton(name).getMesh().visible = !this.uiSystem.getButton(name).getMesh().visible;
+            this.uiSystem.getUIElement<Button>(name).getMesh().visible = !this.uiSystem.getUIElement<Button>(name).getMesh().visible;
         } else {
-            this.uiSystem.getButton(name).getMesh().visible = visible;
+            this.uiSystem.getUIElement<Button>(name).getMesh().visible = visible;
         }
     }
     private updateSprite(name: string, visible?: boolean) {
         if (visible === undefined) {
-            this.uiSystem.getSprite(name).getMesh().visible = !this.uiSystem.getSprite(name).getMesh().visible;
+            this.uiSystem.getUIElement<Sprite>(name).getMesh().visible = !this.uiSystem.getUIElement<Sprite>(name).getMesh().visible;
         } else {
-            this.uiSystem.getSprite(name).getMesh().visible = visible;
+            this.uiSystem.getUIElement<Sprite>(name).getMesh().visible = visible;
         }
     }
     private async waitContinueButton() {
         this.updateButton("continue", true);
-        this.uiSystem.getButton("continue").updateText("恭喜过关\n点击进入下一关")
+        this.uiSystem.getUIElement<Button>("continue").updateText("恭喜过关\n点击进入下一关")
         await new Promise((resolve) => {
             this.continueButtonResolve = resolve;
         })

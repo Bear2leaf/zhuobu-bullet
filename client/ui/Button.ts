@@ -112,7 +112,7 @@ export default class Button implements UIElement {
         }
         this.generateText(data);
     }
-    generateText(data: string) {
+    private generateText(data: string) {
         const gl = this.gl;
         const text = this.text;
         if (text === undefined) {
