@@ -229,8 +229,8 @@ export class Chunk implements Layer {
             if (!tileset) {
                 throw new Error("tileset is undefined");
             }
-            const tx = (((gid - tileset.firstgid) % tileset.columns)) * tileset.tilewidth;
-            const ty = (Math.floor((gid - tileset.firstgid) / tileset.columns)) * tileset.tileheight;
+            const tx = (((gid - tileset.firstgid) % tileset.columns)) * (tileset.tilewidth + tileset.spacing);
+            const ty = (Math.floor((gid - tileset.firstgid) / tileset.columns)) * (tileset.tileheight + tileset.spacing);
             const tileDef = tileset.tiles?.find(t => t.id === (gid - tileset.firstgid));
             if (!tileDef) {
                 continue;
@@ -272,19 +272,8 @@ export class Chunk implements Layer {
                         -hw, -hh, 0,
                     ]
                 } else if (tileDefObject.polygon) {
-
-                    const min = [Infinity, Infinity];
-                    const max = [-Infinity, -Infinity];
                     for (const point of tileDefObject.polygon) {
-                        min[0] = Math.min(min[0], point.x);
-                        min[1] = Math.min(min[1], point.y);
-                        max[0] = Math.max(max[0], point.x);
-                        max[1] = Math.max(max[1], point.y);
-                    }
-                    const hw = (max[0] - min[0]) / 2;
-                    const hh = (max[1] - min[1]) / 2;
-                    for (const point of tileDefObject.polygon) {
-                        tile.shape.push(point.x - hw, hh + point.y, 0);
+                        tile.shape.push(tileDefObject.x + point.x - tile.w / 2, tileDefObject.y + point.y - tile.h / 2, 0);
                     }
                 }
             }

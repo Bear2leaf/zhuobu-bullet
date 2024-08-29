@@ -169,12 +169,12 @@ export class EventSystem implements System {
             if (!root.name) {
                 throw new Error("Level name is undefined");
             }
-            this.uiSystem.getUIElement<Button>("level").updateText(root.name);
+            this.uiSystem.getUIElement<Button>("level").generateText(root.name);
         }
     }
     async requestLevel() {
         this.pause = true;
-        this.uiSystem.getUIElement<Button>("help").updateText(this.helpMsg);
+        this.uiSystem.getUIElement<Button>("help").generateText(this.helpMsg);
         if (this.isContinue) {
             this.freezeUI = true;
             await this.waitContinueButton();
@@ -259,7 +259,7 @@ export class EventSystem implements System {
     }
     private async waitContinueButton() {
         this.updateButton("continue", true);
-        this.uiSystem.getUIElement<Button>("continue").updateText("恭喜过关\n点击进入下一关")
+        this.uiSystem.getUIElement<Button>("continue").generateText("恭喜过关\n点击进入下一关")
         await new Promise((resolve) => {
             this.continueButtonResolve = resolve;
         })

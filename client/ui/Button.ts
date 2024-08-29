@@ -105,14 +105,7 @@ export default class Button implements UIElement {
         });
         this.generateText("");
     }
-    updateText(data: string) {
-        const font = this.fontData;
-        if (font === undefined) {
-            throw new Error("font is undefined");
-        }
-        this.generateText(data);
-    }
-    private generateText(data: string) {
+    generateText(data: string) {
         const gl = this.gl;
         const text = this.text;
         if (text === undefined) {
