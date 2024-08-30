@@ -115,14 +115,23 @@ export class Chunk implements Layer {
             )
         }
     }
-    initEntities(parent: Transform, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, internalIconName: string) {
+    initEntities(parent: Transform, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string) {
         const chunk = this;
         for (let j = 0; j < chunk.data.length; j++) {
             const gid = chunk.data[j];
+            if (gid === 0) {
+                continue;
+            }
             const tile = this.tileInfoMap.get(gid);
+            const tileset = this.tilesets.find(tileset => tileset.firstgid <= gid && gid < (tileset.firstgid + tileset.tilecount))
+            if (!tileset) {
+                throw new Error("tileset is undefined");
+            }
+            const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image));
+            if (!texture) {
+                throw new Error("texture is undefined")
+            }
             if (tile && tile.entity) {
-                const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.indexOf(internalIconName) !== -1);
-
                 const x = (j % chunk.width + chunk.x + 0.5) * tile.w;
                 const y = (Math.floor(j / chunk.width + chunk.y) + 0.5) * tile.h;
                 if (!texture) {

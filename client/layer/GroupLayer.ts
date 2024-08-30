@@ -75,12 +75,11 @@ export class GroupLayer implements Layer {
         fragment: string,
         spriteVertex: string,
         spriteFragment: string,
-        internalIconName: string,
         renderTarget: RenderTarget,
     ) {
         for (const tileLayer of this.tileLayers) {
             tileLayer.drawLayer(renderTarget, gl, spriteVertex, spriteFragment);
-            tileLayer.initTileChunks(gl, vertex, fragment, spriteVertex, spriteFragment, internalIconName)
+            tileLayer.initTileChunks(gl, vertex, fragment, spriteVertex, spriteFragment)
         }
     }
     initGraphics(renderTarget: RenderTarget, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, vertex: string, fragment: string) {

@@ -80,12 +80,12 @@ export class TileLayer implements Layer {
             clear: false
         })
     }
-    initTileChunks(gl: OGLRenderingContext, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string, internalIconName: string) {
+    initTileChunks(gl: OGLRenderingContext, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string) {
         const layer = this;
         for (let i = 0; i < layer.chunks.length; i++) {
             const chunk = layer.chunks[i];
             chunk.initCollisions(this.node, gl, vertex, fragment)
-            chunk.initEntities(this.node, gl, spriteVertex, spriteFragment, internalIconName);
+            chunk.initEntities(this.node, gl, spriteVertex, spriteFragment);
         }
     }
 }

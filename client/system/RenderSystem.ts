@@ -16,7 +16,6 @@ export class RenderSystem implements System {
     private spriteVertex: string = "";
     private readonly textures: Texture[] = [];
     private readonly renderTargets: RenderTarget[] = [];
-    private readonly internalIconName = "finalbossblues-icons_full_16";
     constructor(private readonly gl: OGLRenderingContext
         , private readonly levelSystem: LevelSystem
     ) {
@@ -81,7 +80,7 @@ export class RenderSystem implements System {
             level.setTextures(this.textures);
             level.init()
             level.initRenderTarget(renderTarget)
-            level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, this.internalIconName, renderTarget)
+            level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget)
             level.initGraphics(renderTarget, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
             level.node.setParent(this.levelRoot);
         }
