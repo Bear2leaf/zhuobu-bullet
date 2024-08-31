@@ -41,6 +41,7 @@ export interface ObjectgroupElement {
 
 export enum Draworder {
     Index = "index",
+    Topdown = "topdown",
 }
 
 export interface LayerLayer {
@@ -398,6 +399,7 @@ const typeMap: any = {
     ], false),
     "Draworder": [
         "index",
+        "topdown",
     ],
     "LayerName": [
         "Background",
