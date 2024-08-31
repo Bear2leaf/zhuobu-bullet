@@ -276,9 +276,7 @@ export class Chunk implements Layer {
                         -hw, -hh, 0,
                         hw, -hh, 0,
                         hw, hh, 0,
-                        hw, hh, 0,
                         -hw, hh, 0,
-                        -hw, -hh, 0,
                     ]
                 } else if (tileDefObject.polygon) {
                     for (const point of tileDefObject.polygon) {
