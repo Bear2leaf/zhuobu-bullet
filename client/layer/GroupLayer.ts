@@ -77,8 +77,9 @@ export class GroupLayer implements Layer {
         spriteFragment: string,
         renderTarget: RenderTarget,
     ) {
+        const gridSize = this.tilesets[0].tilewidth;
         for (const tileLayer of this.tileLayers) {
-            tileLayer.drawLayer(renderTarget, gl, spriteVertex, spriteFragment);
+            tileLayer.drawLayer(renderTarget, gl, spriteVertex, spriteFragment, this.min.clone().multiply(gridSize), this.max.clone().multiply(gridSize));
             tileLayer.initTileChunks(gl, vertex, fragment, spriteVertex, spriteFragment)
         }
     }

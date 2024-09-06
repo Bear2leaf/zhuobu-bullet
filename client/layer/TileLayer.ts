@@ -32,24 +32,22 @@ export class TileLayer implements Layer {
         }
         return entities;
     }
-    drawLayer(renderTarget: RenderTarget, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string) {
+    drawLayer(renderTarget: RenderTarget, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, min: Vec2, max: Vec2) {
         const chunks = this.chunks;
         const position = new Array;
         const uv = new Array;
-        const min = new Vec2(Infinity, Infinity);
-        const max = new Vec2(-Infinity, -Infinity);
         const tMap = {
             value: new Texture(gl)
         }
         for (let i = 0; i < chunks.length; i++) {
-            chunks[i].drawChunk(min, max, position, uv, tMap)
+            chunks[i].drawChunk(position, uv, tMap)
         }
         //MAGIC!!! this 0.1 offset make REAL PIXEL PERFECT
         const camera = new Camera(gl, {
-            left: min.x || 0.1,
-            right: max.x || -0.1,
-            top: max.y || -0.1,
-            bottom: min.y || 0.1,
+            left: (min.x) || 0.1,
+            right: (max.x) || -0.1,
+            top: (max.y) || -0.1,
+            bottom: (min.y) || 0.1,
             near: 0,
             far: -1
         })

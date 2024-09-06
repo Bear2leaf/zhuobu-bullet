@@ -65,7 +65,28 @@ export class Chunk implements Layer {
         }
         return entities;
     }
-    drawChunk(min: Vec2, max: Vec2, position: number[], uv: number[], tMap: { value: Texture }) {
+    calculateMinMax(min: Vec2, max: Vec2) {
+        const chunk = this;
+        const gid = this.data.find(gid => gid);
+        if (!gid) {
+            throw new Error("gid is undefined");
+        }
+        const tileset = this.tilesets.find(tileset => tileset.firstgid <= gid && gid < (tileset.firstgid + tileset.tilecount))
+        if (!tileset) {
+            throw new Error("tileset is undefined");
+        }
+        const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image));
+        if (!texture) {
+            throw new Error("texture is undefined")
+        }
+        const tilewidth = tileset.tilewidth;
+        const tileheight = tileset.tileheight;
+        min.x = Math.min(chunk.x * tilewidth, min.x);
+        min.y = Math.min(chunk.y * tileheight, min.y);
+        max.x = Math.max((chunk.x + chunk.width) * tilewidth, max.x);
+        max.y = Math.max((chunk.y + chunk.height) * tileheight, max.y);
+    }
+    drawChunk( position: number[], uv: number[], tMap: { value: Texture }) {
         const chunk = this;
         const gid = this.data.find(gid => gid);
         if (!gid) {
@@ -84,10 +105,6 @@ export class Chunk implements Layer {
         const w = texture.width;
         const h = texture.height;
         tMap.value = texture;
-        min.x = Math.min(chunk.x * tilewidth, min.x);
-        min.y = Math.min(chunk.y * tileheight, min.y);
-        max.x = Math.max((chunk.x + chunk.width) * tilewidth, max.x);
-        max.y = Math.max((chunk.y + chunk.height) * tileheight, max.y);
         for (let j = 0; j < chunk.data.length; j++) {
             const gid = chunk.data[j];
             if (gid === 0 || this.tileInfoMap.get(gid)?.entity) {

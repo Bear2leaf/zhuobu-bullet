@@ -70,6 +70,7 @@ export interface Chunk {
 
 export enum LayerName {
     Background = "Background",
+    Background1 = "Background1",
     Entities = "Entities",
     Entities1 = "Entities1",
     Entities2 = "Entities2",
@@ -407,6 +408,7 @@ const typeMap: any = {
     ],
     "LayerName": [
         "Background",
+        "Background1",
         "Entities",
         "Entities1",
         "Entities2",
