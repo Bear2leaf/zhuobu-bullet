@@ -118,8 +118,8 @@ export default class LevelSystem implements System {
                         continue;
                     }
                     const name = tileDef.properties?.find(prop => prop.name === "name")?.value;
-                    const entityWorldX = x + chunk.width * 0.5;
-                    const entityWorldY = -y - chunk.height * 0.5;
+                    const entityWorldX = x + gridSize * 0.5;
+                    const entityWorldY = -y - gridSize * 0.5;
                     if (name === "Player") {
                         this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)))
                     }

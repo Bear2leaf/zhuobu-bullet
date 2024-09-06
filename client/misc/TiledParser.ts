@@ -9,6 +9,7 @@
 
 export interface Tiled {
     compressionlevel: number;
+    editorsettings:   Editorsettings;
     height:           number;
     infinite:         boolean;
     layers:           ObjectgroupElement[];
@@ -23,6 +24,15 @@ export interface Tiled {
     type:             string;
     version:          string;
     width:            number;
+}
+
+export interface Editorsettings {
+    chunksize: Chunksize;
+}
+
+export interface Chunksize {
+    height: number;
+    width:  number;
 }
 
 export interface ObjectgroupElement {
@@ -71,6 +81,7 @@ export interface Chunk {
 export enum LayerName {
     Background = "Background",
     Background1 = "Background1",
+    Background2 = "Background2",
     Entities = "Entities",
     Entities1 = "Entities1",
     Entities2 = "Entities2",
@@ -311,6 +322,7 @@ function r(name: string) {
 const typeMap: any = {
     "Tiled": o([
         { json: "compressionlevel", js: "compressionlevel", typ: 0 },
+        { json: "editorsettings", js: "editorsettings", typ: r("Editorsettings") },
         { json: "height", js: "height", typ: 0 },
         { json: "infinite", js: "infinite", typ: true },
         { json: "layers", js: "layers", typ: a(r("ObjectgroupElement")) },
@@ -324,6 +336,13 @@ const typeMap: any = {
         { json: "tilewidth", js: "tilewidth", typ: 0 },
         { json: "type", js: "type", typ: "" },
         { json: "version", js: "version", typ: "" },
+        { json: "width", js: "width", typ: 0 },
+    ], false),
+    "Editorsettings": o([
+        { json: "chunksize", js: "chunksize", typ: r("Chunksize") },
+    ], false),
+    "Chunksize": o([
+        { json: "height", js: "height", typ: 0 },
         { json: "width", js: "width", typ: 0 },
     ], false),
     "ObjectgroupElement": o([
@@ -409,6 +428,7 @@ const typeMap: any = {
     "LayerName": [
         "Background",
         "Background1",
+        "Background2",
         "Entities",
         "Entities1",
         "Entities2",
