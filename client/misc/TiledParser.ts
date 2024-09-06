@@ -72,6 +72,7 @@ export enum LayerName {
     Background = "Background",
     Entities = "Entities",
     Entities1 = "Entities1",
+    Entities2 = "Entities2",
 }
 
 export enum PurpleType {
@@ -408,6 +409,7 @@ const typeMap: any = {
         "Background",
         "Entities",
         "Entities1",
+        "Entities2",
     ],
     "PurpleType": [
         "tilelayer",
