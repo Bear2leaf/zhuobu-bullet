@@ -101,29 +101,27 @@ export default class LevelSystem implements System {
         const tiledLayer = levels[this.current];
         const layerInstances = tiledLayer.layers || [];
         for (const layerInstance of layerInstances) {
-            if (layerInstance.name === "Entities") {
-                for (const chunk of layerInstance.chunks) {
-                    for (let j = 0; j < chunk.data.length; j++) {
-                        const gid = chunk.data[j];
-                        if (gid === 0) {
-                            continue;
-                        }
-                        const x = (j % chunk.width) * gridSize + chunk.x * gridSize;
-                        const y = Math.floor(j / chunk.width) * gridSize + chunk.y * gridSize;
-                        const tileset = tiledData.tilesets.find(tileset => tileset.firstgid <= gid && gid < (tileset.firstgid + tileset.tilecount))
-                        if (!tileset) {
-                            throw new Error("tileset is undefined");
-                        }
-                        const tileDef = tileset.tiles?.find(t => t.id === (gid - tileset.firstgid));
-                        if (!tileDef) {
-                            throw new Error("tileDef is undefined");
-                        }
-                        const name = tileDef.properties?.find(prop => prop.name === "name")?.value;
-                        const entityWorldX = x + chunk.width * 0.5;
-                        const entityWorldY = -y - chunk.height * 0.5;
-                        if (name === "Player") {
-                            this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)))
-                        }
+            for (const chunk of layerInstance.chunks) {
+                for (let j = 0; j < chunk.data.length; j++) {
+                    const gid = chunk.data[j];
+                    if (gid === 0) {
+                        continue;
+                    }
+                    const x = (j % chunk.width) * gridSize + chunk.x * gridSize;
+                    const y = Math.floor(j / chunk.width) * gridSize + chunk.y * gridSize;
+                    const tileset = tiledData.tilesets.find(tileset => tileset.firstgid <= gid && gid < (tileset.firstgid + tileset.tilecount))
+                    if (!tileset) {
+                        throw new Error("tileset is undefined");
+                    }
+                    const tileDef = tileset.tiles?.find(t => t.id === (gid - tileset.firstgid));
+                    if (!tileDef) {
+                        continue;
+                    }
+                    const name = tileDef.properties?.find(prop => prop.name === "name")?.value;
+                    const entityWorldX = x + chunk.width * 0.5;
+                    const entityWorldY = -y - chunk.height * 0.5;
+                    if (name === "Player") {
+                        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)))
                     }
                 }
             }

@@ -57,6 +57,7 @@ export interface LayerLayer {
     width:   number;
     x:       number;
     y:       number;
+    locked?: boolean;
 }
 
 export interface Chunk {
@@ -70,6 +71,7 @@ export interface Chunk {
 export enum LayerName {
     Background = "Background",
     Entities = "Entities",
+    Entities1 = "Entities1",
 }
 
 export enum PurpleType {
@@ -348,6 +350,7 @@ const typeMap: any = {
         { json: "width", js: "width", typ: 0 },
         { json: "x", js: "x", typ: 0 },
         { json: "y", js: "y", typ: 0 },
+        { json: "locked", js: "locked", typ: u(undefined, true) },
     ], false),
     "Chunk": o([
         { json: "data", js: "data", typ: a(0) },
@@ -404,6 +407,7 @@ const typeMap: any = {
     "LayerName": [
         "Background",
         "Entities",
+        "Entities1",
     ],
     "PurpleType": [
         "tilelayer",
