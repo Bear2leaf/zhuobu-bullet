@@ -3,14 +3,30 @@ import { WorkerMessage } from "../../worker/ammo.worker";
 import { MainMessage } from "../../worker/ammo.worker";
 export default class BrowserDevice implements Device {
     private worker?: Worker;
-    private readonly windowInfo: [number, number, number];
+    private readonly windowInfo: WechatMinigame.WindowInfo;
     private readonly canvasGL: HTMLCanvasElement
     constructor() {
         this.canvasGL = document.createElement("canvas");
         document.body.appendChild(this.canvasGL);
         this.canvasGL.width = window.innerWidth
         this.canvasGL.height = window.innerHeight
-        this.windowInfo = [this.canvasGL.width, this.canvasGL.height, window.devicePixelRatio];
+        this.windowInfo = {
+            windowWidth: this.canvasGL.width,
+            windowHeight: this.canvasGL.height,
+            pixelRatio: window.devicePixelRatio,
+            statusBarHeight: 10,
+            screenWidth: this.canvasGL.width,
+            screenHeight: this.canvasGL.height,
+            safeArea: {
+                bottom: this.canvasGL.height - 20,
+                height: this.canvasGL.height,
+                left: 0,
+                right: this.canvasGL.width,
+                top: 20,
+                width: this.canvasGL.width
+            },
+            screenTop: 0
+        };;
     }
     getParam(name: string): string {
         const query = window.location.search.substring(1);
@@ -26,7 +42,7 @@ export default class BrowserDevice implements Device {
     getCanvasGL(): HTMLCanvasElement {
         return this.canvasGL;
     }
-    getWindowInfo(): readonly [number, number, number] {
+    getWindowInfo(){
         return this.windowInfo
     }
     now(): number {

@@ -4,10 +4,9 @@ export default interface Device {
   sendmessage: (message: MainMessage) => void;
   onmessage: (message: WorkerMessage) => void;
   createWorker(url: string): void;
-  getParam(name: string): string;
   terminateWorker(): void;
   getCanvasGL(): HTMLCanvasElement;
-  getWindowInfo(): readonly [number, number, number];
+  getWindowInfo(): WechatMinigame.WindowInfo;
   now(): number;
   loadSubpackage(): Promise<null>;
   createWebAudioContext(): AudioContext;

@@ -5,7 +5,7 @@ import { WorkerMessage, MainMessage } from '../../worker/ammo.worker.js';
 
 export default class MinigameDevice implements Device {
     private worker?: WechatMinigame.Worker;
-    private readonly windowInfo: readonly [number, number, number];
+    private readonly windowInfo: WechatMinigame.WindowInfo;
     private readonly canvasGL: WechatMinigame.Canvas
     private readonly divideTimeBy: number;
     private startupTime: number = wx.getPerformance().now();
@@ -14,8 +14,8 @@ export default class MinigameDevice implements Device {
         const info = wx.getWindowInfo();
         (this.canvasGL.width) = info.windowWidth;
         (this.canvasGL.height) = info.windowHeight;
-        this.windowInfo = [this.canvasGL.width, this.canvasGL.height, info.pixelRatio];
-        const isDevTool = wx.getSystemInfoSync().platform === "devtools";
+        this.windowInfo = wx.getWindowInfo();
+        const isDevTool = wx.getDeviceInfo().platform === "devtools";
         this.divideTimeBy = isDevTool ? 1 : 1000;
 
         GameGlobal.performance = {
@@ -25,7 +25,7 @@ export default class MinigameDevice implements Device {
     getCanvasGL(): HTMLCanvasElement {
         return this.canvasGL as unknown as HTMLCanvasElement;
     }
-    getWindowInfo(): readonly [number, number, number] {
+    getWindowInfo() {
         return this.windowInfo;
     }
     now(): number {

@@ -15,7 +15,11 @@ export async function mainMinigame() {
     return device;
 }
 async function start(device: Device) {
-    const [width, height, dpr] = device.getWindowInfo();
+    const {
+        windowHeight: height,
+        windowWidth: width,
+        pixelRatio: dpr
+    }= device.getWindowInfo();
     const audio = new AudioSystem(device);
 
     const engine = new Engine(width, height, dpr, device.getCanvasGL(), audio);
