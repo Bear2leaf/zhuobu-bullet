@@ -1,0 +1,38 @@
+{
+    "activeFile": "starter.json",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "starter.json": {
+            "scale": 1.63095703125,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 0,
+                "y": 0
+            }
+        },
+        "starter.json#finalbossblues-icons_full_16": {
+            "scaleInDock": 1
+        },
+        "starter.json#plains": {
+            "scaleInDock": 1
+        },
+        "starter.json#sunny_land": {
+            "scaleInDock": 1
+        },
+        "starter.json#tilemap_grayscale": {
+            "scaleInDock": 1
+        },
+        "starter.json#tiles": {
+            "scaleInDock": 1
+        }
+    },
+    "openFiles": [
+        "starter.json"
+    ],
+    "project": "zhuobu.tiled-project",
+    "recentFiles": [
+        "starter.json"
+    ]
+}
