@@ -9,8 +9,10 @@ export class Level extends GroupLayer {
         y: number,
         tileLayersData: LayerLayer[],
         tilesets: Tileset[],
+        gridWidth: number,
+        gridHeight: number
     ) {
-        super(name, x, y, tileLayersData, tilesets);
+        super(name, x, y, tileLayersData, tilesets, gridWidth, gridHeight);
     }
     checkNodeEntity(node: Transform, name: string | undefined) {
         return this.tileLayers.some(layer => node.name && layer.getTileInfo(node.name, "name", name))

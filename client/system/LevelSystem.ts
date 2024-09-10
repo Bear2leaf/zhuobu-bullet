@@ -85,7 +85,9 @@ export default class LevelSystem implements System {
                 layer.x,
                 layer.y,
                 layer.layers || [],
-                tiledData.tilesets
+                tiledData.tilesets,
+                tiledData.tilewidth,
+                tiledData.tileheight
             );
             this.collections.push(level);
         })

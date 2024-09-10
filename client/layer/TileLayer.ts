@@ -10,10 +10,12 @@ export class TileLayer implements Layer {
         chunks: _Chunk[],
         tilesets: Tileset[],
         textures: Texture[],
+        gridWidth: number,
+        gridHeight: number
     ) {
         this.chunks = [];
         chunks.forEach(chunk => {
-            const c = new Chunk(tilesets, textures, chunk.data, chunk.x, chunk.y, chunk.width, chunk.height);
+            const c = new Chunk(tilesets, textures, chunk.data, chunk.x, chunk.y, chunk.width, chunk.height, gridWidth, gridHeight);
             this.chunks.push(c)
         })
     }

@@ -30,6 +30,8 @@ export class Chunk implements Layer {
         readonly y: number,
         readonly width: number,
         readonly height: number,
+        private readonly gridWidth: number,
+        private readonly gridHeight: number
     ) {
         this.buildTileInfoMap();
     }
@@ -65,27 +67,6 @@ export class Chunk implements Layer {
         }
         return entities;
     }
-    calculateMinMax(min: Vec2, max: Vec2) {
-        const chunk = this;
-        const gid = this.data.find(gid => gid);
-        if (!gid) {
-            throw new Error("gid is undefined");
-        }
-        const tileset = this.tilesets.find(tileset => tileset.firstgid <= gid && gid < (tileset.firstgid + tileset.tilecount))
-        if (!tileset) {
-            throw new Error("tileset is undefined");
-        }
-        const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image));
-        if (!texture) {
-            throw new Error("texture is undefined")
-        }
-        const tilewidth = tileset.tilewidth;
-        const tileheight = tileset.tileheight;
-        min.x = Math.min(chunk.x * tilewidth, min.x);
-        min.y = Math.min(chunk.y * tileheight, min.y);
-        max.x = Math.max((chunk.x + chunk.width) * tilewidth, max.x);
-        max.y = Math.max((chunk.y + chunk.height) * tileheight, max.y);
-    }
     drawChunk( position: number[], uv: number[], tMap: { value: Texture }) {
         const chunk = this;
         const gid = this.data.find(gid => gid);
@@ -96,12 +77,18 @@ export class Chunk implements Layer {
         if (!tileset) {
             throw new Error("tileset is undefined");
         }
-        const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image));
+        const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image.replace(/\s/g, "%20")));
         if (!texture) {
             throw new Error("texture is undefined")
         }
         const tilewidth = tileset.tilewidth;
         const tileheight = tileset.tileheight;
+        let gridWidth = tileset.tilewidth;
+        let gridHeight = tileset.tileheight;
+        if (tileset.tilerendersize && tileset.tilerendersize === "grid") {
+            gridWidth = this.gridWidth;
+            gridHeight = this.gridHeight;
+        }
         const w = texture.width;
         const h = texture.height;
         tMap.value = texture;
@@ -112,14 +99,14 @@ export class Chunk implements Layer {
             }
             const ux = ((gid - tileset.firstgid) % tileset.columns) * (tilewidth + tileset.spacing);
             const uy = Math.floor((gid - tileset.firstgid) / tileset.columns) * (tileheight + tileset.spacing);
-            const x = ((j % chunk.width) + chunk.x) * tilewidth;
-            const y = (Math.floor(j / chunk.width) + chunk.y) * tileheight;
+            const x = ((j % chunk.width) + chunk.x) * gridWidth;
+            const y = (Math.floor(j / chunk.width) + chunk.y) * gridHeight;
             position.push(
                 (x), ((y)), (0),
-                (x + tilewidth), ((y)), (0),
-                (x + tilewidth), ((y + tileheight)), (0),
-                (x + tilewidth), ((y + tileheight)), (0),
-                (x), ((y + tileheight)), (0),
+                (x + gridWidth), ((y)), (0),
+                (x + gridWidth), ((y + gridHeight)), (0),
+                (x + gridWidth), ((y + gridHeight)), (0),
+                (x), ((y + gridHeight)), (0),
                 (x), ((y)), (0)
             );
             uv.push(
@@ -144,13 +131,19 @@ export class Chunk implements Layer {
             if (!tileset) {
                 throw new Error("tileset is undefined");
             }
-            const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image));
+            const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image.replace(/\s/g, "%20")));
             if (!texture) {
                 throw new Error("texture is undefined")
             }
+            let gridWidth = tileset.tilewidth;
+            let gridHeight = tileset.tileheight;
+            if (tileset.tilerendersize && tileset.tilerendersize === "grid") {
+                gridWidth = this.gridWidth;
+                gridHeight = this.gridHeight;
+            }
             if (tile && tile.entity) {
-                const x = (j % chunk.width + chunk.x + 0.5) * tile.w;
-                const y = (Math.floor(j / chunk.width + chunk.y) + 0.5) * tile.h;
+                const x = (j % chunk.width + chunk.x + 0.5) * gridWidth;
+                const y = (Math.floor(j / chunk.width + chunk.y) + 0.5) * gridHeight;
                 if (!texture) {
                     throw new Error("texture is undefined");
                 }
@@ -159,8 +152,8 @@ export class Chunk implements Layer {
                     const h = texture.height;
                     const mesh = new Mesh(gl, {
                         geometry: new Plane(gl, {
-                            width: tile.w,
-                            height: tile.h,
+                            width: gridWidth,
+                            height: gridHeight,
 
                         }),
                         program: new Program(gl, {
@@ -202,16 +195,13 @@ export class Chunk implements Layer {
         const contours = (getContours(ndarray(this.data.map(x => {
             const tile = this.tileInfoMap.get(x);
             if (tile && tile.collider) {
-                tilewidth = tile.w;
-                tileheight = tile.h;
                 return 1;
             } else {
                 return 0;
             }
         }), [rows, cols]), false));
-        if (!tileheight || !tilewidth) {
-            return;
-        }
+        tilewidth = this.gridWidth;
+        tileheight = this.gridHeight;
         for (let index = 0; index < contours.length; index++) {
             const contour = contours[index];
             const position = contour.reduce((prev, point, index, arr) => {
@@ -281,14 +271,16 @@ export class Chunk implements Layer {
                 if (tileDefObject.polyline) {
                     const min = [Infinity, Infinity];
                     const max = [-Infinity, -Infinity];
+                    const scaleX = this.gridWidth / tileset.tilewidth;
+                    const scaleY = this.gridHeight / tileset.tileheight;
                     for (const point of tileDefObject.polyline) {
                         min[0] = Math.min(min[0], point.x);
                         min[1] = Math.min(min[1], point.y);
                         max[0] = Math.max(max[0], point.x);
                         max[1] = Math.max(max[1], point.y);
                     }
-                    const hw = (max[0] - min[0]) / 2;
-                    const hh = (max[1] - min[1]) / 2;
+                    const hw = (max[0] - min[0]) / 2 * scaleX;
+                    const hh = (max[1] - min[1]) / 2 * scaleY;
                     tile.shape = [
                         -hw, -hh, 0,
                         hw, -hh, 0,

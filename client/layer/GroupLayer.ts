@@ -19,12 +19,14 @@ export class GroupLayer implements Layer {
         readonly y: number,
         private readonly tileLayersData: LayerLayer[],
         private readonly tilesets: Tileset[],
+        private readonly gridWidth: number,
+        private readonly gridHeight: number
     ) { }
     init() {
         const layerInstances = this.tileLayersData;
         for (let layerIndex = 0; layerIndex < layerInstances.length; layerIndex++) {
             const layerLayer = layerInstances[layerIndex];
-            const tileLayer = new TileLayer(layerLayer.name, layerLayer.chunks, this.tilesets, this.textures);
+            const tileLayer = new TileLayer(layerLayer.name, layerLayer.chunks, this.tilesets, this.textures, this.gridWidth, this.gridHeight);
             this.tileLayers.push(tileLayer);
             tileLayer.node.setParent(this.node);
         }
