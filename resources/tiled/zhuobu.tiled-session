@@ -4,12 +4,15 @@
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "": {
+            "scaleInEditor": 1
+        },
         "starter.json": {
-            "scale": 1.63095703125,
-            "selectedLayer": 2,
+            "scale": 2.94,
+            "selectedLayer": 70,
             "viewCenter": {
-                "x": 0,
-                "y": 0
+                "x": 68.3673469387755,
+                "y": -55.442176870748284
             }
         },
         "starter.json#finalbossblues-icons_full_16": {
