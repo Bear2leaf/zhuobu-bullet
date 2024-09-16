@@ -16,6 +16,7 @@
             }
         },
         "starter.json#finalbossblues-icons_full_16": {
+            "dynamicWrapping": false,
             "scaleInDock": 1
         },
         "starter.json#plains": {
