@@ -8,10 +8,13 @@
             "scaleInEditor": 1
         },
         "starter.json": {
+            "expandedGroupLayers": [
+                242
+            ],
             "scale": 2.94,
-            "selectedLayer": 70,
+            "selectedLayer": 109,
             "viewCenter": {
-                "x": 68.3673469387755,
+                "x": 68.19727891156464,
                 "y": -55.442176870748284
             }
         },

@@ -79,7 +79,10 @@ export default class LevelSystem implements System {
         if (!tiledData) {
             throw new Error("tiledData is undefined");
         }
-        tiledData.layers.forEach(layer => {
+        tiledData.layers.forEach((layer, index) => {
+            // if (layer.name !== "Rock") {
+            //     return;
+            // }
             const level = new Level(
                 layer.name,
                 layer.x,

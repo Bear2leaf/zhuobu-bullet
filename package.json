@@ -12,7 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ogl": "^1.0.8"
+    "ogl": "^1.0.8",
+    "polygon-clipping": "^0.15.7"
   },
   "devDependencies": {
     "@types/ndarray": "^1.0.14",

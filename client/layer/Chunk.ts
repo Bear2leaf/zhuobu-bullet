@@ -1,9 +1,8 @@
 import { Geometry, Mesh, OGLRenderingContext, Plane, Program, Texture, Transform, Vec2, Vec3 } from "ogl";
 import { Layer } from "./Layer.js";
 import { Property, Tileset } from "../misc/TiledParser.js";
-import { getContours } from "../misc/contour2d.js";
-import ndarray from "../misc/ndarray/ndarray.js";
 import { counterHandler, radius } from "../misc/radius.js";
+import { Polygon, union } from "polygon-clipping";
 
 type TileInfo = {
     name: string,
@@ -67,7 +66,7 @@ export class Chunk implements Layer {
         }
         return entities;
     }
-    drawChunk( position: number[], uv: number[], tMap: { value: Texture }) {
+    drawChunk(position: number[], uv: number[], tMap: { value: Texture }) {
         const chunk = this;
         const gid = this.data.find(gid => gid);
         if (!gid) {
@@ -188,32 +187,39 @@ export class Chunk implements Layer {
         }
     }
     initCollisions(parent: Transform, gl: OGLRenderingContext, vertex: string, fragment: string) {
-        let tilewidth = 0;
-        let tileheight = 0;
+        const tilewidth = this.gridWidth;
+        const tileheight = this.gridHeight;
         const rows = this.height;
         const cols = this.width;
-        const contours = (getContours(ndarray(this.data.map(x => {
+        const colliders: [number, number][][] = [];
+        this.data.forEach((x, index) => {
             const tile = this.tileInfoMap.get(x);
             if (tile && tile.collider) {
-                return 1;
-            } else {
-                return 0;
+                colliders.push([])
+                for (let i = 0; i < tile.shape.length; i += 3) {
+                    colliders[colliders.length - 1].push([tile.shape[i] + ((index % rows) + this.x + 0.5) * tilewidth, tile.shape[i + 1] + (Math.floor(index / rows) + this.y + 0.5) * tileheight]);
+                }
             }
-        }), [rows, cols]), false));
-        tilewidth = this.gridWidth;
-        tileheight = this.gridHeight;
-        for (let index = 0; index < contours.length; index++) {
-            const contour = contours[index];
-            const position = contour.reduce((prev, point, index, arr) => {
+        });
+        const cldr: Polygon = [];
+        if (colliders.length) {
+            cldr.push(...union([colliders[0]], ...colliders.map(c => [[...c]])).reduce((prev, curr) => {
+                prev.push(...curr);
+                return prev;
+            }, []))
+        }
+        for (let i = 0; i < cldr.length; i++) {
+
+            const position = cldr[i % cldr.length].reduce((prev, point, index, arr) => {
                 const p = [...point];
-                p[0] = (p[0] + this.x) * tilewidth;
-                p[1] = -((p[1] + this.y)) * tileheight;
+                p[0] = p[0];
+                p[1] = -p[1];
                 const nextP = [...arr[(index + 1) % arr.length]];
-                nextP[0] = (nextP[0] + this.x) * tilewidth;
-                nextP[1] = -((nextP[1] + this.y)) * tileheight;
+                nextP[0] = nextP[0];
+                nextP[1] = -nextP[1];
                 prev.push(...p, -radius, ...p, radius, ...nextP, radius, ...nextP, radius, ...nextP, -radius, ...p, -radius);
                 return prev;
-            }, []);
+            }, [] as number[]);
             const mesh = new Mesh(gl, {
                 geometry: new Geometry(gl, {
                     position: { data: new Float32Array(position), size: 3 },
@@ -266,7 +272,7 @@ export class Chunk implements Layer {
                 collider: tileDef.objectgroup.objects?.find(o => o.name === "Collider") ? true : false,
                 properties: tileDef.properties
             };
-            const tileDefObject = tileDef.objectgroup.objects?.find(o => o.name === "Entity");
+            const tileDefObject = tileDef.objectgroup.objects?.find(o => ["Entity", "Collider"].indexOf(o.name) !== -1);
             if (tileDefObject) {
                 if (tileDefObject.polyline) {
                     const min = [Infinity, Infinity];
