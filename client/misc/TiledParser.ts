@@ -79,9 +79,7 @@ export interface Chunk {
 
 export enum LayerName {
     Background = "Background",
-    Background0 = "Background0",
     Background1 = "Background1",
-    Background2 = "Background2",
     Entities = "Entities",
     Entities1 = "Entities1",
     Entities2 = "Entities2",
@@ -95,14 +93,14 @@ export interface Object {
     height:    number;
     id:        number;
     name:      ObjectName;
-    polyline?: Poly[];
+    polygon?:  Poly[];
     rotation:  number;
     type:      string;
     visible:   boolean;
     width:     number;
     x:         number;
     y:         number;
-    polygon?:  Poly[];
+    polyline?: Poly[];
 }
 
 export enum ObjectName {
@@ -131,7 +129,7 @@ export interface Tileset {
     spacing:         number;
     tilecount:       number;
     tileheight:      number;
-    tiles:           Tile[];
+    tiles?:          Tile[];
     tilewidth:       number;
     tilerendersize?: string;
 }
@@ -384,14 +382,14 @@ const typeMap: any = {
         { json: "height", js: "height", typ: 0 },
         { json: "id", js: "id", typ: 0 },
         { json: "name", js: "name", typ: r("ObjectName") },
-        { json: "polyline", js: "polyline", typ: u(undefined, a(r("Poly"))) },
+        { json: "polygon", js: "polygon", typ: u(undefined, a(r("Poly"))) },
         { json: "rotation", js: "rotation", typ: 0 },
         { json: "type", js: "type", typ: "" },
         { json: "visible", js: "visible", typ: true },
         { json: "width", js: "width", typ: 0 },
         { json: "x", js: "x", typ: 3.14 },
         { json: "y", js: "y", typ: 3.14 },
-        { json: "polygon", js: "polygon", typ: u(undefined, a(r("Poly"))) },
+        { json: "polyline", js: "polyline", typ: u(undefined, a(r("Poly"))) },
     ], false),
     "Poly": o([
         { json: "x", js: "x", typ: 3.14 },
@@ -408,7 +406,7 @@ const typeMap: any = {
         { json: "spacing", js: "spacing", typ: 0 },
         { json: "tilecount", js: "tilecount", typ: 0 },
         { json: "tileheight", js: "tileheight", typ: 0 },
-        { json: "tiles", js: "tiles", typ: a(r("Tile")) },
+        { json: "tiles", js: "tiles", typ: u(undefined, a(r("Tile"))) },
         { json: "tilewidth", js: "tilewidth", typ: 0 },
         { json: "tilerendersize", js: "tilerendersize", typ: u(undefined, "") },
     ], false),
@@ -428,9 +426,7 @@ const typeMap: any = {
     ],
     "LayerName": [
         "Background",
-        "Background0",
         "Background1",
-        "Background2",
         "Entities",
         "Entities1",
         "Entities2",

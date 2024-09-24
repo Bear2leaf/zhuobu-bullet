@@ -76,7 +76,7 @@ export class Chunk implements Layer {
         if (!tileset) {
             throw new Error("tileset is undefined");
         }
-        const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image.replace(/\s/g, "%20")));
+        const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image) || (texture.image as HTMLImageElement).src.endsWith(tileset.image.replace(/\s/g, "%20")));
         if (!texture) {
             throw new Error("texture is undefined")
         }
@@ -130,7 +130,7 @@ export class Chunk implements Layer {
             if (!tileset) {
                 throw new Error("tileset is undefined");
             }
-            const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image.replace(/\s/g, "%20")));
+            const texture = this.textures.find(texture => (texture.image as HTMLImageElement).src.endsWith(tileset.image) || (texture.image as HTMLImageElement).src.endsWith(tileset.image.replace(/\s/g, "%20")));
             if (!texture) {
                 throw new Error("texture is undefined")
             }
@@ -143,9 +143,6 @@ export class Chunk implements Layer {
             if (tile && tile.entity) {
                 const x = (j % chunk.width + chunk.x + 0.5) * gridWidth;
                 const y = (Math.floor(j / chunk.width + chunk.y) + 0.5) * gridHeight;
-                if (!texture) {
-                    throw new Error("texture is undefined");
-                }
                 if (tile.name !== "Player") {
                     const w = texture.width;
                     const h = texture.height;

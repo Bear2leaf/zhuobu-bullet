@@ -36,11 +36,17 @@
             "scaleInDock": 1
         }
     },
+    "last.imagePath": "/Users/bear/Documents/git/zhuobu-bullet/resources/tiled/atlas/Pixel Adventure 1/Background",
     "openFiles": [
         "starter.json"
     ],
     "project": "zhuobu.tiled-project",
     "recentFiles": [
         "starter.json"
-    ]
+    ],
+    "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
 }
