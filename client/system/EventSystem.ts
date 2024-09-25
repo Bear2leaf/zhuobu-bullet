@@ -179,6 +179,7 @@ export class EventSystem implements System {
             this.freezeUI = true;
             await this.waitContinueButton();
         }
+        this.renderSystem.initCurrentLevel(this.levelSystem.current);
         this.levelSystem.request(this.renderSystem.levelRoot);
         if (this.levelSystem.current === 0) {
             this.updateButton("help", true);

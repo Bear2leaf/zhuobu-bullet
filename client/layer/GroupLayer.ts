@@ -13,6 +13,7 @@ export class GroupLayer implements Layer {
     readonly max: Vec2 = new Vec2;
     readonly properties: Record<string, string | number | boolean> = {};
     private readonly textures: Texture[] = [];
+    requested = false;
     constructor(
         readonly name: string,
         readonly x: number,
@@ -70,6 +71,7 @@ export class GroupLayer implements Layer {
         const width = (this.max.x - this.min.x) * gridSize;
         const height = (this.max.y - this.min.y) * gridSize;
         renderTarget.setSize(width, height)
+        this.requested = true;
     }
     initGraphicsBuffer(
         gl: OGLRenderingContext,

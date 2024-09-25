@@ -18,7 +18,7 @@ export class CameraSystem implements System {
     private scaleT = 0;
     scale = 0;
     radius: number = 0;
-    constructor(gl: OGLRenderingContext, windowInfo: ReturnType<Device["getWindowInfo"]>) {
+    constructor(gl: OGLRenderingContext, windowInfo: [number, number, number]) {
         const [width, height, dpr] = windowInfo;
         const ratio = width / height;
         this.uiCamera = new Camera(gl, {

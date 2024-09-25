@@ -1,5 +1,5 @@
 {
-    "activeFile": "starter.json",
+    "activeFile": "",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -9,14 +9,26 @@
         },
         "starter.json": {
             "expandedGroupLayers": [
-                17
+                278
             ],
-            "scale": 2.94,
-            "selectedLayer": 7,
+            "scale": 1.3,
+            "selectedLayer": 181,
             "viewCenter": {
-                "x": 74.65986394557822,
-                "y": -50
+                "x": -21.923076923076906,
+                "y": -132.30769230769226
             }
+        },
+        "starter.json#Blue": {
+            "scaleInDock": 1
+        },
+        "starter.json#Purple": {
+            "scaleInDock": 1
+        },
+        "starter.json#Terrain (16x16)": {
+            "scaleInDock": 1
+        },
+        "starter.json#Yellow": {
+            "scaleInDock": 1
         },
         "starter.json#finalbossblues-icons_full_16": {
             "dynamicWrapping": false,
@@ -38,7 +50,6 @@
     },
     "last.imagePath": "/Users/bear/Documents/git/zhuobu-bullet/resources/tiled/atlas/Pixel Adventure 1/Background",
     "openFiles": [
-        "starter.json"
     ],
     "project": "zhuobu.tiled-project",
     "recentFiles": [

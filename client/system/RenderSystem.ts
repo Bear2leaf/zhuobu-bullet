@@ -71,19 +71,28 @@ export class RenderSystem implements System {
         mesh.setParent(this.levelRoot);
         mesh.name = "Ball"
         for (const level of this.levelSystem.collections) {
-            const renderTarget = new RenderTarget(this.gl, {
-                minFilter: this.gl.NEAREST,
-                magFilter: this.gl.NEAREST,
-                depth: false
-            });
-            this.renderTargets.push(renderTarget);
-            level.setTextures(this.textures);
             level.init()
-            level.initRenderTarget(renderTarget)
-            level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget)
-            level.initGraphics(renderTarget, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
             level.node.setParent(this.levelRoot);
         }
+    }
+    initCurrentLevel(current: number) {
+        console.log(current)
+        const level = this.levelSystem.collections[current];
+        if (level.requested) {
+            return;
+        }
+        const renderTarget = new RenderTarget(this.gl, {
+            minFilter: this.gl.NEAREST,
+            magFilter: this.gl.NEAREST,
+            depth: false
+        });
+        this.renderTargets.push(renderTarget);
+        level.setTextures(this.textures);
+        level.initRenderTarget(renderTarget)
+        level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget)
+        level.initGraphics(renderTarget, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
+        
+
     }
     update(): void {
         throw new Error("Method not implemented.");
