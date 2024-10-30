@@ -88,13 +88,11 @@ export class InputSystem implements System {
             })
         }
 
-        document.addEventListener("touchstart", (e) => start({ x: e.touches[0].pageX, y: e.touches[0].pageY }))
-        document.addEventListener("touchmove", (e) => move({ x: e.touches[0].pageX, y: e.touches[0].pageY }))
-        document.addEventListener("touchend", () => end())
-        document.addEventListener("touchcancel", () => end())
-        document.addEventListener("mousedown", (e) => start({ x: e.pageX, y: e.pageY }))
-        document.addEventListener("mousemove", (e) => move({ x: e.pageX, y: e.pageY }))
-        document.addEventListener("mouseup", () => end())
+
+        document.addEventListener("pointerdown", (e) => start({ x: e.pageX, y: e.pageY }))
+        document.addEventListener("pointermove", (e) => move({ x: e.pageX, y: e.pageY }))
+        document.addEventListener("pointerup", () => end())
+        document.addEventListener("pointercancel", () => end())
     }
     initTouchEvents() {
         const ui = this;
@@ -138,8 +136,9 @@ export class InputSystem implements System {
             xDown = null;
             yDown = null;
         };
-        document.addEventListener("touchstart", (ev) => handleTouchStart(ev.touches[0].clientX, ev.touches[0].clientY));
-        document.addEventListener("touchmove", (ev) => handleTouchMove(ev.touches[0].clientX, ev.touches[0].clientY));
+
+        document.addEventListener("pointerdown", (e) => handleTouchStart(e.pageX,  e.pageY))
+        document.addEventListener("pointermove", (e) => handleTouchMove(e.pageX,  e.pageY))
         document.addEventListener("keydown", (ev) => {
             switch (ev.key) {
                 case "ArrowUp":

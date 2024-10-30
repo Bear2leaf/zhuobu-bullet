@@ -1,11 +1,8 @@
 {
   "name": "zhuobu-bullet",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0.1",
+  "main": "index.mjs",
   "scripts": {
-    "build": "esbuild client/main.ts worker/main.ts --target=es2015 --platform=node --outdir=dist --bundle --format=esm",
-    "dev": "esbuild --sourcemap client/main.ts worker/main.ts --outdir=dist --platform=node  --bundle --format=esm --watch  --servedir=.",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -65,14 +65,6 @@ function Image() {
     return wx.createImage();
 }
 function noop() { }
-function touchEventHandlerFactory(type) {
-    return (event) => {
-        event.type = type;
-        event.preventDefault = noop;
-        event.stopPropagation = noop;
-        document.dispatchEvent(event)
-    }
-}
 
 function wheelEventHandlerFactory(type) {
     return (event) => {
@@ -83,10 +75,29 @@ function wheelEventHandlerFactory(type) {
     }
 }
 
-wx.onTouchStart(touchEventHandlerFactory('touchstart'))
-wx.onTouchMove(touchEventHandlerFactory('touchmove'))
-wx.onTouchEnd(touchEventHandlerFactory('touchend'))
-wx.onTouchCancel(touchEventHandlerFactory('touchcancel'))
+function pointerEventHandlerFactory(type) {
+    return (event) => {
+        const touches = [];
+        touches.push(...event.changedTouches)
+        for (const change of touches) {
+            document.dispatchEvent({
+                pageX: change.pageX,
+                pageY: change.pageY,
+                offsetX: change.offsetX,
+                offsetY: change.offsetY,
+                pointerId: change.identifier,
+                target: document,
+                type,
+                pointerType: "touch"
+            })
+        }
+    }
+}
+wx.onTouchStart(pointerEventHandlerFactory('pointerdown'))
+wx.onTouchMove(pointerEventHandlerFactory('pointermove'))
+wx.onTouchEnd(pointerEventHandlerFactory('pointerup'))
+wx.onTouchCancel(pointerEventHandlerFactory('pointercancel'))
+
 wx.onWheel(wheelEventHandlerFactory('wheel'))
 
 const _window = {
