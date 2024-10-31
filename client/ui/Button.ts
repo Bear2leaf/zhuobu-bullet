@@ -2,7 +2,7 @@ import { Geometry, Mesh, OGLRenderingContext, Plane, Program, Text, Texture, Tra
 import UIElement from "./UIElement.js";
 
 export default class Button implements UIElement {
-    private readonly font: string = "NotoSansSC-Bold";
+    private readonly font: string = "ZCOOLQingKeHuangYou-Regular";
     private readonly texture: Texture;
     private readonly bgTexture: Texture;
     private readonly bgTextureDown: Texture;
