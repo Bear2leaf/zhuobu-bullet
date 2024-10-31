@@ -20,6 +20,7 @@ export class EventSystem implements System {
     private isContinue: boolean = false;
     private freezeUI = false;
     private readonly dirSet = new Set<Direction>();
+    private readonly currentCollisions = new Set<string>();
     private readonly gravityScale = 100;
     private readonly gravity = new Vec3();
     private readonly acc = new Vec3(0, -this.gravityScale, 0);
@@ -53,6 +54,10 @@ export class EventSystem implements System {
             this.updateMesh(message);
         } else if (message.type === "collisionEnter") {
             this.handleCollision(message.data);
+            this.currentCollisions.add(message.data[1]);
+        } else if (message.type === "collisionExit") {
+            this.currentCollisions.delete(message.data[1]);
+        } else if (message.type === "collisionUpdate") {
         }
     }
     init(): void {
@@ -322,6 +327,8 @@ export class EventSystem implements System {
                 }
                 this.dirSet.add(dir);
                 this.levelSystem.hideDirEntity(dir);
+            } else if (this.levelSystem.getDirEntities(dir).some((name) => this.currentCollisions.has(name))) {
+
             } else {
                 this.dirSet.delete(dir);
                 this.levelSystem.showDirEntity(dir);
@@ -335,6 +342,8 @@ export class EventSystem implements System {
                 }
                 this.dirSet.add(dir);
                 this.levelSystem.hideDirEntity(dir);
+            } else if (this.levelSystem.getDirEntities(dir).some((name) => this.currentCollisions.has(name))) {
+                
             } else {
                 this.dirSet.delete(dir);
                 this.levelSystem.showDirEntity(dir);
@@ -348,6 +357,8 @@ export class EventSystem implements System {
                 }
                 this.dirSet.add(dir);
                 this.levelSystem.hideDirEntity(dir);
+            } else if (this.levelSystem.getDirEntities(dir).some((name) => this.currentCollisions.has(name))) {
+                
             } else {
                 this.dirSet.delete(dir);
                 this.levelSystem.showDirEntity(dir);
@@ -361,6 +372,8 @@ export class EventSystem implements System {
                 }
                 this.dirSet.add(dir);
                 this.levelSystem.hideDirEntity(dir);
+            } else if (this.levelSystem.getDirEntities(dir).some((name) => this.currentCollisions.has(name))) {
+
             } else {
                 this.dirSet.delete(dir);
                 this.levelSystem.showDirEntity(dir);

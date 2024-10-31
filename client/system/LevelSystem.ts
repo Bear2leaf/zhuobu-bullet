@@ -60,6 +60,9 @@ export default class LevelSystem implements System {
         this.collections[this.current].node.traverse(n => !!(n.name === name && (node = n)))
         return node;
     }
+    getDirEntities(dir: "Down" | "Up" | "Left" | "Right") {
+        return this.collections[this.current].getMeshNames("Dir" + dir);
+    }
     hideDirEntity(dir: "Down" | "Up" | "Left" | "Right") {
         this.collections[this.current].updateVisible("Dir" + dir, false);
         const names = this.collections[this.current].getMeshNames("Dir" + dir);
