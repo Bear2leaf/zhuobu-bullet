@@ -272,24 +272,27 @@ export class Chunk implements Layer {
             const tileDefObject = tileDef.objectgroup.objects?.find(o => ["Entity", "Collider"].indexOf(o.name) !== -1);
             if (tileDefObject) {
                 if (tileDefObject.polyline) {
-                    const min = [Infinity, Infinity];
-                    const max = [-Infinity, -Infinity];
-                    const scaleX = this.gridWidth / tileset.tilewidth;
-                    const scaleY = this.gridHeight / tileset.tileheight;
-                    for (const point of tileDefObject.polyline) {
-                        min[0] = Math.min(min[0], point.x);
-                        min[1] = Math.min(min[1], point.y);
-                        max[0] = Math.max(max[0], point.x);
-                        max[1] = Math.max(max[1], point.y);
+                    if (tileDefObject.polyline.length === 2) {
+                        if (name === "CaveRock") {
+                            console.log(tileDefObject);
+                        }
+                        const scaleX = this.gridWidth / tileset.tilewidth;
+                        const scaleY = this.gridHeight / tileset.tileheight;
+                        const p0 = tileDefObject.polyline[0];
+                        const p1 = tileDefObject.polyline[1];
+                        const x0 = (tileDefObject.x + p0.x - tileset.tilewidth / 2) * scaleX;
+                        const y0 = (tileDefObject.y + p0.y - tileset.tileheight / 2) * scaleY;
+                        const x1 = (tileDefObject.x + p1.x - tileset.tilewidth / 2) * scaleX;
+                        const y1 = (tileDefObject.y + p1.y - tileset.tileheight / 2) * scaleY;
+                        tile.shape = [
+                            x0, y0, 0,
+                            x1, y0, 0,
+                            x1, y1, 0,
+                            x0, y1, 0,
+                        ]
+                    } else {
+                        throw new Error("polyline length is not 2");
                     }
-                    const hw = (max[0] - min[0]) / 2 * scaleX;
-                    const hh = (max[1] - min[1]) / 2 * scaleY;
-                    tile.shape = [
-                        -hw, -hh, 0,
-                        hw, -hh, 0,
-                        hw, hh, 0,
-                        -hw, hh, 0,
-                    ]
                 } else if (tileDefObject.polygon) {
                     for (const point of tileDefObject.polygon) {
                         tile.shape.push(tileDefObject.x + point.x - tile.w / 2, tileDefObject.y + point.y - tile.h / 2, 0);
