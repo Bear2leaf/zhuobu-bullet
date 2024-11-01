@@ -152,7 +152,8 @@ export default class LevelSystem implements System {
             }
         }
         this.collections[this.current].resetVisibility()
-        this.radius = max.distance(min) / 2;
+        console.log(devicePixelRatio)
+        this.radius = max.distance(min) / 8 * devicePixelRatio;
         this.center.copy(max.add(min).multiply(0.5));
     }
     private buildMinMax(child: Mesh, min: Vec3, max: Vec3) {
