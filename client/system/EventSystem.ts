@@ -16,7 +16,7 @@ export class EventSystem implements System {
     private readonly continueMsg = "恭喜过关！\n点击进入下一关";
     private readonly availableLevels: Set<number> = new Set();
     private charset: string = "";
-    private pause = true;
+    private pause = false;
     private isContinue: boolean = false;
     private freezeUI = false;
     private readonly dirSet = new Set<Direction>();
@@ -178,7 +178,7 @@ export class EventSystem implements System {
         }
     }
     async requestLevel() {
-        this.pause = true;
+        this.pause = false;
         this.uiSystem.getUIElement<Button>("help").generateText(this.helpMsg);
         if (this.isContinue) {
             this.freezeUI = true;
@@ -208,7 +208,7 @@ export class EventSystem implements System {
         // } else {
         //     this.updateSprite("prev", false);
         // }
-        this.cameraSystem.resetRotation();
+        this.onrelease && this.onrelease();
     }
     handleCollision(data: [string, string]) {
         if (data[0] === "Ball") {

@@ -17,16 +17,16 @@ export default class UISystem implements System {
         const gl = this.renderer.gl;
         const { dpr } = this.renderer;
 
-        this.buttons.push(new Button(gl, "help", new Vec3(0, -7, 0), true));
-        this.buttons.push(new Button(gl, "continue", new Vec3(0, -6 * dpr, 0), true, 1));
-        this.switches.push(new Switch(gl, "pause", new Vec3(0, -9 * dpr, 0)));
-        this.switches.push(new Switch(gl, "zoom", new Vec3(3, -5, 0)));
-        this.switches.push(new Switch(gl, "audio", new Vec3(-3, -5, 0)));
-        this.buttons.push(new Button(gl, "info", new Vec3(0, 0, 0)));
-        this.buttons.push(new Button(gl, "level", new Vec3(0, -2, 0)));
-        this.sprites.push(new Sprite(gl, "prev", new Vec3(-3, -2.6, 0)));
-        this.sprites.push(new Sprite(gl, "next", new Vec3(3, -2.6, 0)));
-        this.sprites.push(new Sprite(gl, "information", new Vec3(0, -5, 0)));
+        this.switches.push(new Switch(gl, "zoom", new Vec3(3, 4 * dpr, 0)));
+        this.sprites.push(new Sprite(gl, "information", new Vec3(0, 4 * dpr, 0)));
+        this.switches.push(new Switch(gl, "audio", new Vec3(-3, 4 * dpr, 0)));
+        this.buttons.push(new Button(gl, "help", new Vec3(0, 2 * dpr, 0), true));
+        this.buttons.push(new Button(gl, "continue", new Vec3(0, -1, 0), true, 1));
+        this.switches.push(new Switch(gl, "pause", new Vec3(0, -4, 0)));
+        this.buttons.push(new Button(gl, "info", new Vec3(0, 4 * dpr, 0)));
+        this.buttons.push(new Button(gl, "level", new Vec3(0, -3.8 * dpr, 0)));
+        this.sprites.push(new Sprite(gl, "prev", new Vec3(-3, -4 * dpr, 0)));
+        this.sprites.push(new Sprite(gl, "next", new Vec3(3, -4 * dpr, 0)));
 
     }
     update(): void {
@@ -49,10 +49,11 @@ export default class UISystem implements System {
             item.init();
             item.getMesh().setParent(this.scene);
             if (item.getMesh().name === "help") {
-                item.getMesh().scale.multiply(0.5);
                 item.getMesh().visible = false;
             } else if (item.getMesh().name === "level") {
                 item.getMesh().visible = true;
+            } else if (item.getMesh().name === "pause") {
+                item.getMesh().visible = false;
             }
         }
     }

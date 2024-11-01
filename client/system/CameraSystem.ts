@@ -24,8 +24,8 @@ export class CameraSystem implements System {
         this.uiCamera = new Camera(gl, {
             left: ratio * -5 * dpr,
             right: ratio * 5 * dpr,
-            top: 0,
-            bottom: -10 * dpr
+            top: 5 * dpr,
+            bottom: -5 * dpr
         })
         this.uiCamera.position.z = 1;
 
