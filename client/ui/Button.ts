@@ -6,14 +6,14 @@ export default class Button implements UIElement {
     private readonly texture: Texture;
     private readonly bgTexture: Texture;
     private readonly bgTextureDown: Texture;
-    private readonly mesh: Mesh;
+    private readonly bgMesh: Mesh;
     private text?: Text;
     private fontData?: object;
     private fragment: string = "";
     private vertex: string = "";
     private bgFragment: string = "";
     private bgVertex: string = "";
-    constructor(private readonly gl: OGLRenderingContext, name: string, private readonly position: Vec3, background = false, private readonly type: 0 | 1 = 0) {
+    constructor(private readonly gl: OGLRenderingContext, name: string, position: Vec3, private readonly background = false, private readonly type: 0 | 1 = 0) {
 
         this.texture = new Texture(gl);
         this.bgTexture = new Texture(gl, {
@@ -24,13 +24,13 @@ export default class Button implements UIElement {
             magFilter: gl.NEAREST,
             minFilter: gl.NEAREST,
         });
-        const mesh = new Mesh(gl);
-        mesh.name = name
-        mesh.position.copy(position);
-        const releaseBg = new Mesh(gl);
-        releaseBg.setParent(mesh);
-        releaseBg.visible = background;
-        this.mesh = mesh;
+        const bgMesh = new Mesh(gl);
+        bgMesh.name = name
+        bgMesh.position.copy(position);
+        bgMesh.visible = background;
+        this.bgMesh = bgMesh;
+        const textMesh = new Mesh(gl);
+        textMesh.setParent(bgMesh)
     }
     async load() {
 
@@ -49,28 +49,23 @@ export default class Button implements UIElement {
         bgImageDown.onload = () => (this.bgTextureDown.image = bgImageDown);
         bgImageDown.src = `resources/image/${this.type === 0 ? "input_square_down" : "input_square_down"}.png`;
     }
-    getMesh() {
-        return this.mesh;
+    getTextMesh() {
+        return this.getMesh().children[0] as Mesh;
     }
-    getBgMesh() {
-        const mesh = this.getMesh();
-        const bgMesh = mesh.children[0];
-        if (bgMesh === undefined || !(bgMesh instanceof Mesh)) {
-            throw new Error("bgMesh in undefined");
-        }
-        return bgMesh as Mesh;
+    getMesh() {
+        return this.bgMesh;
     }
     setParent(scene: Transform) {
         this.getMesh().setParent(scene);
     }
     isDown(): boolean {
-        return this.getBgMesh().program.uniforms.tMap.value === this.bgTextureDown;
+        return this.getMesh().program.uniforms.tMap.value === this.bgTextureDown;
     }
     down() {
-        this.getBgMesh().program.uniforms.tMap.value = this.bgTextureDown;
+        this.getMesh().program.uniforms.tMap.value = this.bgTextureDown;
     }
     release() {
-        this.getBgMesh().program.uniforms.tMap.value = this.bgTexture;
+        this.getMesh().program.uniforms.tMap.value = this.bgTexture;
     }
     init() {
         const gl = this.gl;
@@ -83,19 +78,15 @@ export default class Button implements UIElement {
             vertex: this.vertex,
             fragment: this.fragment,
             transparent: true,
-            cullFace: false,
-            depthWrite: false,
             uniforms: { tMap: { value: this.texture }, uColor: { value: color } },
 
         });
-        this.getMesh().visible = false;
-        this.getMesh().program = program;
-        this.getBgMesh().program = new Program(gl, {
+        this.getTextMesh().program = program;
+        this.getMesh().program = new Program(gl, {
             vertex: this.bgVertex,
             fragment: this.bgFragment,
             transparent: true,
-            cullFace: false,
-            depthWrite: false,
+            cullFace: this.background ? gl.BACK : gl.FRONT,
             uniforms: { tMap: { value: this.bgTexture }, uDimension: { value: [0, 0] } },
         });
         this.text = new Text({
@@ -123,12 +114,12 @@ export default class Button implements UIElement {
         const offset = geometry.bounds.max.y + geometry.bounds.min.y;
         const padding = this.type === 0 ? 1 : 2;
         const dimension = [Math.abs(geometry.bounds.max.x - geometry.bounds.min.x) + padding, Math.abs(geometry.bounds.max.y - geometry.bounds.min.y) + padding];
-        this.getMesh().geometry = geometry;
-        this.getBgMesh().geometry = new Plane(gl, {
+        this.getTextMesh().geometry = geometry;
+        this.getMesh().geometry = new Plane(gl, {
             width: dimension[0],
             height: dimension[1],
         });
-        this.getBgMesh().program.uniforms.uDimension.value = dimension.map(x => 1 / x);
-        this.getBgMesh().position.y = + offset / 2;
+        this.getMesh().program.uniforms.uDimension.value = dimension.map(x => 1 / x);
+        this.getTextMesh().position.y = - offset / 2;
     }
 }

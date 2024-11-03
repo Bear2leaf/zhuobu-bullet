@@ -25,7 +25,9 @@ export class CameraSystem implements System {
             left: ratio * -5 * dpr,
             right: ratio * 5 * dpr,
             top: 5 * dpr,
-            bottom: -5 * dpr
+            bottom: -5 * dpr,
+            near: 0,
+            far: 1000
         })
         this.uiCamera.position.z = 1;
 
@@ -35,7 +37,7 @@ export class CameraSystem implements System {
             top: 50,
             bottom: -50,
             near: 0,
-            far: 10000
+            far: 1000
         })
     }
     load(): Promise<void> {

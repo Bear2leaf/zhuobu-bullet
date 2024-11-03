@@ -54,8 +54,6 @@ export default class Sprite implements UIElement{
             vertex: this.vertex,
             fragment: this.fragment,
             transparent: true,
-            cullFace: false,
-            depthWrite: false,
             uniforms: { tMap: { value: this.texture } },
 
         });

@@ -11,6 +11,9 @@ declare const handler: {
     onmessage: (message: MainMessage) => void;
     postMessage: (message: WorkerMessage) => void;
 }
+export type PhysicsObject = [number, number, number, number, number, number, number, string];
+export type PhysicsCharacterObject = [number, number, number, number, number, number, number, number, number, number];
+
 export type MainMessage = {
     type: "updateGravity"
     data: string
@@ -30,7 +33,7 @@ export type MainMessage = {
     type: "addBall",
     data: { transform: number[] }
 } | {
-    type: "updateVelocity",
+    type: "updateCharacterVelocity",
     data: { x: number, y: number, z: number, name: string }
 } | {
     type: "teleport",
@@ -41,10 +44,16 @@ export type MainMessage = {
     type: "release",
 } | {
     type: "pause",
+} | {
+    type: "tick",
+    data: {delta: number, objects: PhysicsObject[]},
 }
 export type WorkerMessage = {
     type: "update"
     objects: [number, number, number, number, number, number, number, string][];
+} | {
+    type: "updateCharacter"
+    data: PhysicsCharacterObject;
 } | {
     type: "ready",
 } | {

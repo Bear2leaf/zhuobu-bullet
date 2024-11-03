@@ -79,8 +79,6 @@ export default class Switch implements UIElement {
             vertex: this.vertex,
             fragment: this.fragment,
             transparent: true,
-            cullFace: false,
-            depthWrite: false,
             uniforms: { tMap: { value: this.textureOn } },
 
         });

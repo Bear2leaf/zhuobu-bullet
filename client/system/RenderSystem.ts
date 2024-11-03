@@ -19,7 +19,6 @@ export class RenderSystem implements System {
     constructor(private readonly gl: OGLRenderingContext
         , private readonly levelSystem: LevelSystem
     ) {
-        this.levelRoot.visible = false;
     }
     tiledData?: Tiled;
     async load(): Promise<void> {
@@ -76,7 +75,6 @@ export class RenderSystem implements System {
         }
     }
     initCurrentLevel(current: number) {
-        console.log(current)
         const level = this.levelSystem.collections[current];
         if (level.requested) {
             return;

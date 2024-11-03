@@ -20,13 +20,13 @@ export default class UISystem implements System {
         this.switches.push(new Switch(gl, "zoom", new Vec3(3, 4 * dpr, 0)));
         this.sprites.push(new Sprite(gl, "information", new Vec3(0, 4 * dpr, 0)));
         this.switches.push(new Switch(gl, "audio", new Vec3(-3, 4 * dpr, 0)));
-        this.buttons.push(new Button(gl, "help", new Vec3(0, 2 * dpr, 0), true));
         this.buttons.push(new Button(gl, "continue", new Vec3(0, -1, 0), true, 1));
         this.switches.push(new Switch(gl, "pause", new Vec3(0, -4, 0)));
         this.buttons.push(new Button(gl, "info", new Vec3(0, 4 * dpr, 0)));
-        this.buttons.push(new Button(gl, "level", new Vec3(0, -3.8 * dpr, 0)));
+        this.buttons.push(new Button(gl, "level", new Vec3(0, -4 * dpr, 0)));
         this.sprites.push(new Sprite(gl, "prev", new Vec3(-3, -4 * dpr, 0)));
         this.sprites.push(new Sprite(gl, "next", new Vec3(3, -4 * dpr, 0)));
+        this.buttons.push(new Button(gl, "help", new Vec3(0, 0 * dpr, 0), true));
 
     }
     update(): void {

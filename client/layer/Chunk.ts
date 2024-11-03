@@ -273,9 +273,6 @@ export class Chunk implements Layer {
             if (tileDefObject) {
                 if (tileDefObject.polyline) {
                     if (tileDefObject.polyline.length === 2) {
-                        if (name === "CaveRock") {
-                            console.log(tileDefObject);
-                        }
                         const scaleX = this.gridWidth / tileset.tilewidth;
                         const scaleY = this.gridHeight / tileset.tileheight;
                         const p0 = tileDefObject.polyline[0];
