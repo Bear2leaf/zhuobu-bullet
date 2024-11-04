@@ -144,7 +144,8 @@ export default class LevelSystem implements System {
         const max = new Vec3(-Infinity, -Infinity, 0);
         const level = this.collections[this.current];
         if (level instanceof GltfLevel) {
-            return
+            this.radius = level.max.distance(level.min) / 8 * devicePixelRatio;
+            this.center.copy(level.max.clone().add(level.min.clone()).multiply(0.5));
         } else {
             for (const child of level.node.children) {
                 if (child instanceof Mesh) {

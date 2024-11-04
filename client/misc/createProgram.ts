@@ -69,7 +69,7 @@ export function createProgram(node: Mesh, shadow: boolean, vertex?: string, frag
             uEnvDiffuse: { value: 0.75 },
             uEnvSpecular: { value: 0.75 },
 
-            uLightDirection: light?.direction,
+            uLightDirection: { value: light ? light.direction : new Vec3(0, 0, 1) },
             uLightColor: { value: new Vec3(1) },
 
             uAlpha: { value: 1 },
@@ -79,5 +79,5 @@ export function createProgram(node: Mesh, shadow: boolean, vertex?: string, frag
         cullFace: gltf.doubleSided ? false : gl.BACK,
     });
     (program as GLTFProgram).gltfMaterial = gltf;
-    return program as GLTFProgram;
+    node.program = program;
 }

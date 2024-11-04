@@ -1,8 +1,10 @@
-import { Transform, Texture, RenderTarget, OGLRenderingContext } from "ogl";
+import { Transform, Texture, RenderTarget, OGLRenderingContext, GLTF, Vec2, Vec3 } from "ogl";
 import { TileLayer } from "../tiled/TileLayer";
 import { Level } from "./Level";
 
 export class GltfLevel implements Level {
+    readonly min: Vec3 = new Vec3(Infinity, Infinity, Infinity);
+    readonly max: Vec3 = new Vec3(-Infinity, -Infinity, -Infinity);
     readonly node: Transform = new Transform;
     readonly tileLayers: TileLayer[] = [];
     requested: boolean = false;
@@ -10,6 +12,25 @@ export class GltfLevel implements Level {
         name: string
     ) {
         this.node.name = name;
+    }
+    initGltfLevel(gltf?: GLTF): void {
+        if (!gltf || !this.node.name) {
+            throw new Error("gltf or node name is not defined");
+        }
+        const levelNode = gltf.scene[0].children.find(child => child.name === this.node.name);
+        if (!levelNode) {
+            throw new Error("levelNode not found");
+        }
+        levelNode.setParent(this.node);
+        levelNode.traverse(node => {
+            this.min.x = Math.min(this.min.x, node.position.x);
+            this.min.y = Math.min(this.min.y, node.position.y);
+            this.min.z = Math.min(this.min.z, node.position.z);
+            this.max.x = Math.max(this.max.x, node.position.x);
+            this.max.y = Math.max(this.max.y, node.position.y);
+            this.max.z = Math.max(this.max.z, node.position.z);
+        })
+        this.requested = true;
     }
     checkNodeEntity(node: Transform, name: string | undefined): boolean {
         throw new Error("Method not implemented.");

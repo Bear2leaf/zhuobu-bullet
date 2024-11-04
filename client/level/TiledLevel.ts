@@ -1,4 +1,4 @@
-import { Plane, Transform, Vec3 } from "ogl";
+import { GLTF, Plane, Transform, Vec3 } from "ogl";
 
 import { Vec2, Camera, Mesh, Geometry, Program, Texture, RenderTarget, OGLRenderingContext } from "ogl";
 import { LayerLayer, Tiled, Tileset } from "../misc/TiledParser.js";
@@ -9,8 +9,8 @@ import { Level } from "./Level.js";
 export class TiledLevel implements Level {
     readonly tileLayers: TileLayer[] = [];
     readonly node: Transform = new Transform;
-    readonly min: Vec2 = new Vec2;
-    readonly max: Vec2 = new Vec2;
+    readonly min: Vec3 = new Vec3;
+    readonly max: Vec3 = new Vec3;
     readonly properties: Record<string, string | number | boolean> = {};
     private readonly textures: Texture[] = [];
     requested = false;
@@ -23,6 +23,8 @@ export class TiledLevel implements Level {
         private readonly gridWidth: number,
         private readonly gridHeight: number
     ) { }
+    initGltfLevel(gltf?: GLTF): void {
+    }
     checkNodeEntity(node: Transform, name: string | undefined) {
         return this.tileLayers.some(layer => node.name && layer.getTileInfo(node.name, "name", name))
     }
@@ -88,7 +90,7 @@ export class TiledLevel implements Level {
                 prev.x = Math.min(curr.x, prev.x);
                 prev.y = Math.min(curr.y, prev.y);
                 return prev;
-            }, new Vec2);
+            }, new Vec3);
             lprev.x = Math.min(min.x, lprev.x);
             lprev.y = Math.min(min.y, lprev.y);
             return lprev;
@@ -98,7 +100,7 @@ export class TiledLevel implements Level {
                 prev.x = Math.max(curr.x + curr.width, prev.x);
                 prev.y = Math.max(curr.y + curr.height, prev.y);
                 return prev;
-            }, new Vec2);
+            }, new Vec3);
             lprev.x = Math.max(max.x, lprev.x);
             lprev.y = Math.max(max.y, lprev.y);
             return lprev;
@@ -131,7 +133,11 @@ export class TiledLevel implements Level {
     ) {
         const gridSize = this.tilesets[0].tilewidth;
         for (const tileLayer of this.tileLayers) {
-            tileLayer.drawLayer(renderTarget, gl, spriteVertex, spriteFragment, this.min.clone().multiply(gridSize), this.max.clone().multiply(gridSize));
+            const min = this.min.clone().multiply(gridSize);
+            const max = this.max.clone().multiply(gridSize);
+            const minVec2 = new Vec2(min.x, min.y);
+            const maxVec2 = new Vec2(max.x, max.y);
+            tileLayer.drawLayer(renderTarget, gl, spriteVertex, spriteFragment, minVec2, maxVec2);
             tileLayer.initTileChunks(gl, vertex, fragment, spriteVertex, spriteFragment)
         }
     }

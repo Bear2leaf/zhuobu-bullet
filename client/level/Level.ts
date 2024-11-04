@@ -1,7 +1,9 @@
-import { Transform, Texture, RenderTarget, OGLRenderingContext } from "ogl";
+import { Transform, Texture, RenderTarget, OGLRenderingContext, GLTF, Vec2, Vec3 } from "ogl";
 import { TileLayer } from "../tiled/TileLayer";
 
 export interface Level {
+    readonly min: Vec3;
+    readonly max: Vec3;
     readonly node: Transform;
     readonly tileLayers: TileLayer[];
     requested: boolean;
@@ -26,4 +28,5 @@ export interface Level {
         renderTarget: RenderTarget,
     ): void
     initGraphics(renderTarget: RenderTarget, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, vertex: string, fragment: string): void
+    initGltfLevel(gltf?: GLTF): void
 }

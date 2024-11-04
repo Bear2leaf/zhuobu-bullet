@@ -5,6 +5,7 @@ import LevelSystem from "./LevelSystem.js";
 import { WorkerMessage } from "../../worker/ammo.worker.js";
 import { radius } from "../misc/radius.js";
 import DracoTask from "../draco/DracoTask.js";
+import { createProgram } from "../misc/createProgram.js";
 
 export class RenderSystem implements System {
     readonly uiRoot = new Transform;
@@ -15,6 +16,8 @@ export class RenderSystem implements System {
     private vertex: string = "";
     private spriteFragment: string = "";
     private spriteVertex: string = "";
+    private gltfFragment: string = "";
+    private gltfVertex: string = "";
     get gl() {
         return this.renderer.gl;
     }
@@ -36,8 +39,10 @@ export class RenderSystem implements System {
         this.ballFragment = await (await fetch("resources/glsl/simple.frag.sk")).text();
         this.vertex = await (await fetch("resources/glsl/level.vert.sk")).text();
         this.fragment = await (await fetch("resources/glsl/level.frag.sk")).text();
-        this.spriteVertex = this.spriteVertex = await (await fetch("resources/glsl/sprite.vert.sk")).text();
-        this.spriteFragment = this.spriteFragment = await (await fetch("resources/glsl/sprite.frag.sk")).text();
+        this.spriteVertex = await (await fetch("resources/glsl/sprite.vert.sk")).text();
+        this.spriteFragment = await (await fetch("resources/glsl/sprite.frag.sk")).text();
+        this.gltfVertex = await (await fetch("resources/glsl/gltf.vert.sk")).text();
+        this.gltfFragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
         const gl = this.gl;
         for await (const tileset of this.tiledData.tilesets) {
             if (tileset.image) {
@@ -125,7 +130,13 @@ export class RenderSystem implements System {
         }
         await Promise.all(promises);
         this.gltf = await GLTFLoader.parse(gl, desc, "");
-        console.log(desc, this.gltf)
+        this.gltf.scene.forEach(scene => {
+            scene.traverse(node => {
+                if (node instanceof Mesh) {
+                    createProgram(node, false, this.gltfVertex, this.gltfFragment, true)
+                }
+            })
+        })
     }
     init(): void {
 
@@ -165,7 +176,7 @@ export class RenderSystem implements System {
         level.initRenderTarget(renderTarget)
         level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget)
         level.initGraphics(renderTarget, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
-
+        level.initGltfLevel(this.gltf);
 
     }
     update(timeStamp: number): void {

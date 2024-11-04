@@ -143,7 +143,7 @@ export default class PhysicsSystem implements System {
         })
     }
     handleCollision(data: [string, string]) {
-        console.log("collision: ", ...data)
+        // console.log("collision: ", ...data)
         if (data[0] === "Ball") {
             if (this.levelSystem.checkNeedExit(data[1])) {
                 this.eventSystem.onupdatevelocity && this.eventSystem.onupdatevelocity(data[0], 0, 0, 0);
