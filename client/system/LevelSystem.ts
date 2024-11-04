@@ -143,8 +143,22 @@ export default class LevelSystem implements System {
         const max = new Vec3(-Infinity, -Infinity, 0);
         const level = this.collections[this.current];
         if (level instanceof GltfLevel) {
-            this.radius = level.max.distance(level.min) / 8 * devicePixelRatio;
+            this.radius = level.max.distance(level.min) / 4 * devicePixelRatio;
             this.center.copy(level.max.clone().add(level.min.clone()).multiply(0.5));
+            level.node.traverse(node => {
+                if (node instanceof Mesh) {
+                    const mesh = node;
+                    const attributeData = mesh.geometry.getPosition().data;
+                    const indices = mesh.geometry.attributes.index?.data;
+                    mesh.updateMatrixWorld();
+                    const name = mesh.parent?.name;
+                    if (name && name.startsWith("Icosphere")) {
+                        this.onaddball && this.onaddball(mesh.worldMatrix)
+                    } else if (name) {
+                        this.onaddmesh && this.onaddmesh(name, mesh.worldMatrix, [...attributeData || []], [...indices || []])
+                    }
+                }
+            });
         } else {
             for (const child of level.node.children) {
                 if (child instanceof Mesh) {

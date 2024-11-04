@@ -1,4 +1,4 @@
-import { Mat4, Quat, Transform, Vec3 } from "ogl";
+import { Mat4, Mesh, Quat, Transform, Vec3 } from "ogl";
 import { MainMessage, PhysicsObject, WorkerMessage } from "../../worker/ammo.worker";
 import { System } from "./System";
 import AudioSystem from "./AudioSystem";
@@ -88,8 +88,6 @@ export default class PhysicsSystem implements System {
             type: "resetWorld",
         })
         this.eventSystem.onchangelevel = (levelNode) => {
-            this.objectNames.clear();
-            this.currentCollisions.clear();
             this.levelNode = levelNode;
         }
     }
@@ -103,6 +101,8 @@ export default class PhysicsSystem implements System {
         // console.log("message from worker", message);
         if (message.type === "requestLevel") {
             this.dirSet.clear();
+            this.objectNames.clear();
+            this.currentCollisions.clear();
             audio.play();
             this.eventSystem.requestLevel();
         } else if (message.type === "ready") {
@@ -236,7 +236,7 @@ export default class PhysicsSystem implements System {
         this.updateDirObjects();
         const objects: PhysicsObject[] = [];
         this.levelNode?.traverse((node) => {
-            if (node.name && this.objectNames.has(node.name)) {
+            if (node.name && this.objectNames.has(node.name) && !(node instanceof Mesh)) {
                 const physicsObject: PhysicsObject = [
                     node.position.x,
                     node.position.y,

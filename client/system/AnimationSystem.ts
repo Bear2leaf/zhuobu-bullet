@@ -20,6 +20,5 @@ export default class AnimationSystem implements System {
         for (const animation of gltf.animations) {
             this.animations.push(animation);
         }
-        console.log(this.animations)
     }
 }

@@ -11,6 +11,22 @@
  "infinite":true,
  "layers":[
         {
+         "id":282,
+         "layers":[],
+         "name":"c1",
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"gltf",
+                 "type":"bool",
+                 "value":true
+                }],
+         "type":"group",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
          "id":9,
          "layers":[
                 {
@@ -76,22 +92,6 @@
          "locked":true,
          "name":"Intro",
          "opacity":1,
-         "type":"group",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "id":282,
-         "layers":[],
-         "name":"c2",
-         "opacity":1,
-         "properties":[
-                {
-                 "name":"gltf",
-                 "type":"bool",
-                 "value":true
-                }],
          "type":"group",
          "visible":true,
          "x":0,

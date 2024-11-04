@@ -33,16 +33,16 @@ export class GltfLevel implements Level {
         this.requested = true;
     }
     checkNodeEntity(node: Transform, name: string | undefined): boolean {
-        throw new Error("Method not implemented.");
+        return false;
     }
     checkEntityName(meshName: string, name: string): boolean {
-        throw new Error("Method not implemented.");
+        return false;
     }
     getTeleportDestinationName(): string {
         throw new Error("Method not implemented.");
     }
     check(meshName: string, name: string): boolean {
-        throw new Error("Method not implemented.");
+        return false;
     }
     getMeshNames(name: string): string[] {
         return [];
@@ -50,7 +50,7 @@ export class GltfLevel implements Level {
     updateVisible(name: string, visible: boolean): void {
     }
     checkRock(collision: string): boolean {
-        throw new Error("Method not implemented.");
+        return false;
     }
     init(): void {
     }
