@@ -44,8 +44,8 @@ export default class PhysicsSystem implements System {
                 data: { vertices: [...vertices], indices: [...indices], propertities, name, transform: [...position, ...quaternion, ...scale], convex }
             })
         }
-        this.levelSystem.onaddball = (transform) => {
-            this.addBall(transform)
+        this.levelSystem.onaddball = (transform, isBall) => {
+            this.addBall(transform, isBall)
         }
         this.levelSystem.onenablemesh = (name: string | undefined) => {
             sendmessage({
@@ -136,11 +136,12 @@ export default class PhysicsSystem implements System {
             data: name || ""
         })
     }
-    addBall(transform: number[]) {
+    addBall(transform: number[], isBall: boolean) {
         this.sendmessage && this.sendmessage({
             type: "addBall",
             data: {
-                transform
+                transform,
+                isBall
             }
         })
     }
@@ -164,7 +165,7 @@ export default class PhysicsSystem implements System {
             } else if (this.levelSystem.checkBeltUp(data[1])) {
                 const node = this.levelSystem.getCurrentLevelNode(data[1]);
                 const transform = node?.matrix || new Mat4().identity();
-                this.addBall(transform)
+                this.addBall(transform, false);
                 this.disableMesh(data[1]);
                 this.eventSystem.onupdatevelocity && this.eventSystem.onupdatevelocity(data[0], 0, 200, 0);
             }

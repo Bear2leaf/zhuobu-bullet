@@ -31,7 +31,7 @@ export type MainMessage = {
     data: string
 } | {
     type: "addBall",
-    data: { transform: number[] }
+    data: { transform: number[], isBall: boolean }
 } | {
     type: "updateCharacterVelocity",
     data: { x: number, y: number, z: number, name: string }

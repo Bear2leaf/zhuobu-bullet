@@ -152,7 +152,7 @@ export class RenderSystem implements System {
                 }
             }
         });
-        const geometry = new Sphere(this.gl, { radius });
+        const geometry = new Sphere(this.gl, { radius:1 });
         const mesh = new Mesh(this.gl, {
             geometry,
             program,

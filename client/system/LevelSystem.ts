@@ -5,6 +5,7 @@ import { TileLayer } from "../tiled/TileLayer.js";
 import { Level } from "../level/Level.js";
 import { TiledLevel } from "../level/TiledLevel.js";
 import { GltfLevel } from "../level/GltfLevel.js";
+import { radius, radius3d } from "../misc/radius.js";
 
 export default class LevelSystem implements System {
     tiledData?: Tiled;
@@ -16,7 +17,7 @@ export default class LevelSystem implements System {
     onaddmesh?: (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>, convex?: boolean) => void;
     ondisablemesh?: (name: string | undefined) => void;
     onenablemesh?: (name: string | undefined) => void;
-    onaddball?: (transform: number[]) => void;
+    onaddball?: (transform: number[], isBall: boolean) => void;
     update(): void {
         throw new Error("Method not implemented.");
     }
@@ -133,7 +134,8 @@ export default class LevelSystem implements System {
                     const entityWorldX = x + gridSize * 0.5;
                     const entityWorldY = -y - gridSize * 0.5;
                     if (name === "Player") {
-                        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)))
+                        scene.children[0].scale.set(radius, radius, radius)
+                        this.onaddball && this.onaddball(new Mat4().translate(new Vec3(entityWorldX, entityWorldY, 0)), true)
                     }
                 }
             }
@@ -153,7 +155,9 @@ export default class LevelSystem implements System {
                     mesh.updateMatrixWorld();
                     const name = mesh.parent?.name;
                     if (name && name.startsWith("Icosphere")) {
-                        this.onaddball && this.onaddball(mesh.worldMatrix)
+                        mesh.visible = false;
+                        scene.children[0].scale.set(radius3d, radius3d, radius3d)
+                        this.onaddball && this.onaddball(mesh.worldMatrix, false)
                     } else if (name) {
                         this.onaddmesh && this.onaddmesh(name, mesh.worldMatrix, [...attributeData || []], [...indices || []])
                     }

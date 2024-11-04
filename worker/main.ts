@@ -1,4 +1,4 @@
-import { radius } from "../client/misc/radius.js";
+import { radius, radius3d } from "../client/misc/radius.js";
 import Ammo, { config, Module, handler, MainMessage, WorkerMessage, PhysicsObject } from "./ammo.worker.js"
 
 enum CollisionFlags {
@@ -65,17 +65,17 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         startTransform.setIdentity();
         const mass = 1;
         const localInertia = new Ammo.btVector3(1, 1, 1);
-        const sphereShape = new Ammo.btSphereShape(radius);
+        const sphereShape = new Ammo.btSphereShape(1);
         sphereShape.calculateLocalInertia(mass, localInertia);
         const myMotionState = new Ammo.btDefaultMotionState(startTransform);
         const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, sphereShape, localInertia);
-        
+
         const v = new UserData;
         v.name = "Ball";
         const body = new Ammo.btRigidBody(rbInfo);
         body.setUserPointer(v);
         body.setActivationState(ActivationState.DISABLE_DEACTIVATION);
-        
+
         // for 3d ?
         // body.setRestitution(0.5);
         // body.setFriction(0.5);
@@ -136,6 +136,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             return;
         } else if (message.type === "addBall") {
             const body = bodies[0];
+            const isBall = message.data.isBall;
             const startTransform = new Ammo.btTransform();
             const state = body.getMotionState();
             state.getWorldTransform(startTransform);
@@ -144,6 +145,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             body.setMotionState(state);
             body.setLinearVelocity(new Ammo.btVector3(0, 0, 0));
             body.setAngularVelocity(new Ammo.btVector3(0, 0, 0));
+            const scale = isBall ? radius : radius3d;
+            body.getCollisionShape().setLocalScaling(new Ammo.btVector3(scale, scale, scale));
         } else if (message.type === "addMesh") {
             const startTransform = new Ammo.btTransform();
             startTransform.setIdentity();
@@ -199,7 +202,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             body.setRestitution(0);
             body.setFriction(1);
             body.setActivationState(ActivationState.DISABLE_DEACTIVATION);
-            
+
             if (convex) {
                 body.setRestitution(1);
                 body.setFriction(1);
