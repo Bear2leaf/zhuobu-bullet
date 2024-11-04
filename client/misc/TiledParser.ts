@@ -12,7 +12,7 @@ export interface Tiled {
     editorsettings:   Editorsettings;
     height:           number;
     infinite:         boolean;
-    layers:           ObjectgroupElement[];
+    layers:           TiledLayer[];
     nextlayerid:      number;
     nextobjectid:     number;
     orientation:      string;
@@ -35,23 +35,17 @@ export interface Chunksize {
     width:  number;
 }
 
-export interface ObjectgroupElement {
-    id?:        number;
-    layers?:    LayerLayer[];
-    locked?:    boolean;
-    name:       string;
-    opacity:    number;
-    type:       ObjectgroupType;
-    visible:    boolean;
-    x:          number;
-    y:          number;
-    draworder?: Draworder;
-    objects?:   Object[];
-}
-
-export enum Draworder {
-    Index = "index",
-    Topdown = "topdown",
+export interface TiledLayer {
+    id:          number;
+    layers:      LayerLayer[];
+    locked?:     boolean;
+    name:        string;
+    opacity:     number;
+    type:        FluffyType;
+    visible:     boolean;
+    x:           number;
+    y:           number;
+    properties?: LayerProperty[];
 }
 
 export interface LayerLayer {
@@ -89,6 +83,54 @@ export enum PurpleType {
     Tilelayer = "tilelayer",
 }
 
+export interface LayerProperty {
+    name:  string;
+    type:  string;
+    value: boolean;
+}
+
+export enum FluffyType {
+    Group = "group",
+}
+
+export interface Tileset {
+    columns:         number;
+    firstgid:        number;
+    image:           string;
+    imageheight:     number;
+    imagewidth:      number;
+    margin:          number;
+    name:            string;
+    spacing:         number;
+    tilecount:       number;
+    tileheight:      number;
+    tiles?:          Tile[];
+    tilewidth:       number;
+    tilerendersize?: string;
+}
+
+export interface Tile {
+    id:          number;
+    objectgroup: Objectgroup;
+    properties:  TileProperty[];
+}
+
+export interface Objectgroup {
+    draworder: Draworder;
+    name:      string;
+    objects:   Object[];
+    opacity:   number;
+    type:      ObjectgroupType;
+    visible:   boolean;
+    x:         number;
+    y:         number;
+}
+
+export enum Draworder {
+    Index = "index",
+    Topdown = "topdown",
+}
+
 export interface Object {
     height:    number;
     id:        number;
@@ -114,33 +156,10 @@ export interface Poly {
 }
 
 export enum ObjectgroupType {
-    Group = "group",
     Objectgroup = "objectgroup",
 }
 
-export interface Tileset {
-    columns:         number;
-    firstgid:        number;
-    image:           string;
-    imageheight:     number;
-    imagewidth:      number;
-    margin:          number;
-    name:            string;
-    spacing:         number;
-    tilecount:       number;
-    tileheight:      number;
-    tiles?:          Tile[];
-    tilewidth:       number;
-    tilerendersize?: string;
-}
-
-export interface Tile {
-    id:          number;
-    objectgroup: ObjectgroupElement;
-    properties:  Property[];
-}
-
-export interface Property {
+export interface TileProperty {
     name:  PropertyName;
     type:  PropertyType;
     value: string;
@@ -324,7 +343,7 @@ const typeMap: any = {
         { json: "editorsettings", js: "editorsettings", typ: r("Editorsettings") },
         { json: "height", js: "height", typ: 0 },
         { json: "infinite", js: "infinite", typ: true },
-        { json: "layers", js: "layers", typ: a(r("ObjectgroupElement")) },
+        { json: "layers", js: "layers", typ: a(r("TiledLayer")) },
         { json: "nextlayerid", js: "nextlayerid", typ: 0 },
         { json: "nextobjectid", js: "nextobjectid", typ: 0 },
         { json: "orientation", js: "orientation", typ: "" },
@@ -344,18 +363,17 @@ const typeMap: any = {
         { json: "height", js: "height", typ: 0 },
         { json: "width", js: "width", typ: 0 },
     ], false),
-    "ObjectgroupElement": o([
-        { json: "id", js: "id", typ: u(undefined, 0) },
-        { json: "layers", js: "layers", typ: u(undefined, a(r("LayerLayer"))) },
+    "TiledLayer": o([
+        { json: "id", js: "id", typ: 0 },
+        { json: "layers", js: "layers", typ: a(r("LayerLayer")) },
         { json: "locked", js: "locked", typ: u(undefined, true) },
         { json: "name", js: "name", typ: "" },
         { json: "opacity", js: "opacity", typ: 0 },
-        { json: "type", js: "type", typ: r("ObjectgroupType") },
+        { json: "type", js: "type", typ: r("FluffyType") },
         { json: "visible", js: "visible", typ: true },
         { json: "x", js: "x", typ: 0 },
         { json: "y", js: "y", typ: 0 },
-        { json: "draworder", js: "draworder", typ: u(undefined, r("Draworder")) },
-        { json: "objects", js: "objects", typ: u(undefined, a(r("Object"))) },
+        { json: "properties", js: "properties", typ: u(undefined, a(r("LayerProperty"))) },
     ], false),
     "LayerLayer": o([
         { json: "chunks", js: "chunks", typ: a(r("Chunk")) },
@@ -378,22 +396,10 @@ const typeMap: any = {
         { json: "x", js: "x", typ: 0 },
         { json: "y", js: "y", typ: 0 },
     ], false),
-    "Object": o([
-        { json: "height", js: "height", typ: 0 },
-        { json: "id", js: "id", typ: 0 },
-        { json: "name", js: "name", typ: r("ObjectName") },
-        { json: "polygon", js: "polygon", typ: u(undefined, a(r("Poly"))) },
-        { json: "rotation", js: "rotation", typ: 0 },
+    "LayerProperty": o([
+        { json: "name", js: "name", typ: "" },
         { json: "type", js: "type", typ: "" },
-        { json: "visible", js: "visible", typ: true },
-        { json: "width", js: "width", typ: 0 },
-        { json: "x", js: "x", typ: 3.14 },
-        { json: "y", js: "y", typ: 3.14 },
-        { json: "polyline", js: "polyline", typ: u(undefined, a(r("Poly"))) },
-    ], false),
-    "Poly": o([
-        { json: "x", js: "x", typ: 3.14 },
-        { json: "y", js: "y", typ: 3.14 },
+        { json: "value", js: "value", typ: true },
     ], false),
     "Tileset": o([
         { json: "columns", js: "columns", typ: 0 },
@@ -412,18 +418,41 @@ const typeMap: any = {
     ], false),
     "Tile": o([
         { json: "id", js: "id", typ: 0 },
-        { json: "objectgroup", js: "objectgroup", typ: r("ObjectgroupElement") },
-        { json: "properties", js: "properties", typ: a(r("Property")) },
+        { json: "objectgroup", js: "objectgroup", typ: r("Objectgroup") },
+        { json: "properties", js: "properties", typ: a(r("TileProperty")) },
     ], false),
-    "Property": o([
+    "Objectgroup": o([
+        { json: "draworder", js: "draworder", typ: r("Draworder") },
+        { json: "name", js: "name", typ: "" },
+        { json: "objects", js: "objects", typ: a(r("Object")) },
+        { json: "opacity", js: "opacity", typ: 0 },
+        { json: "type", js: "type", typ: r("ObjectgroupType") },
+        { json: "visible", js: "visible", typ: true },
+        { json: "x", js: "x", typ: 0 },
+        { json: "y", js: "y", typ: 0 },
+    ], false),
+    "Object": o([
+        { json: "height", js: "height", typ: 3.14 },
+        { json: "id", js: "id", typ: 0 },
+        { json: "name", js: "name", typ: r("ObjectName") },
+        { json: "polygon", js: "polygon", typ: u(undefined, a(r("Poly"))) },
+        { json: "rotation", js: "rotation", typ: 0 },
+        { json: "type", js: "type", typ: "" },
+        { json: "visible", js: "visible", typ: true },
+        { json: "width", js: "width", typ: 0 },
+        { json: "x", js: "x", typ: 3.14 },
+        { json: "y", js: "y", typ: 3.14 },
+        { json: "polyline", js: "polyline", typ: u(undefined, a(r("Poly"))) },
+    ], false),
+    "Poly": o([
+        { json: "x", js: "x", typ: 3.14 },
+        { json: "y", js: "y", typ: 3.14 },
+    ], false),
+    "TileProperty": o([
         { json: "name", js: "name", typ: r("PropertyName") },
         { json: "type", js: "type", typ: r("PropertyType") },
         { json: "value", js: "value", typ: "" },
     ], false),
-    "Draworder": [
-        "index",
-        "topdown",
-    ],
     "LayerName": [
         "Background",
         "Background1",
@@ -434,12 +463,18 @@ const typeMap: any = {
     "PurpleType": [
         "tilelayer",
     ],
+    "FluffyType": [
+        "group",
+    ],
+    "Draworder": [
+        "index",
+        "topdown",
+    ],
     "ObjectName": [
         "Collider",
         "Entity",
     ],
     "ObjectgroupType": [
-        "group",
         "objectgroup",
     ],
     "PropertyName": [

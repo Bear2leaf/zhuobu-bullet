@@ -25,7 +25,7 @@ export default class Engine {
         renderer.setSize(width, height);
         this.cameraSystem = new CameraSystem(gl, [width, height, dpr]);
         this.levelSystem = new LevelSystem();
-        this.renderSystem = new RenderSystem(gl, this.levelSystem);
+        this.renderSystem = new RenderSystem(renderer, this.cameraSystem.camera, this.cameraSystem.uiCamera, this.levelSystem);
         this.uiSystem = new UISystem(renderer, this.renderSystem.uiRoot, this.cameraSystem.uiCamera);
         this.inputSystem = new InputSystem(width, height, this.cameraSystem.uiCamera, this.uiSystem);
         this.audioSystem.initAudioContext();
@@ -67,8 +67,7 @@ export default class Engine {
         this.cameraSystem.ballPosition.copy(this.renderSystem.levelRoot.children[0].position);
         this.cameraSystem.center.copy(this.levelSystem.center);
         this.cameraSystem.update(timeStamp);
-        this.renderer.render({ scene, camera });
-        this.uiSystem.update();
+        this.renderSystem.update(timeStamp);
         this.quat.fill(0)
         this.matrix.fromArray(camera.viewMatrix.multiply(scene.worldMatrix));
         this.matrix.getRotation(this.quat);

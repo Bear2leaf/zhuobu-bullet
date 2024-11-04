@@ -238,7 +238,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 writeBulletObject([...message.data.objects][i]);
             }
             if (paused) {
-                console.log(1)
                 return;
             }
             dynamicsWorld.stepSimulation(message.data.delta);
@@ -251,10 +250,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 data: [...object, linearVelocity.x(), linearVelocity.y(), linearVelocity.z()]
             });
         } else if (message.type === "pause") {
-            console.log(2)
             paused = true;
         } else if (message.type === "release") {
-            console.log(3)
             paused = false;
         }
     }

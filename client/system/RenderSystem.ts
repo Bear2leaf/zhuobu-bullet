@@ -1,9 +1,10 @@
-import { Camera, Geometry, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Sphere, Texture, Transform, Vec2, Vec3 } from "ogl";
+import { Camera, Geometry, GLTF, GLTFLoader, Mesh, OGLRenderingContext, Plane, Program, Renderer, RenderTarget, Sphere, Texture, Transform, Vec2, Vec3 } from "ogl";
 import { System } from "./System.js";
 import { Tiled } from "../misc/TiledParser.js";
 import LevelSystem from "./LevelSystem.js";
 import { WorkerMessage } from "../../worker/ammo.worker.js";
 import { radius } from "../misc/radius.js";
+import DracoTask from "../draco/DracoTask.js";
 
 export class RenderSystem implements System {
     readonly uiRoot = new Transform;
@@ -14,9 +15,15 @@ export class RenderSystem implements System {
     private vertex: string = "";
     private spriteFragment: string = "";
     private spriteVertex: string = "";
+    get gl() {
+        return this.renderer.gl;
+    }
     private readonly textures: Texture[] = [];
     private readonly renderTargets: RenderTarget[] = [];
-    constructor(private readonly gl: OGLRenderingContext
+    private gltf?: GLTF;
+    constructor(private readonly renderer: Renderer
+        , private readonly camera: Camera
+        , private readonly uiCamera: Camera
         , private readonly levelSystem: LevelSystem
     ) {
     }
@@ -50,6 +57,75 @@ export class RenderSystem implements System {
                 })
             }
         }
+
+
+        const desc = GLTFLoader.unpackGLB(await (await fetch('resources/gltf/marble.glb')).arrayBuffer()) as any;
+        const task = new DracoTask();
+
+        const promiseMap = new Map<string, { resolve: () => void, reject: (reason?: any) => void, primitiveAccessors: Record<string, {}>, indicesAccessor: {} }>();
+        const promises = new Array<Promise<void>>();
+        task.postMessage = (data: any) => {
+            if (data.type === 'decode') {
+                const primitives = promiseMap.get(data.id)!.primitiveAccessors as Record<string, { bufferView: number }>;
+                for (const attribute of data.geometry.attributes) {
+                    const primitive = primitives[attribute.name];
+                    const index = desc.buffers.push({ byteLength: attribute.array.byteLength, binary: attribute.array.buffer }) - 1;
+                    const bufferViewIndex = desc.bufferViews.push({ buffer: index, byteOffset: 0, byteLength: attribute.array.byteLength }) - 1;
+                    primitive.bufferView = bufferViewIndex;
+                }
+                {
+                    const indices = promiseMap.get(data.id)!.indicesAccessor as { bufferView: number, componentType: number };
+                    const index = desc.buffers.push({ byteLength: data.geometry.index.array.byteLength, binary: data.geometry.index.array.buffer }) - 1;
+                    const bufferViewIndex = desc.bufferViews.push({ buffer: index, byteOffset: 0, byteLength: data.geometry.index.array.byteLength }) - 1;
+                    indices.bufferView = bufferViewIndex;
+                    indices.componentType = 5125;
+                }
+                promiseMap.get(data.id)!.resolve();
+            }
+        }
+        let counter = 0;
+        task.onmessage({ data: { type: 'init', id: (counter++).toString(), decoderConfig: { locateFile: () => "resources/wasm/draco_decoder_gltf.wasm" } } });
+        const bufferViews = desc.bufferViews;
+        const buffers = desc.buffers;
+        const accessors = desc.accessors;
+        const componentTypeToTypedArray = {
+            5120: "Int8Array",
+            5121: "Uint8Array",
+            5122: "Int16Array",
+            5123: "Uint16Array",
+            5125: "Uint32Array",
+            5126: "Float32Array",
+        }
+        for (const mesh of desc.meshes) {
+            for (const primitive of mesh.primitives) {
+                const { attributes, bufferView } = primitive.extensions.KHR_draco_mesh_compression;
+                const bufferViewData = bufferViews[bufferView];
+                const buffer = buffers[bufferViewData.buffer];
+                const data = new Uint8Array(buffer.binary, bufferViewData.byteOffset, bufferViewData.byteLength);
+                const primitiveAccessors: Record<string, {}> = {};
+                const attributeTypedArrayNames = Object.keys(primitive.attributes).reduce<Record<string, string>>((prev, key) => {
+                    const accessor = accessors[primitive.attributes[key]];
+                    primitiveAccessors[key] = accessor;
+                    prev[key] = componentTypeToTypedArray[accessor.componentType as keyof typeof componentTypeToTypedArray];
+                    return prev;
+                }, {});
+                task.onmessage({
+                    data: {
+                        type: 'decode', id: (counter++).toString(), buffer: data, taskConfig: {
+                            attributeIDs: attributes,
+                            attributeTypes: attributeTypedArrayNames
+                        }
+                    }
+                });
+                promises.push(new Promise((resolve, reject) => {
+                    promiseMap.set((counter - 1).toString(),
+                        { resolve, reject, primitiveAccessors, indicesAccessor: accessors[primitive.indices] });
+                }))
+            }
+        }
+        await Promise.all(promises);
+        this.gltf = await GLTFLoader.parse(gl, desc, "");
+        console.log(desc, this.gltf)
     }
     init(): void {
 
@@ -89,11 +165,13 @@ export class RenderSystem implements System {
         level.initRenderTarget(renderTarget)
         level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget)
         level.initGraphics(renderTarget, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
-        
+
 
     }
-    update(): void {
-        throw new Error("Method not implemented.");
+    update(timeStamp: number): void {
+
+        this.renderer.render({ scene: this.levelRoot, camera: this.camera });
+        this.renderer.render({ scene: this.uiRoot, camera: this.uiCamera, clear: false });
     }
 
     hideMesh(name: string, levelSystem: LevelSystem) {

@@ -8,10 +8,6 @@
         "type": "folder"
       },
       {
-        "value": "resources/gltf",
-        "type": "folder"
-      },
-      {
         "value": "resources/font/ZCOOLQingKeHuangYou-Regular.ttf",
         "type": "file"
       }

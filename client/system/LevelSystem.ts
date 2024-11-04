@@ -1,8 +1,10 @@
 import { Box, Camera, Geometry, Mat4, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Sphere, Texture, Transform, Triangle, Vec2, Vec3, Vec4 } from "ogl";
 import { Convert, Tiled } from "../misc/TiledParser.js";
 import { System } from "./System.js";
-import { Level } from "../layer/Level.js";
-import { TileLayer } from "../layer/TileLayer.js";
+import { TileLayer } from "../tiled/TileLayer.js";
+import { Level } from "../level/Level.js";
+import { TiledLevel } from "../level/TiledLevel.js";
+import { GltfLevel } from "../level/GltfLevel.js";
 
 export default class LevelSystem implements System {
     tiledData?: Tiled;
@@ -23,6 +25,9 @@ export default class LevelSystem implements System {
 
         const tiledJsonText = await (await fetch("resources/tiled/starter.json")).text();
         this.tiledData = Convert.toTiled(tiledJsonText);
+
+
+        
     }
     updateLevel(reverse: boolean) {
         if (reverse) {
@@ -83,19 +88,19 @@ export default class LevelSystem implements System {
             throw new Error("tiledData is undefined");
         }
         tiledData.layers.forEach((layer, index) => {
-            // if (layer.name !== "Rock") {
-            //     return;
-            // }
-            const level = new Level(
-                layer.name,
-                layer.x,
-                layer.y,
-                layer.layers || [],
-                tiledData.tilesets,
-                tiledData.tilewidth,
-                tiledData.tileheight
-            );
-            this.collections.push(level);
+            if (layer.properties?.find(prop => prop.name === "gltf" && prop.value === true)) {
+                this.collections.push(new GltfLevel(layer.name));
+            } else {
+                this.collections.push(new TiledLevel(
+                    layer.name,
+                    layer.x,
+                    layer.y,
+                    layer.layers || [],
+                    tiledData.tilesets,
+                    tiledData.tilewidth,
+                    tiledData.tileheight
+                ));
+            }
         })
     }
     request(scene: Transform) {
@@ -138,22 +143,26 @@ export default class LevelSystem implements System {
         const min = new Vec3(Infinity, Infinity, 0)
         const max = new Vec3(-Infinity, -Infinity, 0);
         const level = this.collections[this.current];
-        for (const child of level.node.children) {
-            if (child instanceof Mesh) {
-                this.buildCollision(child);
-            }
-        }
-        for (const tileLayer of level.tileLayers) {
-            for (const child of tileLayer.node.children) {
+        if (level instanceof GltfLevel) {
+            return
+        } else {
+            for (const child of level.node.children) {
                 if (child instanceof Mesh) {
-                    this.buildCollision(child, tileLayer);
-                    this.buildMinMax(child, min, max)
+                    this.buildCollision(child);
                 }
             }
+            for (const tileLayer of level.tileLayers) {
+                for (const child of tileLayer.node.children) {
+                    if (child instanceof Mesh) {
+                        this.buildCollision(child, tileLayer);
+                        this.buildMinMax(child, min, max)
+                    }
+                }
+            }
+            this.collections[this.current].resetVisibility()
+            this.radius = max.distance(min) / 8 * devicePixelRatio;
+            this.center.copy(max.add(min).multiply(0.5));
         }
-        this.collections[this.current].resetVisibility()
-        this.radius = max.distance(min) / 8 * devicePixelRatio;
-        this.center.copy(max.add(min).multiply(0.5));
     }
     private buildMinMax(child: Mesh, min: Vec3, max: Vec3) {
         const mesh = child;

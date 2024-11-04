@@ -1,8 +1,7 @@
 import { Camera, Geometry, Mesh, OGLRenderingContext, Plane, Program, RenderTarget, Texture, Transform, Vec2, Vec3 } from "ogl";
-import { Layer } from "./Layer.js";
-import { LayerLayer, Property, Tileset, Chunk as _Chunk } from "../misc/TiledParser.js";
+import { LayerLayer, LayerProperty, TileProperty, Tileset, Chunk as _Chunk } from "../misc/TiledParser.js";
 import { Chunk } from "./Chunk.js";
-export class TileLayer implements Layer {
+export class TileLayer {
     readonly chunks: Chunk[];
     readonly node: Transform = new Transform;
     constructor(
@@ -19,7 +18,7 @@ export class TileLayer implements Layer {
             this.chunks.push(c)
         })
     }
-    getTileInfo(name: string, propName?: string, propValue?: Property["value"]) {
+    getTileInfo(name: string, propName?: string, propValue?: TileProperty["value"]) {
         for (const chunk of this.chunks) {
             const tile = chunk.getTileInfo(name, propName, propValue);
             if (tile) {
@@ -27,7 +26,7 @@ export class TileLayer implements Layer {
             }
         }
     }
-    getMeshNamesByPropertyCondition(propName: string, propValue: Property["value"]) {
+    getMeshNamesByPropertyCondition(propName: string, propValue: TileProperty["value"]) {
         const entities = [];
         for (const chunk of this.chunks) {
             entities.push(...chunk.getEntitiesByPropertyCondition(propName, propValue));

@@ -82,6 +82,22 @@
          "y":0
         }, 
         {
+         "id":282,
+         "layers":[],
+         "name":"GltfDemo",
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"gltf",
+                 "type":"bool",
+                 "value":true
+                }],
+         "type":"group",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
          "id":13,
          "layers":[
                 {
@@ -936,7 +952,8 @@
          "visible":false,
          "x":0,
          "y":0
-        }, 
+        },
+    
         {
          "id":25,
          "layers":[
@@ -1039,8 +1056,7 @@
          "visible":false,
          "x":0,
          "y":0
-        },
-    
+        }, 
         {
          "id":42,
          "layers":[
@@ -1999,7 +2015,8 @@
          "visible":false,
          "x":0,
          "y":0
-        }, 
+        },
+    
         {
          "id":66,
          "layers":[
@@ -2102,8 +2119,7 @@
          "visible":false,
          "x":0,
          "y":0
-        },
-    
+        }, 
         {
          "id":69,
          "layers":[
@@ -3658,7 +3674,8 @@
          "visible":false,
          "x":0,
          "y":0
-        }, 
+        },
+    
         {
          "id":230,
          "layers":[
@@ -3869,8 +3886,7 @@
          "visible":false,
          "x":0,
          "y":0
-        },
-    
+        }, 
         {
          "id":238,
          "layers":[
@@ -5289,7 +5305,8 @@
          "visible":false,
          "x":0,
          "y":0
-        }, 
+        },
+    
         {
          "id":147,
          "layers":[
@@ -5484,8 +5501,7 @@
          "visible":false,
          "x":0,
          "y":0
-        },
-    
+        }, 
         {
          "id":151,
          "layers":[
@@ -6794,7 +6810,8 @@
          "visible":false,
          "x":0,
          "y":0
-        }, 
+        },
+    
         {
          "id":274,
          "layers":[
@@ -6897,8 +6914,7 @@
          "visible":false,
          "x":0,
          "y":0
-        },
-    
+        }, 
         {
          "id":278,
          "layers":[
@@ -7048,7 +7064,7 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":282,
+ "nextlayerid":283,
  "nextobjectid":8,
  "orientation":"orthogonal",
  "renderorder":"right-down",

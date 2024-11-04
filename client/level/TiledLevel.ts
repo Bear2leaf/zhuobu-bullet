@@ -1,12 +1,12 @@
 import { Plane, Transform, Vec3 } from "ogl";
-import { Layer } from "./Layer.js";
 
 import { Vec2, Camera, Mesh, Geometry, Program, Texture, RenderTarget, OGLRenderingContext } from "ogl";
 import { LayerLayer, Tiled, Tileset } from "../misc/TiledParser.js";
 import { counterHandler, radius } from "../misc/radius.js";
-import { TileLayer } from "./TileLayer.js";
+import { TileLayer } from "../tiled/TileLayer.js";
+import { Level } from "./Level.js";
 
-export class GroupLayer implements Layer {
+export class TiledLevel implements Level {
     readonly tileLayers: TileLayer[] = [];
     readonly node: Transform = new Transform;
     readonly min: Vec2 = new Vec2;
@@ -23,6 +23,54 @@ export class GroupLayer implements Layer {
         private readonly gridWidth: number,
         private readonly gridHeight: number
     ) { }
+    checkNodeEntity(node: Transform, name: string | undefined) {
+        return this.tileLayers.some(layer => node.name && layer.getTileInfo(node.name, "name", name))
+    }
+    checkEntityName(meshName: string, name: string) {
+        return this.tileLayers.some(layer => layer.getTileInfo(meshName, "name", name))
+    }
+    getTeleportDestinationName() {
+        const names = this.getMeshNames("TeleportDestination")
+        const name = names[0]
+        if (names.length !== 1 || !name) {
+            throw new Error("wrong teleportDestinationMeshNameSet");
+        }
+        return name;
+    }
+    check(meshName: string, name: string) {
+        return this.checkEntityName(meshName, name)
+    }
+    getMeshNames(name: string) {
+        return this.tileLayers.reduce<string[]>((prev, curr) => {
+            prev.push(...curr.getMeshNamesByPropertyCondition("name", name))
+            return prev;
+        }, [])
+    }
+    updateVisible(name: string, visible: boolean) {
+        this.node?.traverse(node => {
+            const find = this.checkNodeEntity(node, name);
+            if (find) {
+                node.visible = visible;
+            }
+            return find;
+        })
+    }
+    checkRock(collision: string): boolean {
+        if (this.checkEntityName(collision, "Rock")) {
+            let hasPickaxe = false;
+            this.node?.traverse(node => {
+                const find = this.checkNodeEntity(node, "Pickaxe");
+                if (find) {
+                    hasPickaxe = !node.visible;
+                }
+                return find;
+            });
+            return hasPickaxe;
+        }
+        return false;
+    }
+
+
     init() {
         const layerInstances = this.tileLayersData;
         for (let layerIndex = 0; layerIndex < layerInstances.length; layerIndex++) {

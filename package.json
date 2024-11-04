@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "draco3dgltf": "^1.5.7",
     "ogl": "^1.0.8",
     "polygon-clipping": "^0.15.7"
   },

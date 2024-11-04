@@ -1,8 +1,7 @@
 import { Geometry, Mesh, OGLRenderingContext, Plane, Program, Texture, Transform, Vec2, Vec3 } from "ogl";
-import { Layer } from "./Layer.js";
-import { Property, Tileset } from "../misc/TiledParser.js";
 import { counterHandler, radius } from "../misc/radius.js";
 import { Polygon, union } from "polygon-clipping";
+import { TileProperty, Tileset } from "../misc/TiledParser.js";
 
 type TileInfo = {
     name: string,
@@ -13,11 +12,11 @@ type TileInfo = {
     shape: number[],
     entity?: boolean,
     collider?: boolean,
-    properties: Property[]
+    properties: TileProperty[]
 }
 
 
-export class Chunk implements Layer {
+export class Chunk {
     private readonly tileInfoMap = new Map<number, TileInfo>();
     private readonly meshNameEntityTileMap = new Map<string, number>();
     readonly node = new Transform;
@@ -34,7 +33,7 @@ export class Chunk implements Layer {
     ) {
         this.buildTileInfoMap();
     }
-    getTileInfo(name: string, propName?: string, propValue?: Property["value"]) {
+    getTileInfo(name: string, propName?: string, propValue?: TileProperty["value"]) {
         const gid = this.meshNameEntityTileMap.get(name);
         if (gid === undefined) {
             return;
@@ -56,7 +55,7 @@ export class Chunk implements Layer {
             }
         }
     }
-    getEntitiesByPropertyCondition(propName: string, propValue: Property["value"]) {
+    getEntitiesByPropertyCondition(propName: string, propValue: TileProperty["value"]) {
         const entities = [];
         for (const [key, gid] of this.meshNameEntityTileMap.entries()) {
             const tileInfo = this.tileInfoMap.get(gid);

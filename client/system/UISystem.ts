@@ -30,7 +30,7 @@ export default class UISystem implements System {
 
     }
     update(): void {
-        this.renderer.render({ scene: this.scene, camera: this.camera, clear: false })
+        throw new Error("Method not implemented.");
     }
     async load() {
         for await (const item of this.all) {
