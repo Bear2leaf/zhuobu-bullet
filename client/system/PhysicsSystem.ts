@@ -88,6 +88,8 @@ export default class PhysicsSystem implements System {
             type: "resetWorld",
         })
         this.eventSystem.onchangelevel = (levelNode) => {
+            this.objectNames.clear();
+            this.currentCollisions.clear();
             this.levelNode = levelNode;
         }
     }

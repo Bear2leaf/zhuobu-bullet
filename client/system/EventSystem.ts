@@ -9,6 +9,7 @@ import { Mat4, Quat, Transform, Vec2, Vec3 } from "ogl";
 import Button from "../ui/Button.js";
 import Switch from "../ui/Switch.js";
 import Sprite from "../ui/Sprite.js";
+import AnimationSystem from "./AnimationSystem.js";
 export class EventSystem implements System {
     private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关";
@@ -24,7 +25,8 @@ export class EventSystem implements System {
         private readonly levelSystem: LevelSystem,
         private readonly renderSystem: RenderSystem,
         private readonly uiSystem: UISystem,
-        private readonly audio: AudioSystem
+        private readonly audio: AudioSystem,
+        private readonly animationSystem: AnimationSystem
 
     ) { }
     init(): void {

@@ -104,7 +104,6 @@ export default class LevelSystem implements System {
         })
     }
     request(scene: Transform) {
-
         const tiledData = this.tiledData;
         if (!tiledData) {
             throw new Error("tiledData is undefined");

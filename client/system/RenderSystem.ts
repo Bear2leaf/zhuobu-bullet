@@ -6,6 +6,7 @@ import { WorkerMessage } from "../../worker/ammo.worker.js";
 import { radius } from "../misc/radius.js";
 import DracoTask from "../draco/DracoTask.js";
 import { createProgram } from "../misc/createProgram.js";
+import AnimationSystem from "./AnimationSystem.js";
 
 export class RenderSystem implements System {
     readonly uiRoot = new Transform;
@@ -28,6 +29,7 @@ export class RenderSystem implements System {
         , private readonly camera: Camera
         , private readonly uiCamera: Camera
         , private readonly levelSystem: LevelSystem
+        , private readonly animationSystem: AnimationSystem
     ) {
     }
     tiledData?: Tiled;
@@ -137,6 +139,7 @@ export class RenderSystem implements System {
                 }
             })
         })
+        this.animationSystem.initAnimations(this.gltf);
     }
     init(): void {
 

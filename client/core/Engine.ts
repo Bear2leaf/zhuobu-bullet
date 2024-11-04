@@ -7,6 +7,7 @@ import { InputSystem } from "../system/InputSystem.js";
 import { EventSystem } from "../system/EventSystem.js";
 import AudioSystem from "../system/AudioSystem.js";
 import PhysicsSystem from "../system/PhysicsSystem.js";
+import AnimationSystem from "../system/AnimationSystem.js";
 export default class Engine {
     private readonly renderer: Renderer;
     private readonly uiSystem: UISystem;
@@ -14,6 +15,7 @@ export default class Engine {
     private readonly inputSystem: InputSystem;
     private readonly cameraSystem: CameraSystem;
     private readonly renderSystem: RenderSystem;
+    private readonly animationSystem: AnimationSystem;
     readonly physicsSystem: PhysicsSystem;
     private readonly eventSystem: EventSystem;
     private readonly quat = new Quat()
@@ -25,7 +27,8 @@ export default class Engine {
         renderer.setSize(width, height);
         this.cameraSystem = new CameraSystem(gl, [width, height, dpr]);
         this.levelSystem = new LevelSystem();
-        this.renderSystem = new RenderSystem(renderer, this.cameraSystem.camera, this.cameraSystem.uiCamera, this.levelSystem);
+        this.animationSystem = new AnimationSystem();
+        this.renderSystem = new RenderSystem(renderer, this.cameraSystem.camera, this.cameraSystem.uiCamera, this.levelSystem, this.animationSystem);
         this.uiSystem = new UISystem(renderer, this.renderSystem.uiRoot, this.cameraSystem.uiCamera);
         this.inputSystem = new InputSystem(width, height, this.cameraSystem.uiCamera, this.uiSystem);
         this.audioSystem.initAudioContext();
@@ -35,7 +38,8 @@ export default class Engine {
             this.levelSystem,
             this.renderSystem,
             this.uiSystem,
-            this.audioSystem
+            this.audioSystem,
+            this.animationSystem
         );
         this.physicsSystem = new PhysicsSystem(this.levelSystem, this.audioSystem, this.eventSystem);
     }
@@ -67,6 +71,7 @@ export default class Engine {
         this.cameraSystem.ballPosition.copy(this.renderSystem.levelRoot.children[0].position);
         this.cameraSystem.center.copy(this.levelSystem.center);
         this.cameraSystem.update(timeStamp);
+        this.animationSystem.update(timeStamp);
         this.renderSystem.update(timeStamp);
         this.quat.fill(0)
         this.matrix.fromArray(camera.viewMatrix.multiply(scene.worldMatrix));
