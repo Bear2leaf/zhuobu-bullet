@@ -41,8 +41,8 @@ export default class Engine {
     }
     async load() {
 
-        await this.audioSystem.load();
         await this.eventSystem.load();
+        await this.audioSystem.load();
         await this.uiSystem.load();
         await this.levelSystem.load();
         this.renderSystem.tiledData = this.levelSystem.tiledData;

@@ -40,11 +40,12 @@ export class EventSystem implements System {
                     this.continueButtonResolve && this.continueButtonResolve(void (0));
                     this.updateButton("continue");
                     this.continueButtonResolve = undefined;
+                    this.onrelease && this.onrelease();
                 }
                 return;
             }
             if (tag === "pause") {
-                this.release();
+                this.updatePause();
             } else if (tag === "zoom") {
                 this.cameraSystem.updateZoom();
                 this.updateSwitch("zoom", !this.cameraSystem.scale)
@@ -95,7 +96,7 @@ export class EventSystem implements System {
             this.availableLevels.add(this.levelSystem.current);
         }
         this.updateLevelUI();
-        this.updateSwitch("pause", true);
+        // this.updateSwitch("pause", true);
         this.checkCharset();
         this.isContinue = true;
         this.freezeUI = false;
@@ -109,7 +110,6 @@ export class EventSystem implements System {
         // } else {
         //     this.updateSprite("prev", false);
         // }
-        this.onrelease && this.onrelease();
     }
 
     updateSwitch(name: string, value: boolean) {
@@ -146,7 +146,7 @@ export class EventSystem implements System {
             this.continueButtonResolve = resolve;
         })
     }
-    private release() {
+    private updatePause() {
         const stage = this;
         const pause = this.pause = !this.pause;
         stage.updateSwitch("pause", pause);
@@ -188,7 +188,7 @@ export class EventSystem implements System {
     onremovemesh?: (name: string) => void;
     ongetpickaxe?: () => void;
     update(timeStamp: number): void {
-        
+
     }
 
 }

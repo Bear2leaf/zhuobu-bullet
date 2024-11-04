@@ -4,7 +4,6 @@ import { System } from "./System";
 import AudioSystem from "./AudioSystem";
 import { EventSystem } from "./EventSystem";
 import LevelSystem from "./LevelSystem";
-import { RenderSystem } from "./RenderSystem";
 
 type Direction = "Down" | "Up" | "Left" | "Right";
 export default class PhysicsSystem implements System {
@@ -144,10 +143,11 @@ export default class PhysicsSystem implements System {
         })
     }
     handleCollision(data: [string, string]) {
+        console.log("collision: ", ...data)
         if (data[0] === "Ball") {
-            // console.log("collision: ", ...data)
             if (this.levelSystem.checkNeedExit(data[1])) {
                 this.eventSystem.onupdatevelocity && this.eventSystem.onupdatevelocity(data[0], 0, 0, 0);
+                this.eventSystem.onpause && this.eventSystem.onpause();
                 this.levelSystem.updateLevel(false);
                 this.eventSystem.onresetworld && this.eventSystem.onresetworld();
             } else if (this.levelSystem.checkGetPickaxe(data[1])) {

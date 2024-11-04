@@ -12,7 +12,6 @@ export default class AudioSystem implements System {
     private readonly gain = this.context.createGain();
     constructor(private readonly device: Device) { }
     async load(): Promise<void> {
-        const device = this.device;
         this.bleepAudio.setBuffer((await (await fetch("/resources/audio/bleep.wav")).arrayBuffer()));
         this.bgmAudio.setBuffer((await (await fetch("/resources/audio/happy_adveture.mp3")).arrayBuffer()));
     }

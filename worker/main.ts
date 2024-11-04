@@ -28,7 +28,7 @@ handler.onmessage = function (message) {
 
 Ammo.bind(Module)(config).then(function (Ammo) {
     // Bullet-interfacing code
-
+    let paused = false;
     handler.postMessage({ type: "ready" });
     const collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
     const dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
@@ -69,8 +69,13 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         sphereShape.calculateLocalInertia(mass, localInertia);
         const myMotionState = new Ammo.btDefaultMotionState(startTransform);
         const rbInfo = new Ammo.btRigidBodyConstructionInfo(mass, myMotionState, sphereShape, localInertia);
+        
+        const v = new UserData;
+        v.name = "Ball";
         const body = new Ammo.btRigidBody(rbInfo);
+        body.setUserPointer(v);
         body.setActivationState(ActivationState.DISABLE_DEACTIVATION);
+        
         // for 3d ?
         // body.setRestitution(0.5);
         // body.setFriction(0.5);
@@ -112,6 +117,15 @@ Ammo.bind(Module)(config).then(function (Ammo) {
         motionState.setWorldTransform(transform);
         body.setMotionState(motionState);
     }
+    function resetWorld() {
+        while (bodies.length > 1) {
+            const removed = bodies.pop()!;
+            dynamicsWorld.removeRigidBody(removed);
+        }
+        handler.postMessage({
+            type: "requestLevel",
+        })
+    }
     function messageHandler(message: MainMessage) {
         if (message.type === "updateGravity") {
             const g = message.data.split(",").map(x => parseFloat(x));
@@ -152,7 +166,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const scaleY = transform[8];
             const scaleZ = transform[9];
             const scale = new Ammo.btVector3(scaleX, scaleY, scaleZ);
-            console.log(message.data)
             startTransform.setOrigin(new Ammo.btVector3(transform[0], transform[1], transform[2]))
             startTransform.setRotation(new Ammo.btQuaternion(transform[3], transform[4], transform[5], transform[6]))
             let shape
@@ -194,9 +207,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             dynamicsWorld.addRigidBody(body);
             bodies.push(body);
         } else if (message.type === "resetWorld") {
-            handler.postMessage({
-                type: "requestLevel",
-            })
+            resetWorld();
         } else if (message.type === "updateCharacterVelocity") {
             updateVelocity(message.data)
         } else if (message.type === "teleport") {
@@ -226,6 +237,10 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             for (let i = 0; i < message.data.objects.length; i++) {
                 writeBulletObject([...message.data.objects][i]);
             }
+            if (paused) {
+                console.log(1)
+                return;
+            }
             dynamicsWorld.stepSimulation(message.data.delta);
             prepareCollision();
             handleCollision();
@@ -235,6 +250,12 @@ Ammo.bind(Module)(config).then(function (Ammo) {
                 type: "updateCharacter",
                 data: [...object, linearVelocity.x(), linearVelocity.y(), linearVelocity.z()]
             });
+        } else if (message.type === "pause") {
+            console.log(2)
+            paused = true;
+        } else if (message.type === "release") {
+            console.log(3)
+            paused = false;
         }
     }
     function updateVelocity({ x, y, z }: (MainMessage & { type: "updateCharacterVelocity" })["data"]) {

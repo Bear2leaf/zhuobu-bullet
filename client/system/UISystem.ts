@@ -21,7 +21,7 @@ export default class UISystem implements System {
         this.sprites.push(new Sprite(gl, "information", new Vec3(0, 4 * dpr, 0)));
         this.switches.push(new Switch(gl, "audio", new Vec3(-3, 4 * dpr, 0)));
         this.buttons.push(new Button(gl, "continue", new Vec3(0, -1, 0), true, 1));
-        this.switches.push(new Switch(gl, "pause", new Vec3(0, -4, 0)));
+        // this.switches.push(new Switch(gl, "pause", new Vec3(0, -4, 0)));
         this.buttons.push(new Button(gl, "info", new Vec3(0, 4 * dpr, 0)));
         this.buttons.push(new Button(gl, "level", new Vec3(0, -4 * dpr, 0)));
         this.sprites.push(new Sprite(gl, "prev", new Vec3(-3, -4 * dpr, 0)));
@@ -52,8 +52,6 @@ export default class UISystem implements System {
                 item.getMesh().visible = false;
             } else if (item.getMesh().name === "level") {
                 item.getMesh().visible = true;
-            } else if (item.getMesh().name === "pause") {
-                item.getMesh().visible = false;
             }
         }
     }
