@@ -29,6 +29,7 @@ handler.onmessage = function (message) {
 Ammo.bind(Module)(config).then(function (Ammo) {
     // Bullet-interfacing code
     let paused = false;
+    let gravityScale = 1;
     handler.postMessage({ type: "ready" });
     const collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
     const dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
@@ -132,6 +133,8 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             gravity.setX(g[0])
             gravity.setY(g[1])
             gravity.setZ(g[2])
+            gravity.normalize();
+            gravity.op_mul(gravityScale);
             dynamicsWorld.setGravity(gravity);
             return;
         } else if (message.type === "addBall") {
@@ -146,6 +149,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             body.setLinearVelocity(new Ammo.btVector3(0, 0, 0));
             body.setAngularVelocity(new Ammo.btVector3(0, 0, 0));
             const scale = isBall ? radius : radius3d;
+            gravityScale = isBall ? 100 : 10;
             body.getCollisionShape().setLocalScaling(new Ammo.btVector3(scale, scale, scale));
         } else if (message.type === "addMesh") {
             const startTransform = new Ammo.btTransform();
