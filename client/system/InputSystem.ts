@@ -9,6 +9,8 @@ export class InputSystem implements System {
     }
     onclick?: (tag?: string) => void;
     onswipe?: (direction: "left" | "right" | "up" | "down") => void;
+    ondown?: () => void;
+    onup?: () => void;
     load(): Promise<void> {
         throw new Error("Method not implemented.");
     }
@@ -42,7 +44,7 @@ export class InputSystem implements System {
             })
         }
         const start = (e: { x: number, y: number }) => {
-
+            this.ondown && this.ondown();
             const help = all.find(node => node.getMesh().name === "help");
             if (help) {
                 help.getMesh().visible = false;
@@ -68,6 +70,7 @@ export class InputSystem implements System {
             })
         }
         const end = () => {
+            this.onup && this.onup();
             // Update the ray's origin and direction using the camera and mouse
             raycast.castMouse(camera, mouse);
 

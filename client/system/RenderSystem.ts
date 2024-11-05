@@ -142,23 +142,14 @@ export class RenderSystem implements System {
         this.animationSystem.initAnimations(this.gltf);
     }
     init(): void {
-
-        const program = new Program(this.gl, {
-            vertex: this.ballVertex,
-            fragment: this.ballFragment,
-            uniforms: {
-                uColor: {
-                    value: new Vec3(0.7, 0.2, 0.7)
+        for (const scene of this.gltf?.scene || []) {
+            for (const collection of scene.children) {
+                if (collection.name === "others") {
+                    const ball = collection.children.find(child => child.name === "Ball");
+                    ball?.setParent(this.levelRoot);
                 }
             }
-        });
-        const geometry = new Sphere(this.gl, { radius:1 });
-        const mesh = new Mesh(this.gl, {
-            geometry,
-            program,
-        });
-        mesh.setParent(this.levelRoot);
-        mesh.name = "Ball"
+        }
         for (const level of this.levelSystem.collections) {
             level.init()
             level.node.setParent(this.levelRoot);

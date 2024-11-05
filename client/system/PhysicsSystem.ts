@@ -164,9 +164,11 @@ export default class PhysicsSystem implements System {
                 this.eventSystem.onteleport && this.eventSystem.onteleport(data[0], to);
             } else if (this.levelSystem.checkBeltUp(data[1])) {
                 const node = this.levelSystem.getCurrentLevelNode(data[1]);
-                const transform = node?.matrix || new Mat4().identity();
-                this.addBall(transform, false);
-                this.disableMesh(data[1]);
+                if (!node) {
+                    throw new Error("node is undefined");
+                }
+                const transform = node.matrix;
+                this.addBall(transform, true);
                 this.eventSystem.onupdatevelocity && this.eventSystem.onupdatevelocity(data[0], 0, 200, 0);
             }
         }

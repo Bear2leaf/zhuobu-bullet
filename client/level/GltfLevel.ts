@@ -42,7 +42,7 @@ export class GltfLevel implements Level {
         throw new Error("Method not implemented.");
     }
     check(meshName: string, name: string): boolean {
-        return false;
+        return meshName.startsWith("Goal") && name === "Exit";
     }
     getMeshNames(name: string): string[] {
         return [];

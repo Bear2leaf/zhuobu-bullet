@@ -36,6 +36,12 @@ export class EventSystem implements System {
             audio.toggle();
             this.updateSwitch("audio", audio.isOn())
         }
+        this.inputSystem.ondown = () => {
+            this.animationSystem.down = true;
+        }
+        this.inputSystem.onup = () => {
+            this.animationSystem.down = false;
+        }
         this.inputSystem.onclick = (tag) => {
             if (this.freezeUI) {
                 if (tag === "continue") {

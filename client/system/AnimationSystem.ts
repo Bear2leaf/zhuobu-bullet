@@ -3,11 +3,24 @@ import { System } from "./System";
 
 export default class AnimationSystem implements System {
     private readonly animations: GLTFAnimationReference[] = [];
+    down: boolean = false;
     update(timeStamp: number): void {
-        for (const animation of this.animations) {
-            animation.animation.elapsed += timeStamp;
-            animation.animation.elapsed %= animation.animation.duration;
-            animation.animation.update();
+        for (let i = 0; i < this.animations.length; i++) {
+            const animation = this.animations[i];
+            if (this.down) {
+                animation.animation.elapsed += timeStamp;
+            } else {
+                animation.animation.elapsed -= timeStamp;
+            }
+
+
+            if (animation.animation.elapsed <= 0) {
+                animation.animation.elapsed = 0;
+            } else if (animation.animation.elapsed >= animation.animation.duration) {
+                animation.animation.elapsed = animation.animation.duration;
+            } else {
+                animation.animation.update();
+            }
         }
     }
     async load(): Promise<void> {
@@ -21,4 +34,5 @@ export default class AnimationSystem implements System {
             this.animations.push(animation);
         }
     }
+
 }
