@@ -55,16 +55,16 @@ export class InputSystem implements System {
         const start = (e: { x: number, y: number }) => {
             indicatorDelta = 0;
             lastX = e.x;
-            if (mouse.y < -0.7) {
-                mouseDown = true;
-                return;
-            }
-            this.ondown && this.ondown();
             const help = all.find(node => node.getMesh().name === "help");
             if (help) {
                 help.getMesh().visible = false;
             }
             mouse.set(2.0 * (e.x / width) - 1.0, 2.0 * (1.0 - e.y / height) - 1.0);
+            if (mouse.y < -0.7) {
+                mouseDown = true;
+                return;
+            }
+            this.ondown && this.ondown();
 
             // Update the ray's origin and direction using the camera and mouse
             raycast.castMouse(camera, mouse);
