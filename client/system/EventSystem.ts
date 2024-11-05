@@ -19,6 +19,7 @@ export class EventSystem implements System {
     private isContinue: boolean = false;
     private freezeUI = false;
     private continueButtonResolve?: (value: unknown) => void;
+    private freezeRotation: boolean = false;
     constructor(
         private readonly inputSystem: InputSystem,
         private readonly cameraSystem: CameraSystem,
@@ -75,6 +76,9 @@ export class EventSystem implements System {
         }
 
         this.inputSystem.onswipe = (dir) => {
+            if (this.freezeRotation) {
+                return;
+            }
             this.cameraSystem.rollCamera(dir, this.levelSystem.isMazeMode)
         }
     }
@@ -108,6 +112,13 @@ export class EventSystem implements System {
         this.checkCharset();
         this.isContinue = true;
         this.freezeUI = false;
+        this.cameraSystem.resetRotation();
+        if (this.levelSystem.isCurrentGltfLevel()) {
+            this.freezeRotation = true;
+        } else {
+            this.freezeRotation = false;
+        }
+        console.log() 
         // if (this.availableLevels.has(this.levelSystem.current + 1)) {
         //     this.updateSprite("next", true);
         // } else {

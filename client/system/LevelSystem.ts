@@ -30,6 +30,9 @@ export default class LevelSystem implements System {
 
         
     }
+    isCurrentGltfLevel() {
+        return this.collections[this.current] instanceof GltfLevel;
+    }
     updateLevel(reverse: boolean) {
         if (reverse) {
             this.current = this.current === 0 ? (this.collections.length - 1) : (this.current - 1)
