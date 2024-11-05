@@ -4,13 +4,15 @@ import Sprite from "../ui/Sprite.js";
 import Switch from "../ui/Switch.js";
 import UIElement from "../ui/UIElement.js";
 import { System } from "./System.js";
+import LevelIndicator from "../ui/LevelIndicator.js";
 
 export default class UISystem implements System {
     private readonly buttons: Button[] = [];
     private readonly sprites: Sprite[] = [];
     private readonly switches: Switch[] = [];
+    private readonly levelIndicator: LevelIndicator;
     get all(): UIElement[] {
-        return [...this.sprites, ...this.switches, ...this.buttons].filter(o => o.getMesh());
+        return [...this.sprites, ...this.switches, ...this.buttons, this.levelIndicator].filter(o => o.getMesh());
     }
 
     constructor(private readonly renderer: Renderer, private readonly scene: Transform, private readonly camera: Camera) {
@@ -21,12 +23,11 @@ export default class UISystem implements System {
         this.sprites.push(new Sprite(gl, "information", new Vec3(0, 4 * dpr, 0)));
         this.switches.push(new Switch(gl, "audio", new Vec3(-3, 4 * dpr, 0)));
         this.buttons.push(new Button(gl, "continue", new Vec3(0, -1, 0), true, 1));
-        // this.switches.push(new Switch(gl, "pause", new Vec3(0, -4, 0)));
         this.buttons.push(new Button(gl, "info", new Vec3(0, 4 * dpr, 0)));
-        this.buttons.push(new Button(gl, "level", new Vec3(0, -4 * dpr, 0)));
-        this.sprites.push(new Sprite(gl, "prev", new Vec3(-3, -4 * dpr, 0)));
-        this.sprites.push(new Sprite(gl, "next", new Vec3(3, -4 * dpr, 0)));
+        this.buttons.push(new Button(gl, "level", new Vec3(0, 0, 0)));
         this.buttons.push(new Button(gl, "help", new Vec3(0, 0 * dpr, 0), true));
+
+        this.levelIndicator = new LevelIndicator(gl, "indicator", new Vec3(0, -4 * dpr, 0));
 
     }
     update(): void {
