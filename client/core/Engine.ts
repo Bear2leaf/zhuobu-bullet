@@ -71,6 +71,7 @@ export default class Engine {
         this.cameraSystem.ballPosition.copy(this.renderSystem.levelRoot.children[0].position);
         this.cameraSystem.center.copy(this.levelSystem.center);
         this.cameraSystem.update(timeStamp);
+        this.uiSystem.update(timeStamp);
         this.animationSystem.update(timeStamp);
         this.renderSystem.update(timeStamp);
         this.quat.fill(0)

@@ -5,12 +5,26 @@ export default class LevelIndicator implements UIElement {
     private readonly mesh: Mesh;
     private fragment: string = "";
     private vertex: string = "";
+    readonly uCurrent: { value: number} = { value: 0 };
+    private next: number = 0;
+    
     constructor(private readonly gl: OGLRenderingContext, name: string, position: Vec3) {
 
         const mesh = new Mesh(gl);
         mesh.name = name
         mesh.position.copy(position);
         this.mesh = mesh;
+    }
+    update(timeStamp: number) {
+        if (this.uCurrent.value < this.next) {
+            this.uCurrent.value = Math.min(this.next, this.uCurrent.value + timeStamp);
+        } else if (this.uCurrent.value > this.next) {
+            this.uCurrent.value = Math.max(this.next, this.uCurrent.value - timeStamp);
+        } else {
+            this.next = Math.round(Math.random() * 6);
+            console.log(this.uCurrent.value, this.next);
+        }
+
     }
     async load() {
         this.vertex = await (await fetch(`resources/glsl/${this.mesh.name}.vert.sk`)).text();
@@ -58,7 +72,7 @@ export default class LevelIndicator implements UIElement {
             fragment: fragmentPrefix + this.fragment,
             transparent: true,
             uniforms: {
-                uCurrent: { value: 3 }
+                uCurrent: this.uCurrent
             }
         });
         const geometry = new Geometry(gl, {

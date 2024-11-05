@@ -5,12 +5,12 @@ import Switch from "../ui/Switch.js";
 import UIElement from "../ui/UIElement.js";
 import { System } from "./System.js";
 import LevelIndicator from "../ui/LevelIndicator.js";
-
 export default class UISystem implements System {
     private readonly buttons: Button[] = [];
     private readonly sprites: Sprite[] = [];
     private readonly switches: Switch[] = [];
     private readonly levelIndicator: LevelIndicator;
+
     get all(): UIElement[] {
         return [...this.sprites, ...this.switches, ...this.buttons, this.levelIndicator].filter(o => o.getMesh());
     }
@@ -30,8 +30,8 @@ export default class UISystem implements System {
         this.levelIndicator = new LevelIndicator(gl, "indicator", new Vec3(0, -4 * dpr, 0));
 
     }
-    update(): void {
-        throw new Error("Method not implemented.");
+    update(timeStamp: number): void {
+        this.levelIndicator.update(timeStamp);
     }
     async load() {
         for await (const item of this.all) {
