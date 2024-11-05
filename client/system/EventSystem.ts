@@ -10,6 +10,7 @@ import Button from "../ui/Button.js";
 import Switch from "../ui/Switch.js";
 import Sprite from "../ui/Sprite.js";
 import AnimationSystem from "./AnimationSystem.js";
+import LevelIndicator from "../ui/LevelIndicator.js";
 export class EventSystem implements System {
     private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关";
@@ -17,7 +18,6 @@ export class EventSystem implements System {
     private charset: string = "";
     private pause = false;
     private isContinue: boolean = false;
-    private freezeUI = false;
     private continueButtonResolve?: (value: unknown) => void;
     private freezeRotation: boolean = false;
     constructor(
@@ -42,9 +42,10 @@ export class EventSystem implements System {
         }
         this.inputSystem.onup = () => {
             this.animationSystem.down = false;
+            this.uiSystem.getUIElement<LevelIndicator>("indicator").confirm();
         }
         this.inputSystem.onclick = (tag) => {
-            if (this.freezeUI) {
+            if (this.uiSystem.freeze) {
                 if (tag === "continue") {
                     this.continueButtonResolve && this.continueButtonResolve(void (0));
                     this.updateButton("continue");
@@ -74,13 +75,24 @@ export class EventSystem implements System {
                 this.updateButton("help");
             }
         }
-
+        this.inputSystem.onupdateIndicator = (delta: number) => {
+            this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(delta);
+        }
+        this.uiSystem.getUIElement<LevelIndicator>("indicator").updateTotal(this.renderSystem.levelRoot.children.length - 1);
         this.inputSystem.onswipe = (dir) => {
             if (this.freezeRotation) {
                 return;
             }
             this.cameraSystem.rollCamera(dir, this.levelSystem.isMazeMode)
         }
+        this.uiSystem.getUIElement<LevelIndicator>("indicator").onselectlevel = (level) => {
+            if (this.levelSystem.current !== level) {
+                this.levelSystem.current = level;
+                this.isContinue = false;
+                this.pause = false;
+                this.onresetworld && this.onresetworld();
+            }
+        };
     }
     updateLevelUI() {
         const root = this.renderSystem.levelRoot.children[this.levelSystem.current + 1];
@@ -89,6 +101,7 @@ export class EventSystem implements System {
                 throw new Error("Level name is undefined");
             }
             this.uiSystem.getUIElement<Button>("level").generateText(root.name);
+            this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(this.levelSystem.current, true);
             this.onchangelevel && this.onchangelevel(root);
         }
     }
@@ -96,7 +109,7 @@ export class EventSystem implements System {
         this.pause = false;
         this.uiSystem.getUIElement<Button>("help").generateText(this.helpMsg);
         if (this.isContinue) {
-            this.freezeUI = true;
+            this.uiSystem.freeze = true;
             await this.waitContinueButton();
         }
         this.renderSystem.initCurrentLevel(this.levelSystem.current);
@@ -111,7 +124,7 @@ export class EventSystem implements System {
         // this.updateSwitch("pause", true);
         this.checkCharset();
         this.isContinue = true;
-        this.freezeUI = false;
+        this.uiSystem.freeze = false;
         this.cameraSystem.resetRotation();
         if (this.levelSystem.isCurrentGltfLevel()) {
             this.freezeRotation = true;
@@ -194,7 +207,7 @@ export class EventSystem implements System {
     }
     async load(): Promise<void> {
         this.charset = await (await fetch("resources/font/charset.txt")).text();
-    }
+    };
     onchangelevel?: (levelNode: Transform) => void;
     onpause?: () => void;
     onrelease?: () => void;
@@ -206,7 +219,14 @@ export class EventSystem implements System {
     onremovemesh?: (name: string) => void;
     ongetpickaxe?: () => void;
     update(timeStamp: number): void {
-
+        const current = this.uiSystem.getUIElement<LevelIndicator>("indicator").getCurrent()
+        const root = this.renderSystem.levelRoot.children[current + 1];
+        if (root) {
+            if (!root.name) {
+                throw new Error("Level name is undefined");
+            }
+            this.uiSystem.getUIElement<Button>("level").generateText(root.name);
+        }
     }
 
 }

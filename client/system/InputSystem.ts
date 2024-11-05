@@ -5,8 +5,9 @@ import UISystem from "./UISystem.js";
 
 export class InputSystem implements System {
     private readonly mouse = new Vec2();
-    constructor(private readonly width: number, private readonly  height: number, private readonly camera: Camera, private readonly uiSystem: UISystem) {
+    constructor(private readonly width: number, private readonly height: number, private readonly camera: Camera, private readonly uiSystem: UISystem) {
     }
+    onupdateIndicator?: (delta: number) => void;
     onclick?: (tag?: string) => void;
     onswipe?: (direction: "left" | "right" | "up" | "down") => void;
     ondown?: () => void;
@@ -22,32 +23,14 @@ export class InputSystem implements System {
         const all = this.uiSystem.all;
         // Create a raycast object
         const raycast = new Raycast();
+        let indicatorDelta = 0;
+        let mouseDown = false;
+        let lastX = 0;
         const move = (e: { x: number, y: number }) => {
-            mouse.set(2.0 * (e.x / width) - 1.0, 2.0 * (1.0 - e.y / height) - 1.0);
-
-            // Update the ray's origin and direction using the camera and mouse
-            raycast.castMouse(camera, mouse);
-
-
-            // raycast.intersectBounds will test against the bounds of each mesh, and
-            // return an array of intersected meshes in order of closest to farthest
-            const hits = raycast.intersectBounds(all.map(node => node.getMesh() as Mesh));
-
-            // Update our feedback using this array
-            all.forEach(item => {
-                item.release();
-                hits.forEach(hit => {
-                    if (item.getMesh().name === hit.name || item.getMesh().name === hit.parent?.name) {
-                        item.down();
-                    }
-                })
-            })
-        }
-        const start = (e: { x: number, y: number }) => {
-            this.ondown && this.ondown();
-            const help = all.find(node => node.getMesh().name === "help");
-            if (help) {
-                help.getMesh().visible = false;
+            if (mouseDown) {
+                indicatorDelta = (lastX - e.x) * 0.1;
+                this.onupdateIndicator && this.onupdateIndicator(indicatorDelta);
+                lastX = e.x;
             }
             mouse.set(2.0 * (e.x / width) - 1.0, 2.0 * (1.0 - e.y / height) - 1.0);
 
@@ -69,8 +52,42 @@ export class InputSystem implements System {
                 })
             })
         }
+        const start = (e: { x: number, y: number }) => {
+            indicatorDelta = 0;
+            lastX = e.x;
+            if (mouse.y < -0.7) {
+                mouseDown = true;
+                return;
+            }
+            this.ondown && this.ondown();
+            const help = all.find(node => node.getMesh().name === "help");
+            if (help) {
+                help.getMesh().visible = false;
+            }
+            mouse.set(2.0 * (e.x / width) - 1.0, 2.0 * (1.0 - e.y / height) - 1.0);
+
+            // Update the ray's origin and direction using the camera and mouse
+            raycast.castMouse(camera, mouse);
+
+            // raycast.intersectBounds will test against the bounds of each mesh, and
+            // return an array of intersected meshes in order of closest to farthest
+            const hits = raycast.intersectBounds(all.map(node => node.getMesh() as Mesh));
+
+            // Update our feedback using this array
+            all.forEach(item => {
+                item.release();
+                hits.forEach(hit => {
+                    if (item.getMesh().name === hit.name || item.getMesh().name === hit.parent?.name) {
+                        item.down();
+                    }
+                })
+            })
+        }
         const end = () => {
             this.onup && this.onup();
+            mouseDown = false;
+            indicatorDelta = 0;
+            lastX = 0;
             // Update the ray's origin and direction using the camera and mouse
             raycast.castMouse(camera, mouse);
 
@@ -103,12 +120,12 @@ export class InputSystem implements System {
         let yDown: number | null = null;
 
 
-        function handleTouchStart(x: number, y: number) {
+        const handleTouchStart = (x: number, y: number) => {
             xDown = x;
             yDown = y;
         };
 
-        function handleTouchMove(x: number, y: number) {
+        const handleTouchMove = (x: number, y: number) => {
             if (!xDown || !yDown) {
                 return;
             }
@@ -140,8 +157,8 @@ export class InputSystem implements System {
             yDown = null;
         };
 
-        document.addEventListener("pointerdown", (e) => handleTouchStart(e.pageX,  e.pageY))
-        document.addEventListener("pointermove", (e) => handleTouchMove(e.pageX,  e.pageY))
+        document.addEventListener("pointerdown", (e) => handleTouchStart(e.pageX, e.pageY))
+        document.addEventListener("pointermove", (e) => handleTouchMove(e.pageX, e.pageY))
         document.addEventListener("keydown", (ev) => {
             switch (ev.key) {
                 case "ArrowUp":
@@ -167,5 +184,5 @@ export class InputSystem implements System {
     update(): void {
         throw new Error("Method not implemented.");
     }
-    
+
 }

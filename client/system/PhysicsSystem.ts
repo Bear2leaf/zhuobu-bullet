@@ -93,7 +93,6 @@ export default class PhysicsSystem implements System {
     }
     sendmessage?: (message: MainMessage) => void;
     onmessage(message: WorkerMessage): void {
-        const audio = this.audio;
         const sendmessage = this.sendmessage;
         if (!sendmessage) {
             throw new Error("sendmessage is undefined");
@@ -103,7 +102,7 @@ export default class PhysicsSystem implements System {
             this.dirSet.clear();
             this.objectNames.clear();
             this.currentCollisions.clear();
-            audio.play();
+            this.audio.play();
             this.eventSystem.requestLevel();
         } else if (message.type === "ready") {
             sendmessage({

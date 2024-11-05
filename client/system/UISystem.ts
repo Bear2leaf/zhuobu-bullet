@@ -10,7 +10,7 @@ export default class UISystem implements System {
     private readonly sprites: Sprite[] = [];
     private readonly switches: Switch[] = [];
     private readonly levelIndicator: LevelIndicator;
-
+    freeze: boolean = false;
     get all(): UIElement[] {
         return [...this.sprites, ...this.switches, ...this.buttons, this.levelIndicator].filter(o => o.getMesh());
     }
@@ -24,7 +24,7 @@ export default class UISystem implements System {
         this.switches.push(new Switch(gl, "audio", new Vec3(-3, 4 * dpr, 0)));
         this.buttons.push(new Button(gl, "continue", new Vec3(0, -1, 0), true, 1));
         this.buttons.push(new Button(gl, "info", new Vec3(0, 4 * dpr, 0)));
-        this.buttons.push(new Button(gl, "level", new Vec3(0, 0, 0)));
+        this.buttons.push(new Button(gl, "level", new Vec3(0, -4 * dpr, 0)));
         this.buttons.push(new Button(gl, "help", new Vec3(0, 0 * dpr, 0), true));
 
         this.levelIndicator = new LevelIndicator(gl, "indicator", new Vec3(0, -4 * dpr, 0));
