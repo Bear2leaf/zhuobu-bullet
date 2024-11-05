@@ -135,7 +135,7 @@ export class RenderSystem implements System {
         this.gltf.scene.forEach(scene => {
             scene.traverse(node => {
                 if (node instanceof Mesh) {
-                    createProgram(node, false, this.gltfVertex, this.gltfFragment, true)
+                    createProgram(node, this.gltfVertex, this.gltfFragment, true)
                 }
             })
         })

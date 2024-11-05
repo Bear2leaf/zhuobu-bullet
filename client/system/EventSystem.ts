@@ -118,7 +118,6 @@ export class EventSystem implements System {
         } else {
             this.freezeRotation = false;
         }
-        console.log() 
         // if (this.availableLevels.has(this.levelSystem.current + 1)) {
         //     this.updateSprite("next", true);
         // } else {

@@ -19,10 +19,6 @@ uniform sampler2D tOcclusion;
 uniform sampler2D tLUT;
 uniform sampler2D tEnvDiffuse;
 uniform sampler2D tEnvSpecular;
-// uniform sampler2D tMap;
-uniform sampler2D tShadow;
-
-
 uniform float uEnvDiffuse;
 uniform float uEnvSpecular;
 
@@ -36,11 +32,6 @@ varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vMPos;
 varying vec4 vMVPos;
-
-                    #ifdef SHADOW
-varying vec4 vLightNDC;
-                    #endif
-
 
 const float PI = 3.14159265359;
 const float RECIPROCAL_PI = 0.31830988618;
@@ -149,12 +140,6 @@ void getIBLContribution(inout vec3 diffuse, inout vec3 specular, float NdV, floa
     specular *= uEnvSpecular;
 }
 
-                    #ifdef SHADOW
-float unpackRGBA(vec4 v) {
-    return dot(v, 1.0f / vec4(1.0f, 255.0f, 65025.0f, 16581375.0f));
-}
-                    #endif
-
 void main() {
     vec4 baseColor = uBaseColorFactor;
                         #ifdef COLOR_MAP
@@ -233,20 +218,6 @@ void main() {
                         // Convert to sRGB to display
     gl_FragColor.rgb = linearToSRGB(color);
 
-                    #ifdef SHADOW
-    vec3 lightPos = vLightNDC.xyz / vLightNDC.w;
-
-    float bias = 0.0005f;
-    float depth = lightPos.z - bias;
-    float occluder = unpackRGBA(texture(tShadow, lightPos.xy));
-
-    // Compare actual depth from light to the occluded depth rendered in the depth map
-    // If the occluded depth is smaller, we must be in shadow
-    float shadow = mix(0.5f, 1.0f, step(depth, occluder));
-
-
-    gl_FragColor.rgb *= shadow;
-                    #endif
                         // Apply uAlpha uniform at the end to overwrite any specular additions on transparent surfaces
     gl_FragColor.a = alpha * uAlpha;
 }
