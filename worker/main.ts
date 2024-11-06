@@ -147,8 +147,6 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             body.setAngularVelocity(new Ammo.btVector3(0, 0, 0));
             const scale = isBall ? radius : radius3d;
             gravityScale = isBall ? 100 : 10;
-            body.setFriction(isBall ? 1 : 0.5);
-            body.setRestitution(isBall ? 0 : 0.5);
             body.getCollisionShape().setLocalScaling(new Ammo.btVector3(scale, scale, scale));
         } else if (message.type === "addMesh") {
             const startTransform = new Ammo.btTransform();
@@ -202,7 +200,7 @@ Ammo.bind(Module)(config).then(function (Ammo) {
             const body = new Ammo.btRigidBody(rbInfo);
             body.setCollisionFlags(CollisionFlags.CF_KINEMATIC_OBJECT)
             body.setUserPointer(v);
-            body.setRestitution(0.5);
+            body.setRestitution(0);
             body.setFriction(1);
             body.setActivationState(ActivationState.DISABLE_DEACTIVATION);
 

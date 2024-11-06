@@ -162,7 +162,7 @@ export default class LevelSystem implements System {
                     const indices = mesh.geometry.attributes.index?.data;
                     const name = mesh.parent?.name;
                     if (name) {
-                        this.onaddmesh && this.onaddmesh(name, mesh.worldMatrix, [...attributeData || []], [...indices || []])
+                        this.onaddmesh && this.onaddmesh(name, mesh.worldMatrix, [...attributeData || []], [...indices || []], {}, !!(mesh.parent?.extras as any)?.convex)
                     }
                 }
             });
