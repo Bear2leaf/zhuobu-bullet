@@ -70,13 +70,14 @@ export default class LevelIndicator implements UIElement {
     updateCurrent(delta: number, exact = false) {
         if (exact) {
             this.next = delta;
-            return;
-        }
-        this.uCurrent.value += delta;
-        if (this.uCurrent.value < 0) {
-            this.uCurrent.value = 0;
-        } else if (this.uCurrent.value > this.total - 1) {
-            this.uCurrent.value = this.total - 1;
+            this.uCurrent.value = delta;
+        } else {
+            this.uCurrent.value += delta;
+            if (this.uCurrent.value < 0) {
+                this.uCurrent.value = 0;
+            } else if (this.uCurrent.value > this.total - 1) {
+                this.uCurrent.value = this.total - 1;
+            }
         }
     }
     getCurrent() {

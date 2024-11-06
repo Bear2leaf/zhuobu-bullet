@@ -80,7 +80,7 @@ export class EventSystem implements System {
             this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(delta);
             this.updateLevelUI();
         }
-        const specials = new Set();
+        const specials = new Set<number>();
         for (let index = 0; index < this.levelSystem.collections.length; index++) {
             const level = this.levelSystem.collections[index];
             if (level instanceof GltfLevel) {
@@ -127,8 +127,10 @@ export class EventSystem implements System {
         if (this.isContinue) {
             this.availableLevels.add(this.levelSystem.current);
         }
-        this.updateLevelUI();
         // this.updateSwitch("pause", true);
+        
+        this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(this.levelSystem.current, true);
+        this.updateLevelUI();
         this.checkCharset();
         this.isContinue = true;
         this.uiSystem.freeze = false;
