@@ -77,6 +77,7 @@ export class EventSystem implements System {
         }
         this.inputSystem.onupdateIndicator = (delta: number) => {
             this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(delta);
+            this.updateLevelUI();
         }
         this.uiSystem.getUIElement<LevelIndicator>("indicator").updateTotal(this.renderSystem.levelRoot.children.length - 1);
         this.inputSystem.onswipe = (dir) => {
@@ -95,15 +96,12 @@ export class EventSystem implements System {
         };
     }
     updateLevelUI() {
-        const root = this.renderSystem.levelRoot.children[this.levelSystem.current + 1];
-        if (root) {
-            if (!root.name) {
-                throw new Error("Level name is undefined");
-            }
-            this.uiSystem.getUIElement<Button>("level").generateText(root.name);
-            this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(this.levelSystem.current, true);
-            this.onchangelevel && this.onchangelevel(root);
+        const current = this.uiSystem.getUIElement<LevelIndicator>("indicator").getCurrent();
+        const root = this.levelSystem.collections[current];
+        if (!root.node.name) {
+            throw new Error("Level name is undefined");
         }
+        this.uiSystem.getUIElement<Button>("level").generateText(root.node.name);
     }
     async requestLevel() {
         this.pause = false;
@@ -208,7 +206,6 @@ export class EventSystem implements System {
     async load(): Promise<void> {
         this.charset = await (await fetch("resources/font/charset.txt")).text();
     };
-    onchangelevel?: (levelNode: Transform) => void;
     onpause?: () => void;
     onrelease?: () => void;
     onclick?: (tag?: string) => void;
@@ -219,14 +216,6 @@ export class EventSystem implements System {
     onremovemesh?: (name: string) => void;
     ongetpickaxe?: () => void;
     update(timeStamp: number): void {
-        const current = this.uiSystem.getUIElement<LevelIndicator>("indicator").getCurrent()
-        const root = this.renderSystem.levelRoot.children[current + 1];
-        if (root) {
-            if (!root.name) {
-                throw new Error("Level name is undefined");
-            }
-            this.uiSystem.getUIElement<Button>("level").generateText(root.name);
-        }
     }
 
 }

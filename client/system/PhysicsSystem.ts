@@ -9,11 +9,14 @@ type Direction = "Down" | "Up" | "Left" | "Right";
 export default class PhysicsSystem implements System {
     private readonly objectNames: Set<string> = new Set();
     private readonly dirSet = new Set<Direction>();
-    private levelNode?: Transform;
     private readonly currentCollisions = new Set<string>();
     private readonly gravityScale = 100;
     private readonly gravity = new Vec3();
     private readonly acc = new Vec3(0, -this.gravityScale, 0);
+    private get levelNode() {
+        return this.levelSystem.collections[this.levelSystem.current].node;
+    }
+
     constructor(
         private readonly levelSystem: LevelSystem
         , private readonly audio: AudioSystem
@@ -87,9 +90,6 @@ export default class PhysicsSystem implements System {
         this.eventSystem.onresetworld = () => sendmessage({
             type: "resetWorld",
         })
-        this.eventSystem.onchangelevel = (levelNode) => {
-            this.levelNode = levelNode;
-        }
     }
     sendmessage?: (message: MainMessage) => void;
     onmessage(message: WorkerMessage): void {
@@ -119,7 +119,7 @@ export default class PhysicsSystem implements System {
             this.currentCollisions.delete(message.data[1]);
         } else if (message.type === "collisionUpdate") {
         } else if (message.type === "updateCharacter") {
-            const ball = this.levelNode?.parent?.children[0];
+            const ball = this.levelNode.parent?.children[0];
             if (ball) {
                 ball.position.set(message.data[0], message.data[1], message.data[2]);
                 ball.quaternion.set(message.data[3], message.data[4], message.data[5], message.data[6]);
