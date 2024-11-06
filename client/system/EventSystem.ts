@@ -42,7 +42,10 @@ export class EventSystem implements System {
         }
         this.inputSystem.onup = () => {
             this.animationSystem.down = false;
-            this.uiSystem.getUIElement<LevelIndicator>("indicator").confirm();
+            if (!this.uiSystem.freeze) {
+                this.uiSystem.getUIElement<LevelIndicator>("indicator").confirm();
+                this.onrelease && this.onrelease();
+            }
         }
         this.inputSystem.onclick = (tag) => {
             if (this.uiSystem.freeze) {
@@ -79,6 +82,8 @@ export class EventSystem implements System {
             if (this.uiSystem.freeze) {
                 return;
             }
+            this.pause = true;
+            this.onpause && this.onpause();
             this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(delta);
             this.updateLevelUI();
         }
