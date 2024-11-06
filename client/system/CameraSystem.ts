@@ -12,12 +12,12 @@ export class CameraSystem implements System {
     private readonly sceneQuat = new Quat();
     private readonly tempPosition = new Vec3();
     readonly ballPosition = new Vec3();
-    readonly levelPosition = new Vec3();
     readonly center: Vec3 = new Vec3;
     private t = 0;
     private scaleT = 0;
     scale = 0;
     radius: number = 0;
+    isGltf: boolean = false;
     constructor(gl: OGLRenderingContext, windowInfo: [number, number, number]) {
         const [width, height, dpr] = windowInfo;
         const ratio = width / height;
@@ -36,7 +36,8 @@ export class CameraSystem implements System {
             right: width * 50 / height,
             top: 50,
             bottom: -50,
-            near: 0,
+            aspect: ratio,
+            near: 0.1,
             far: 1000
         })
     }
@@ -59,9 +60,15 @@ export class CameraSystem implements System {
         } else {
             this.center.z = cameraZ * 2;
         }
-        this.camera.position = this.tempPosition.lerp(this.center.sub(this.levelPosition), this.scaleT);
+        this.camera.position = this.tempPosition.lerp(this.center, this.scaleT);
         this.camera.position.z = Math.max(this.camera.position.z, 0.0001);
-        this.camera.orthographic({ zoom: 50 / this.camera.position.z });
+        if(this.isGltf) {
+            this.camera.perspective({
+                fov: 45,
+            });
+        } else {
+            this.camera.orthographic({ zoom: 50 / this.camera.position.z });
+        }
     }
     rollCamera(tag: "right" | "left" | "up" | "down", isMazeMode: boolean) {
         const rotation = this.rotation;

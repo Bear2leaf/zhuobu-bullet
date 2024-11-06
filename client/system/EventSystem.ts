@@ -5,7 +5,6 @@ import { CameraSystem } from "./CameraSystem.js";
 import LevelSystem from "./LevelSystem.js";
 import { RenderSystem } from "./RenderSystem.js";
 import UISystem from "./UISystem.js";
-import { Mat4, Quat, Transform, Vec2, Vec3 } from "ogl";
 import Button from "../ui/Button.js";
 import Switch from "../ui/Switch.js";
 import Sprite from "../ui/Sprite.js";
@@ -77,6 +76,9 @@ export class EventSystem implements System {
             }
         }
         this.inputSystem.onupdateIndicator = (delta: number) => {
+            if (this.uiSystem.freeze) {
+                return;
+            }
             this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(delta);
             this.updateLevelUI();
         }
@@ -86,7 +88,7 @@ export class EventSystem implements System {
             if (level instanceof GltfLevel) {
                 specials.add(index);
             }
-            
+
         }
         this.uiSystem.getUIElement<LevelIndicator>("indicator").updateTotal(this.renderSystem.levelRoot.children.length - 1, specials);
         this.inputSystem.onswipe = (dir) => {
@@ -128,7 +130,7 @@ export class EventSystem implements System {
             this.availableLevels.add(this.levelSystem.current);
         }
         // this.updateSwitch("pause", true);
-        
+
         this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(this.levelSystem.current, true);
         this.updateLevelUI();
         this.checkCharset();
@@ -137,8 +139,10 @@ export class EventSystem implements System {
         this.cameraSystem.resetRotation();
         if (this.levelSystem.isCurrentGltfLevel()) {
             this.freezeRotation = true;
+            this.cameraSystem.isGltf = true;
         } else {
             this.freezeRotation = false;
+            this.cameraSystem.isGltf = false;
         }
         // if (this.availableLevels.has(this.levelSystem.current + 1)) {
         //     this.updateSprite("next", true);

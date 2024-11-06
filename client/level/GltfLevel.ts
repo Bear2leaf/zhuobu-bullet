@@ -1,4 +1,4 @@
-import { Transform, Texture, RenderTarget, OGLRenderingContext, GLTF, Vec2, Vec3 } from "ogl";
+import { Transform, Texture, RenderTarget, OGLRenderingContext, GLTF, Vec2, Vec3, Mesh } from "ogl";
 import { TileLayer } from "../tiled/TileLayer";
 import { Level } from "./Level";
 
@@ -23,12 +23,19 @@ export class GltfLevel implements Level {
         }
         levelNode.setParent(this.node);
         levelNode.traverse(node => {
-            this.min.x = Math.min(this.min.x, node.position.x);
-            this.min.y = Math.min(this.min.y, node.position.y);
-            this.min.z = Math.min(this.min.z, node.position.z);
-            this.max.x = Math.max(this.max.x, node.position.x);
-            this.max.y = Math.max(this.max.y, node.position.y);
-            this.max.z = Math.max(this.max.z, node.position.z);
+            if (node instanceof Mesh) {
+                node.geometry.computeBoundingBox();
+                const min = node.geometry.bounds.min;
+                const max = node.geometry.bounds.max;
+                min.applyMatrix4(node.worldMatrix);
+                max.applyMatrix4(node.worldMatrix);
+                this.min.x = Math.min(this.min.x, min.x);
+                this.min.y = Math.min(this.min.y, min.y);
+                this.min.z = Math.min(this.min.z, min.z);
+                this.max.x = Math.max(this.max.x, max.x);
+                this.max.y = Math.max(this.max.y, max.y);
+                this.max.z = Math.max(this.max.z, max.z);
+            }
         })
         this.requested = true;
     }

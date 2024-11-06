@@ -21,7 +21,7 @@ export default class Engine {
     private readonly quat = new Quat()
     private readonly matrix = new Mat4();
     constructor(width: number, height: number, dpr: number, canvas: HTMLCanvasElement, private readonly audioSystem: AudioSystem) {
-        const renderer = this.renderer = new Renderer({ dpr, canvas });
+        const renderer = this.renderer = new Renderer({ dpr, canvas, antialias: true });
         const gl = renderer.gl;
         gl.clearColor(0.3, 0.3, 0.6, 1);
         renderer.setSize(width, height);

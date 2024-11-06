@@ -65,7 +65,6 @@ export default class LevelIndicator implements UIElement {
         this.getMesh().program = program;
         this.getMesh().geometry = geometry;
         this.getMesh().mode = gl.POINTS;
-        this.getMesh().geometry.computeBoundingSphere();
     }
     updateCurrent(delta: number, exact = false) {
         if (exact) {
