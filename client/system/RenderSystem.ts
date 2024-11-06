@@ -157,7 +157,6 @@ export class RenderSystem implements System {
     }
     initCurrentLevel(current: number) {
         const level = this.levelSystem.collections[current];
-        console.log(level)
         if (level.requested) {
             return;
         }

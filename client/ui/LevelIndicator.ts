@@ -29,7 +29,7 @@ export default class LevelIndicator implements UIElement {
             this.uCurrent.value = Math.max(this.next, this.uCurrent.value - timeStamp);
         }
     }
-    updateTotal(total: number) {
+    updateTotal(total: number, specials: Set<number>) {
         this.total = total;
         const vertexPrefix =  /* glsl */ `#version 300 es
                 #define attribute in
@@ -54,13 +54,13 @@ export default class LevelIndicator implements UIElement {
                 uCurrent: this.uCurrent
             }
         });
-        const arr = new Float32Array(this.total);
-        for (let i = 0; i < this.total; i++) {
-            arr[i] = i;
+        const arr = new Float32Array(this.total * 2);
+        for (let i = 0; i < this.total * 2; i += 2) {
+            arr[i] = i / 2;
+            arr[i + 1] = specials.has(i / 2) ? 1 : 0;
         }
-
         const geometry = new Geometry(gl, {
-            position: { size: 1, data: arr },
+            position: { size: 2, data: arr },
         });
         this.getMesh().program = program;
         this.getMesh().geometry = geometry;

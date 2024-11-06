@@ -11,6 +11,7 @@ import Switch from "../ui/Switch.js";
 import Sprite from "../ui/Sprite.js";
 import AnimationSystem from "./AnimationSystem.js";
 import LevelIndicator from "../ui/LevelIndicator.js";
+import { GltfLevel } from "../level/GltfLevel.js";
 export class EventSystem implements System {
     private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关";
@@ -79,7 +80,15 @@ export class EventSystem implements System {
             this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(delta);
             this.updateLevelUI();
         }
-        this.uiSystem.getUIElement<LevelIndicator>("indicator").updateTotal(this.renderSystem.levelRoot.children.length - 1);
+        const specials = new Set();
+        for (let index = 0; index < this.levelSystem.collections.length; index++) {
+            const level = this.levelSystem.collections[index];
+            if (level instanceof GltfLevel) {
+                specials.add(index);
+            }
+            
+        }
+        this.uiSystem.getUIElement<LevelIndicator>("indicator").updateTotal(this.renderSystem.levelRoot.children.length - 1, specials);
         this.inputSystem.onswipe = (dir) => {
             if (this.freezeRotation) {
                 return;

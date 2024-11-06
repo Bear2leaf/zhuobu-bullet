@@ -1,11 +1,14 @@
-attribute float position;
+attribute vec2 position;
 
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 
 uniform float uCurrent;
 
+varying float vType;
+
 void main() {
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(float(position - uCurrent), 0.0, 0.0, 1.0);
-    gl_PointSize = clamp(10.0 / abs(position - uCurrent), 10.0, 30.0);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position.x - uCurrent, 0.0, 0.0, 1.0);
+    gl_PointSize = clamp(10.0 / abs(position.x - uCurrent), 10.0, 30.0);
+    vType = position.y;
 }
