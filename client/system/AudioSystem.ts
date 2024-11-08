@@ -8,39 +8,39 @@ export default class AudioSystem implements System {
     private readonly demoAudio = new DemoAudio;
     private readonly bgmAudio = new BgmAudio;
     private readonly bleepAudio = new BleepAudio;
-    private readonly context: AudioContext = this.device.createWebAudioContext();
-    private readonly gain = this.context.createGain();
-    constructor(private readonly device: Device) { }
+    private _context?: AudioContext;
+    private _master?: GainNode;
+    private get context() {
+        if (!this._context) {
+            throw new Error("audio context not initialized");
+        }
+        return this._context;
+    }
+    private get master() {
+        if (!this._master) {
+            throw new Error("audio master not initialized");
+        }
+        return this._master;
+    }
+
     async load(): Promise<void> {
         this.bleepAudio.setBuffer((await (await fetch("/resources/audio/bleep.wav")).arrayBuffer()));
         this.bgmAudio.setBuffer((await (await fetch("/resources/audio/happy_adveture.mp3")).arrayBuffer()));
     }
-    isOn(): boolean {
-        return !!this.gain.gain.value;
-    }
-    initAudioContext() {
-        const context = this.context;
-        [
-            this.demoAudio,
-            this.bgmAudio,
-            this.bleepAudio,
-        ].forEach(clip => {
-            clip.setContext(context);
-        });
-    }
     init() {
+        this._master = this.context.createGain();
+        this.master.gain.value = 1.0;
         [
             this.demoAudio,
             this.bgmAudio,
             this.bleepAudio,
         ].forEach(clip => {
             clip.init();
-            clip.connect(this.gain);
+            clip.connect(this.master);
         });
-        this.gain.connect(this.context.destination);
+        this.master.connect(this.context.destination);
     }
-    play(tag?: string) {
-        this.bleepAudio.playOnce();
+    start(): void {
     }
     update() {
         [
@@ -50,13 +50,29 @@ export default class AudioSystem implements System {
             clip.update();
         });
     }
+    initAudioContext(context: AudioContext) {
+        [
+            this.demoAudio,
+            this.bgmAudio,
+            this.bleepAudio,
+        ].forEach(clip => {
+            clip.setContext(context);
+        });
+        this._context = context;
+    }
+    isOn(): boolean {
+        return !!this.master.gain.value;
+    }
+    play(tag?: string) {
+        this.bleepAudio.playOnce();
+    }
 
     toggle() {
         this.mute = !this.mute;
         if (this.mute) {
-            this.gain.gain.value = 0.0;
+            this.master.gain.value = 0.0;
         } else {
-            this.gain.gain.value = 1.0;
+            this.master.gain.value = 1.0;
         }
     }
 }

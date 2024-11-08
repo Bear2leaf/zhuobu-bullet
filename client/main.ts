@@ -15,20 +15,12 @@ export async function mainMinigame() {
     return device;
 }
 async function start(device: Device) {
-    const {
-        windowHeight: height,
-        windowWidth: width,
-        pixelRatio: dpr
-    }= device.getWindowInfo();
-    const audio = new AudioSystem(device);
 
-    const engine = new Engine(width, height, dpr, device.getCanvasGL(), audio);
-    device.onmessage = engine.physicsSystem.onmessage.bind(engine.physicsSystem);
+    const engine = new Engine(device);
     let delta = 0;
     let last = 0;
+    engine.init();
     await engine.load();
-    device.createWorker("dist/worker/main.js");
-    engine.physicsSystem.sendmessage = device.sendmessage.bind(device);
     function update(t: number) {
         requestAnimationFrame((t) => update(t));
         delta = (t - last) / 1000;
@@ -36,9 +28,9 @@ async function start(device: Device) {
         engine.loop(delta);
     }
     requestAnimationFrame((t) => {
-        last = t;
         engine.start();
         update(t);
+        last = t;
     });
 }
 export {

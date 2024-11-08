@@ -13,84 +13,89 @@ export default class PhysicsSystem implements System {
     private readonly gravityScale = 100;
     private readonly gravity = new Vec3();
     private readonly acc = new Vec3(0, -this.gravityScale, 0);
+    private _levelNode?: Transform;
+    onupdatevelocity: any;
+    onpause: any;
+    levelSystem: any;
+    onresetworld: any;
+    onremovemesh: any;
+    onteleport: any;
     private get levelNode() {
-        return this.levelSystem.collections[this.levelSystem.current].node;
+        if (!this._levelNode) {
+            throw new Error("levelNode not initialized");
+        }
+        return this._levelNode;
     }
 
-    constructor(
-        private readonly levelSystem: LevelSystem
-        , private readonly audio: AudioSystem
-        , private readonly eventSystem: EventSystem
-    ) {
-    }
     async load(): Promise<void> {
     }
-    init(): void {
-        const sendmessage = this.sendmessage;
-        if (!sendmessage) {
-            throw new Error("sendmessage is undefined");
+    setLevelNode(levelNode: Transform) {
+        this._levelNode = levelNode;
+    }
+    addMesh(name: string, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>, convex?: boolean) {
+        if (!name) {
+            throw new Error("name is undefined");
         }
-        this.levelSystem.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>, convex?: boolean) => {
-            if (!name) {
-                throw new Error("name is undefined");
-            }
-            this.objectNames.add(name);
-            const mat4 = new Mat4(...transform)
-            const position = new Vec3();
-            const quaternion = new Quat();
-            const scale = new Vec3();
-            mat4.getTranslation(position);
-            mat4.getRotation(quaternion);
-            mat4.getScaling(scale);
-            sendmessage({
-                type: "addMesh",
-                data: { vertices: [...vertices], indices: [...indices], propertities, name, transform: [...position, ...quaternion, ...scale], convex }
-            })
-        }
-        this.levelSystem.onaddball = (transform, isBall) => {
-            this.addBall(transform, isBall)
-        }
-        this.levelSystem.onenablemesh = (name: string | undefined) => {
-            sendmessage({
-                type: "enableMesh",
-                data: name || ""
-            })
-        }
-        this.eventSystem.onteleport = (from: string, to: string) => {
-            sendmessage({
-                type: "teleport",
-                data: [from, to]
-            })
-        }
-        this.levelSystem.ondisablemesh = this.disableMesh.bind(this);
-        this.eventSystem.onpause = () => sendmessage({
-            type: "pause"
-        })
-        this.eventSystem.onrelease = () => sendmessage({
-            type: "release"
-        })
-        this.eventSystem.onremovemesh = (name) => {
-            this.objectNames.delete(name);
-            sendmessage({
-                type: "removeMesh",
-                data: name
-            })
-        }
-        this.eventSystem.onupdatevelocity = (name, x, y, z) => {
-            sendmessage({
-                type: "updateCharacterVelocity",
-                data: {
-                    name,
-                    x,
-                    y,
-                    z,
-                }
-            })
-        }
-        this.eventSystem.onresetworld = () => sendmessage({
-            type: "resetWorld",
+        this.objectNames.add(name);
+        const mat4 = new Mat4(...transform)
+        const position = new Vec3();
+        const quaternion = new Quat();
+        const scale = new Vec3();
+        mat4.getTranslation(position);
+        mat4.getRotation(quaternion);
+        mat4.getScaling(scale);
+        this.sendmessage && this.sendmessage({
+            type: "addMesh",
+            data: { vertices: [...vertices], indices: [...indices], propertities, name, transform: [...position, ...quaternion, ...scale], convex }
         })
     }
+    enableMesh(name: string | undefined) {
+        this.sendmessage && this.sendmessage({
+            type: "enableMesh",
+            data: name || ""
+        })
+    }
+    teleport(from: string, to: string) {
+        this.sendmessage && this.sendmessage({
+            type: "teleport",
+            data: [from, to]
+        })
+    }
+    pause() {
+        this.sendmessage && this.sendmessage({
+            type: "pause"
+        })
+    }
+    release() {
+        this.sendmessage && this.sendmessage({
+            type: "release"
+        })
+    }
+    removeMesh(name: string) {
+        this.objectNames.delete(name);
+        this.sendmessage && this.sendmessage({
+            type: "removeMesh",
+            data: name
+        })
+    }
+    updateVelocity(name: string, x: number, y: number, z: number) {
+        this.sendmessage && this.sendmessage({
+            type: "updateCharacterVelocity",
+            data: { name, x, y, z }
+        })
+    }
+    resetWorld() {
+        this.sendmessage && this.sendmessage({
+            type: "resetWorld"
+        })
+    }
+    init(): void {
+    }
+    start(): void {
+    }
+
+
+
     sendmessage?: (message: MainMessage) => void;
     onmessage(message: WorkerMessage): void {
         const sendmessage = this.sendmessage;
@@ -102,16 +107,16 @@ export default class PhysicsSystem implements System {
             this.dirSet.clear();
             this.objectNames.clear();
             this.currentCollisions.clear();
-            this.audio.play();
-            this.eventSystem.requestLevel();
+            this.onplayaudio && this.onplayaudio();
+            this.onrequestlevel && this.onrequestlevel();
         } else if (message.type === "ready") {
             sendmessage({
                 type: "resetWorld",
             });
         } else if (message.type === "removeBody") {
-            this.eventSystem.hideMesh(message.data);
+            this.onhideMesh && this.onhideMesh(message.data);
         } else if (message.type === "update") {
-            this.eventSystem.updateMesh(message);
+            this.onupdateMesh && this.onupdateMesh(message.objects);
         } else if (message.type === "collisionEnter") {
             this.handleCollision(message.data);
             this.currentCollisions.add(message.data[1]);
@@ -147,28 +152,28 @@ export default class PhysicsSystem implements System {
     handleCollision(data: [string, string]) {
         // console.log("collision: ", ...data)
         if (data[0] === "Ball") {
-            if (this.levelSystem.checkNeedExit(data[1])) {
-                this.eventSystem.onupdatevelocity && this.eventSystem.onupdatevelocity(data[0], 0, 0, 0);
-                this.eventSystem.onpause && this.eventSystem.onpause();
+            if (this.oncheckneedexit && this.oncheckneedexit(data[1])) {
+                this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 0, 0);
+                this.onpause && this.onpause();
                 this.levelSystem.updateLevel(false);
-                this.eventSystem.onresetworld && this.eventSystem.onresetworld();
-            } else if (this.levelSystem.checkGetPickaxe(data[1])) {
+                this.onresetworld && this.onresetworld();
+            } else if (this.oncheckgetpickaxe && this.oncheckgetpickaxe(data[1])) {
                 this.levelSystem.getPickaxe();
-                this.eventSystem.onremovemesh && this.eventSystem.onremovemesh(data[1])
-            } else if (this.levelSystem.checkRock(data[1])) {
+                this.onremovemesh && this.onremovemesh(data[1])
+            } else if (this.oncheckrock && this.oncheckrock(data[1])) {
                 this.levelSystem.removeRock(data[1]);
-                this.eventSystem.onremovemesh && this.eventSystem.onremovemesh(data[1])
-            } else if (this.levelSystem.checkTeleport(data[1])) {
+                this.onremovemesh && this.onremovemesh(data[1])
+            } else if (this.oncheckteleport && this.oncheckteleport(data[1])) {
                 const to = this.levelSystem.getTeleportDestinationName();
-                this.eventSystem.onteleport && this.eventSystem.onteleport(data[0], to);
-            } else if (this.levelSystem.checkBeltUp(data[1])) {
+                this.onteleport && this.onteleport(data[0], to);
+            } else if (this.oncheckbeltup && this.oncheckbeltup(data[1])) {
                 const node = this.levelSystem.getCurrentLevelNode(data[1]);
                 if (!node) {
                     throw new Error("node is undefined");
                 }
                 const transform = node.matrix;
                 this.addBall(transform, true);
-                this.eventSystem.onupdatevelocity && this.eventSystem.onupdatevelocity(data[0], 0, 200, 0);
+                this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 200, 0);
             }
         }
     }
@@ -180,12 +185,12 @@ export default class PhysicsSystem implements System {
                     return;
                 }
                 this.dirSet.add(dir);
-                this.levelSystem.hideDirEntity(dir);
-            } else if (this.levelSystem.getDirEntities(dir).some((name) => this.currentCollisions.has(name))) {
+                this.onhidedirentity && this.onhidedirentity(dir);
+            } else if (this.ongetdirentities && this.ongetdirentities(dir).some((name) => this.currentCollisions.has(name))) {
 
             } else {
                 this.dirSet.delete(dir);
-                this.levelSystem.showDirEntity(dir);
+                this.onshowdirentity && this.onshowdirentity(dir);
             }
         }
         dir = "Up";
@@ -195,12 +200,12 @@ export default class PhysicsSystem implements System {
                     return;
                 }
                 this.dirSet.add(dir);
-                this.levelSystem.hideDirEntity(dir);
-            } else if (this.levelSystem.getDirEntities(dir).some((name) => this.currentCollisions.has(name))) {
+                this.onhidedirentity && this.onhidedirentity(dir);
+            } else if (this.ongetdirentities && this.ongetdirentities(dir).some((name) => this.currentCollisions.has(name))) {
 
             } else {
                 this.dirSet.delete(dir);
-                this.levelSystem.showDirEntity(dir);
+                this.onshowdirentity && this.onshowdirentity(dir);
             }
         }
         dir = "Left";
@@ -210,12 +215,12 @@ export default class PhysicsSystem implements System {
                     return;
                 }
                 this.dirSet.add(dir);
-                this.levelSystem.hideDirEntity(dir);
-            } else if (this.levelSystem.getDirEntities(dir).some((name) => this.currentCollisions.has(name))) {
+                this.onhidedirentity && this.onhidedirentity(dir);
+            } else if (this.ongetdirentities && this.ongetdirentities(dir).some((name) => this.currentCollisions.has(name))) {
 
             } else {
                 this.dirSet.delete(dir);
-                this.levelSystem.showDirEntity(dir);
+                this.onshowdirentity && this.onshowdirentity(dir);
             }
         }
         dir = "Right";
@@ -225,19 +230,34 @@ export default class PhysicsSystem implements System {
                     return;
                 }
                 this.dirSet.add(dir);
-                this.levelSystem.hideDirEntity(dir);
-            } else if (this.levelSystem.getDirEntities(dir).some((name) => this.currentCollisions.has(name))) {
+                this.onhidedirentity && this.onhidedirentity(dir);
+            } else if (this.ongetdirentities && this.ongetdirentities(dir).some((name) => this.currentCollisions.has(name))) {
 
             } else {
                 this.dirSet.delete(dir);
-                this.levelSystem.showDirEntity(dir);
+                this.onshowdirentity && this.onshowdirentity(dir);
             }
         }
     }
+    onplayaudio?: () => void;
+    onrequestlevel?: () => void;
+    onhideMesh?: (name: string) => void;
+    onupdateMesh?: (data: PhysicsObject[]) => void;
+    oncheckneedexit?: (name: string) => boolean;
+    oncheckgetpickaxe?: (name: string) => boolean;
+    oncheckrock?: (name: string) => boolean;
+    oncheckteleport?: (name: string) => boolean;
+    oncheckbeltup?: (name: string) => boolean;
+    ongetdirentities?: (dir: "Down" | "Up" | "Left" | "Right") => string[];
+    onhidedirentity?: (dir: "Down" | "Up" | "Left" | "Right") => void
+    onshowdirentity?: (dir: "Down" | "Up" | "Left" | "Right") => void
     update(timeStamp: number): void {
+        if (this._levelNode === undefined) {
+            return;
+        }
         this.updateDirObjects();
         const objects: PhysicsObject[] = [];
-        this.levelNode?.traverse((node) => {
+        this.levelNode.traverse((node) => {
             if (node.name && this.objectNames.has(node.name) && !(node instanceof Mesh)) {
                 const physicsObject: PhysicsObject = [
                     node.position.x,

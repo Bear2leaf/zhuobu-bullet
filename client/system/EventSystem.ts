@@ -11,6 +11,10 @@ import Sprite from "../ui/Sprite.js";
 import AnimationSystem from "./AnimationSystem.js";
 import LevelIndicator from "../ui/LevelIndicator.js";
 import { GltfLevel } from "../level/GltfLevel.js";
+import PhysicsSystem from "./PhysicsSystem.js";
+import Device from "../device/Device.js";
+import { RenderTarget, Texture, OGLRenderingContext, GLTF, Renderer } from "ogl";
+import { PhysicsObject } from "../../worker/ammo.worker.js";
 export class EventSystem implements System {
     private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
     private readonly continueMsg = "恭喜过关！\n点击进入下一关";
@@ -21,18 +25,26 @@ export class EventSystem implements System {
     private continueButtonResolve?: (value: unknown) => void;
     private freezeRotation: boolean = false;
     constructor(
+        private readonly device: Device,
         private readonly inputSystem: InputSystem,
         private readonly cameraSystem: CameraSystem,
         private readonly levelSystem: LevelSystem,
         private readonly renderSystem: RenderSystem,
         private readonly uiSystem: UISystem,
-        private readonly audio: AudioSystem,
-        private readonly animationSystem: AnimationSystem
-
+        private readonly audioSystem: AudioSystem,
+        private readonly animationSystem: AnimationSystem,
+        private readonly physicsSystem: PhysicsSystem
     ) { }
+    start(): void {
+        const device = this.device;
+        device.onmessage = this.physicsSystem.onmessage.bind(this.physicsSystem);
+        device.createWorker("dist/worker/main.js");
+        this.physicsSystem.sendmessage = device.sendmessage.bind(device);
+    }
     init(): void {
+        const device = this.device;
         this.availableLevels.add(0);
-        const audio = this.audio;
+        const audio = this.audioSystem;
         this.ontoggleaudio = () => {
             audio.toggle();
             this.updateSwitch("audio", audio.isOn())
@@ -46,6 +58,59 @@ export class EventSystem implements System {
                 this.uiSystem.getUIElement<LevelIndicator>("indicator").confirm();
                 this.onrelease && this.onrelease();
             }
+        }
+        this.levelSystem.collections.forEach((level, index) => {
+            level.init();
+            level.node.setParent(this.renderSystem.levelRoot);
+        });
+        this.physicsSystem.onrequestlevel = this.requestLevel.bind(this);
+        this.physicsSystem.onplayaudio = this.audioSystem.play.bind(this.audioSystem);
+        this.physicsSystem.onhideMesh = this.hideMesh.bind(this);
+        this.physicsSystem.onupdateMesh = this.updateMesh.bind(this);
+        this.physicsSystem.oncheckneedexit = this.levelSystem.checkNeedExit.bind(this.levelSystem);
+        this.physicsSystem.oncheckgetpickaxe = this.levelSystem.checkGetPickaxe.bind(this.levelSystem);
+        this.physicsSystem.oncheckrock = this.levelSystem.checkRock.bind(this.levelSystem);
+        this.physicsSystem.oncheckteleport = this.levelSystem.checkTeleport.bind(this.levelSystem);
+        this.physicsSystem.oncheckbeltup = this.levelSystem.checkBeltUp.bind(this.levelSystem);
+        this.physicsSystem.ongetdirentities = this.levelSystem.getDirEntities.bind(this.levelSystem);
+        this.physicsSystem.onhidedirentity = this.levelSystem.hideDirEntity.bind(this.levelSystem);
+        this.physicsSystem.onshowdirentity = this.levelSystem.showDirEntity.bind(this.levelSystem);
+        this.renderSystem.onrender = (renderer) => {
+            const levelRoot = this.renderSystem.levelRoot;
+            const uiRoot = this.renderSystem.uiRoot;
+            const camera = this.cameraSystem.camera;
+            const uiCamera = this.cameraSystem.uiCamera;
+            renderer.render({ scene: levelRoot, camera: camera });
+            renderer.render({ scene: uiRoot, camera: uiCamera, clear: false });
+        }
+        this.renderSystem.oninitanimations = (gltf) => {
+            this.animationSystem.initAnimations(gltf);
+        }
+        this.renderSystem.oninitcameras = (gl: OGLRenderingContext) => {
+            this.cameraSystem.initCameras(gl, device.getWindowInfo());
+        }
+        this.renderSystem.oninitui = (gl: OGLRenderingContext) => {
+            this.uiSystem.initUI(this.renderSystem.uiRoot, gl);
+            this.uiSystem.getUIElement<LevelIndicator>("indicator").onselectlevel = (level) => {
+                if (this.levelSystem.current !== level) {
+                    this.levelSystem.current = level;
+                    this.isContinue = false;
+                    this.pause = false;
+                    this.onresetworld && this.onresetworld();
+                }
+            };
+        }
+        this.renderSystem.oninitlevel = (current: number, renderTarget: RenderTarget, textures: Texture[], gl: OGLRenderingContext, gltf: GLTF | undefined, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string) => {
+            const level = this.levelSystem.collections[current];
+            this.physicsSystem.setLevelNode(level.node);
+            if (level.requested) {
+                return;
+            }
+            level.setTextures(textures);
+            level.initRenderTarget(renderTarget)
+            level.initGraphicsBuffer(gl, vertex, fragment, spriteVertex, spriteFragment, renderTarget)
+            level.initGraphics(renderTarget, gl, spriteVertex, spriteFragment, vertex, fragment);
+            level.initGltfLevel(gltf);
         }
         this.inputSystem.onclick = (tag) => {
             if (this.uiSystem.freeze) {
@@ -87,29 +152,26 @@ export class EventSystem implements System {
             this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(delta);
             this.updateLevelUI();
         }
-        const specials = new Set<number>();
-        for (let index = 0; index < this.levelSystem.collections.length; index++) {
-            const level = this.levelSystem.collections[index];
-            if (level instanceof GltfLevel) {
-                specials.add(index);
+        this.renderSystem.oninitlevels = () => {
+            const specials = new Set<number>();
+            for (let index = 0; index < this.levelSystem.collections.length; index++) {
+                const level = this.levelSystem.collections[index];
+                if (level instanceof GltfLevel) {
+                    specials.add(index);
+                }
             }
+            this.uiSystem.getUIElement<LevelIndicator>("indicator").updateTotal(this.renderSystem.levelRoot.children.length - 1, specials);
 
-        }
-        this.uiSystem.getUIElement<LevelIndicator>("indicator").updateTotal(this.renderSystem.levelRoot.children.length - 1, specials);
+        };
         this.inputSystem.onswipe = (dir) => {
             if (this.freezeRotation) {
                 return;
             }
             this.cameraSystem.rollCamera(dir, this.levelSystem.isMazeMode)
         }
-        this.uiSystem.getUIElement<LevelIndicator>("indicator").onselectlevel = (level) => {
-            if (this.levelSystem.current !== level) {
-                this.levelSystem.current = level;
-                this.isContinue = false;
-                this.pause = false;
-                this.onresetworld && this.onresetworld();
-            }
-        };
+        this.renderSystem.initRenderer(device.getCanvasGL(), device.getWindowInfo());
+        this.audioSystem.initAudioContext(device.createWebAudioContext());
+        this.inputSystem.initInput(device.getWindowInfo(), this.cameraSystem.camera, this.uiSystem.all);
     }
     updateLevelUI() {
         const current = this.uiSystem.getUIElement<LevelIndicator>("indicator").getCurrent();
@@ -171,8 +233,8 @@ export class EventSystem implements System {
     hideMesh(data: string) {
         this.renderSystem.hideMesh(data, this.levelSystem);
     }
-    updateMesh(message: { type: "update"; objects: [number, number, number, number, number, number, number, string][]; }) {
-        this.renderSystem.updateMesh(message, this.levelSystem)
+    updateMesh(objects: PhysicsObject[]) {
+        this.renderSystem.updateMesh(objects, this.levelSystem)
     }
     private updateButton(name: string, visible?: boolean) {
         if (visible === undefined) {

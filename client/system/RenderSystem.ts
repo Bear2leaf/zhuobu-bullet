@@ -1,8 +1,8 @@
 import { Camera, Geometry, GLTF, GLTFLoader, Mesh, OGLRenderingContext, Plane, Program, Renderer, RenderTarget, Sphere, Texture, Transform, Vec2, Vec3 } from "ogl";
 import { System } from "./System.js";
-import { Tiled } from "../misc/TiledParser.js";
+import { Convert, Tiled } from "../misc/TiledParser.js";
 import LevelSystem from "./LevelSystem.js";
-import { WorkerMessage } from "../../worker/ammo.worker.js";
+import { PhysicsObject, WorkerMessage } from "../../worker/ammo.worker.js";
 import { radius } from "../misc/radius.js";
 import DracoTask from "../draco/DracoTask.js";
 import { createProgram } from "../misc/createProgram.js";
@@ -19,24 +19,31 @@ export class RenderSystem implements System {
     private spriteVertex: string = "";
     private gltfFragment: string = "";
     private gltfVertex: string = "";
-    get gl() {
-        return this.renderer.gl;
-    }
     private readonly textures: Texture[] = [];
     private readonly renderTargets: RenderTarget[] = [];
     private gltf?: GLTF;
-    constructor(private readonly renderer: Renderer
-        , private readonly camera: Camera
-        , private readonly uiCamera: Camera
-        , private readonly levelSystem: LevelSystem
-        , private readonly animationSystem: AnimationSystem
-    ) {
-    }
-    tiledData?: Tiled;
-    async load(): Promise<void> {
-        if (!this.tiledData) {
-            throw new Error("tiledData is undefined");
+    private readonly images: string[] = [];
+    private _renderer?: Renderer;
+    oninitcameras?: (gl: OGLRenderingContext) => void;
+    oninitui?: (gl: OGLRenderingContext) => void;
+    oninitlevels?: () => void;
+
+    private get renderer() {
+        if (this._renderer === undefined) {
+            throw new Error("renderer is not initialized");
         }
+        return this._renderer;
+    }
+    private get gl() {
+        return this.renderer.gl;
+    }
+    initRenderer(canvas: HTMLCanvasElement, windowInfo: WechatMinigame.WindowInfo) {
+        const renderer = new Renderer({ dpr: windowInfo.pixelRatio, canvas, antialias: true, width: windowInfo.windowWidth, height: windowInfo.windowHeight });
+        this._renderer = renderer;
+        this.oninitcameras && this.oninitcameras(renderer.gl);
+        this.oninitui && this.oninitui(renderer.gl);
+    }
+    async load(): Promise<void> {
         this.ballVertex = await (await fetch("resources/glsl/simple.vert.sk")).text();
         this.ballFragment = await (await fetch("resources/glsl/simple.frag.sk")).text();
         this.vertex = await (await fetch("resources/glsl/level.vert.sk")).text();
@@ -46,23 +53,21 @@ export class RenderSystem implements System {
         this.gltfVertex = await (await fetch("resources/glsl/gltf.vert.sk")).text();
         this.gltfFragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
         const gl = this.gl;
-        for await (const tileset of this.tiledData.tilesets) {
-            if (tileset.image) {
-                await new Promise((resoive) => {
-                    const image = new Image();
-                    image.onload = () => {
-                        this.textures.push(new Texture(gl, {
-                            image,
-                            width: image.width,
-                            height: image.height,
-                            magFilter: gl.NEAREST,
-                            minFilter: gl.NEAREST
-                        }));
-                        resoive(void (0));
-                    };
-                    image.src = `resources/tiled/${tileset.image}`;
-                })
-            }
+        for await (const imageSrc of this.images) {
+            await new Promise((resoive) => {
+                const image = new Image();
+                image.onload = () => {
+                    this.textures.push(new Texture(gl, {
+                        image,
+                        width: image.width,
+                        height: image.height,
+                        magFilter: gl.NEAREST,
+                        minFilter: gl.NEAREST
+                    }));
+                    resoive(void (0));
+                };
+                image.src = `resources/tiled/${imageSrc}`;
+            })
         }
 
 
@@ -139,9 +144,12 @@ export class RenderSystem implements System {
                 }
             })
         })
-        this.animationSystem.initAnimations(this.gltf);
+        this.oninitanimations && this.oninitanimations(this.gltf);
     }
+    oninitanimations?: (gltf: GLTF) => void;
     init(): void {
+    }
+    start(): void {
         for (const scene of this.gltf?.scene || []) {
             for (const collection of scene.children) {
                 if (collection.name === "others") {
@@ -150,35 +158,24 @@ export class RenderSystem implements System {
                 }
             }
         }
-        for (const level of this.levelSystem.collections) {
-            level.init()
-            level.node.setParent(this.levelRoot);
-        }
+        this.oninitlevels && this.oninitlevels();
     }
+    update(timeStamp: number): void {
+        this.onrender && this.onrender(this.renderer);
+    }
+    onrender?: (renderer: Renderer) => void;
     initCurrentLevel(current: number) {
-        const level = this.levelSystem.collections[current];
-        if (level.requested) {
-            return;
-        }
         const renderTarget = new RenderTarget(this.gl, {
             minFilter: this.gl.NEAREST,
             magFilter: this.gl.NEAREST,
             depth: false
         });
         this.renderTargets.push(renderTarget);
-        level.setTextures(this.textures);
-        level.initRenderTarget(renderTarget)
-        level.initGraphicsBuffer(this.gl, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment, renderTarget)
-        level.initGraphics(renderTarget, this.gl, this.spriteVertex, this.spriteFragment, this.vertex, this.fragment);
-        level.initGltfLevel(this.gltf);
+        this.oninitlevel && this.oninitlevel(current, renderTarget, this.textures, this.gl, this.gltf, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment);
+        
 
     }
-    update(timeStamp: number): void {
-
-        this.renderer.render({ scene: this.levelRoot, camera: this.camera });
-        this.renderer.render({ scene: this.uiRoot, camera: this.uiCamera, clear: false });
-    }
-
+    oninitlevel?: (current: number, renderTarget: RenderTarget, textures: Texture[], gl: OGLRenderingContext, gltf: GLTF | undefined, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string) => void;
     hideMesh(name: string, levelSystem: LevelSystem) {
         const scene = this.levelRoot;
         let child: Transform | undefined;
@@ -200,18 +197,18 @@ export class RenderSystem implements System {
         child && (child.visible = true);
     }
 
-    updateMesh(message: WorkerMessage & { type: "update" }, levelSystem: LevelSystem) {
+    updateMesh(objects: PhysicsObject[], levelSystem: LevelSystem) {
         const scene = this.levelRoot;
         scene.visible = true;
-        for (let index = 0; index < message.objects.length; index++) {
+        for (let index = 0; index < objects.length; index++) {
             let child: Transform | undefined;
-            const name = message.objects[index][7];
+            const name = objects[index][7];
             child = scene.children.find(child => child.name === name);
             if (child === undefined) {
                 child = scene.children[levelSystem.current + 1].children.find(child => child.name === name);
             }
             if (child) {
-                const phyObject = message.objects[index];
+                const phyObject = objects[index];
                 child.position.fromArray(phyObject.slice(0, 3) as number[])
                 child.quaternion.fromArray(phyObject.slice(3, 7) as number[])
             }

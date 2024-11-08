@@ -50,7 +50,7 @@ export type MainMessage = {
 }
 export type WorkerMessage = {
     type: "update"
-    objects: [number, number, number, number, number, number, number, string][];
+    objects: PhysicsObject[];
 } | {
     type: "updateCharacter"
     data: PhysicsCharacterObject;

@@ -5,22 +5,39 @@ import UISystem from "./UISystem.js";
 
 export class InputSystem implements System {
     private readonly mouse = new Vec2();
-    constructor(private readonly width: number, private readonly height: number, private readonly camera: Camera, private readonly uiSystem: UISystem) {
+    private width: number = 0;
+    private height: number = 0;
+    private _camera?: Camera;
+    private get camera(): Camera {
+        if (!this._camera) {
+            throw new Error("camera not initialized");
+        }
+        return this._camera;
     }
+    private readonly all: UIElement[] = [];
     onupdateIndicator?: (delta: number) => void;
     onclick?: (tag?: string) => void;
     onswipe?: (direction: "left" | "right" | "up" | "down") => void;
     ondown?: () => void;
     onup?: () => void;
-    load(): Promise<void> {
-        throw new Error("Method not implemented.");
+    async load(): Promise<void> {
+    }
+    initInput(windowInfo: WechatMinigame.WindowInfo, camera: Camera, all: UIElement[]): void {
+        this.width = windowInfo.windowWidth;
+        this.height = windowInfo.windowHeight;
+        this._camera = camera;
+        this.all.splice(0, this.all.length, ...all);
+        this.init();
+        this.initTouchEvents();
     }
     init(): void {
+    }
+    start(): void {
         const mouse = this.mouse;
         const width = this.width;
         const height = this.height;
         const camera = this.camera;
-        const all = this.uiSystem.all;
+        const all = this.all;
         // Create a raycast object
         const raycast = new Raycast();
         let indicatorDelta = 0;
@@ -182,7 +199,6 @@ export class InputSystem implements System {
         })
     }
     update(): void {
-        throw new Error("Method not implemented.");
     }
 
 }

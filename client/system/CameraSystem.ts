@@ -4,8 +4,20 @@ import Device from "../device/Device.js";
 import { table } from "../misc/rotation.js";
 
 export class CameraSystem implements System {
-    readonly uiCamera: Camera;
-    readonly camera: Camera
+    private _uiCamera?: Camera;
+    private _camera?: Camera;
+     get uiCamera(): Camera {
+        if (!this._uiCamera) {
+            throw new Error("ui camera not initialized");
+        }
+        return this._uiCamera;
+    };
+     get camera(): Camera {
+        if (!this._camera) {
+            throw new Error("camera not initialized");
+        }
+        return this._camera;
+    };
     private readonly rotation: Vec3 = new Vec3;
     private readonly sceneRotation = new Vec3();
     private readonly sceneEuler = new Euler();
@@ -18,10 +30,14 @@ export class CameraSystem implements System {
     scale = 0;
     radius: number = 0;
     isGltf: boolean = false;
-    constructor(gl: OGLRenderingContext, windowInfo: [number, number, number]) {
-        const [width, height, dpr] = windowInfo;
+    async load(): Promise<void> {
+    }
+    initCameras(gl: OGLRenderingContext, windowInfo: WechatMinigame.WindowInfo): void {
+        const width = windowInfo.windowWidth;
+        const height = windowInfo.windowHeight;
+        const dpr = windowInfo.pixelRatio;
         const ratio = width / height;
-        this.uiCamera = new Camera(gl, {
+        this._uiCamera = new Camera(gl, {
             left: ratio * -5 * dpr,
             right: ratio * 5 * dpr,
             top: 5 * dpr,
@@ -31,7 +47,7 @@ export class CameraSystem implements System {
         })
         this.uiCamera.position.z = 1;
 
-        this.camera = new Camera(gl, {
+        this._camera = new Camera(gl, {
             left: -width * 50 / height,
             right: width * 50 / height,
             top: 50,
@@ -41,11 +57,9 @@ export class CameraSystem implements System {
             far: 1000
         })
     }
-    load(): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
     init(): void {
-        throw new Error("Method not implemented.");
+    }
+    start(): void {
     }
     update(timeStamp: number): void {
         this.t = Math.min(1, this.t + timeStamp);

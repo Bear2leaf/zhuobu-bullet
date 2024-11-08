@@ -30,7 +30,6 @@ export default class BgmAudio implements AudioClip {
     }
     init() {
         this.gain = this.context?.createGain();
-        this.playOnce();
     }
 
     update(): void {

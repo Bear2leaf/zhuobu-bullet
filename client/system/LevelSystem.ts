@@ -8,7 +8,13 @@ import { GltfLevel } from "../level/GltfLevel.js";
 import { radius, radius3d } from "../misc/radius.js";
 
 export default class LevelSystem implements System {
-    tiledData?: Tiled;
+    private _tiledData?: Tiled;
+    private get tiledData(): Tiled {
+        if (!this._tiledData) {
+            throw new Error("tiledData not initialized");
+        }
+        return this._tiledData;
+    }
     radius = 0;
     current = 0;
     isMazeMode = true;
@@ -19,15 +25,12 @@ export default class LevelSystem implements System {
     onenablemesh?: (name: string | undefined) => void;
     onaddball?: (transform: number[], isBall: boolean) => void;
     update(): void {
-        throw new Error("Method not implemented.");
     }
 
     async load() {
 
         const tiledJsonText = await (await fetch("resources/tiled/starter.json")).text();
-        this.tiledData = Convert.toTiled(tiledJsonText);
-
-
+        this._tiledData = Convert.toTiled(tiledJsonText);
         
     }
     isCurrentGltfLevel() {
@@ -87,6 +90,8 @@ export default class LevelSystem implements System {
         }
     }
     init() {
+    }
+    start(): void {
         const tiledData = this.tiledData;
         if (!tiledData) {
             throw new Error("tiledData is undefined");
@@ -109,9 +114,6 @@ export default class LevelSystem implements System {
     }
     request(scene: Transform) {
         const tiledData = this.tiledData;
-        if (!tiledData) {
-            throw new Error("tiledData is undefined");
-        }
         const gridSize = tiledData.tilewidth;
         const levels = tiledData.layers;
         const tiledLayer = levels[this.current];

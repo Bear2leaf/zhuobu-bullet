@@ -4,6 +4,12 @@ import { System } from "./System";
 export default class AnimationSystem implements System {
     private readonly animations: GLTFAnimationReference[] = [];
     down: boolean = false;
+    async load(): Promise<void> {
+    }
+    init() {
+    }
+    start(): void {
+    }
     update(timeStamp: number): void {
         for (let i = 0; i < this.animations.length; i++) {
             const animation = this.animations[i];
@@ -22,12 +28,6 @@ export default class AnimationSystem implements System {
                 animation.animation.update();
             }
         }
-    }
-    async load(): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
-    init() {
-        throw new Error("Method not implemented.");
     }
     initAnimations(gltf: GLTF) {
         for (const animation of gltf.animations) {
