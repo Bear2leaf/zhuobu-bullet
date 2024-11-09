@@ -1,6 +1,5 @@
-import Device from "./device/Device.js";
 import Engine from "./core/Engine.js";
-import AudioSystem from "./system/AudioSystem.js";
+import Device from "./device/Device.js";
 
 export async function mainH5() {
     const BrowserDevice = (await import("./device/BrowserDevice.js")).default;
@@ -34,5 +33,5 @@ async function start(device: Device) {
     });
 }
 export {
-    start,
-}
+    start
+};

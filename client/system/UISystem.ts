@@ -1,10 +1,10 @@
-import { Camera, Geometry, Mesh, OGLRenderingContext, Plane, Program, Raycast, Renderer, Text, Texture, Transform, Vec2, Vec3 } from "ogl";
+import { OGLRenderingContext, Transform, Vec3 } from "ogl";
 import Button from "../ui/Button.js";
+import LevelIndicator from "../ui/LevelIndicator.js";
 import Sprite from "../ui/Sprite.js";
 import Switch from "../ui/Switch.js";
 import UIElement from "../ui/UIElement.js";
 import { System } from "./System.js";
-import LevelIndicator from "../ui/LevelIndicator.js";
 export default class UISystem implements System {
     private _root?: Transform;
     private _gl?: OGLRenderingContext;

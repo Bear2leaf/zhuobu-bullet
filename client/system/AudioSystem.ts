@@ -1,8 +1,7 @@
-import Device from "../device/Device.js";
-import { System } from "./System.js";
 import BgmAudio from "../audio/BgmAudio.js";
 import BleepAudio from "../audio/BleepAudio.js";
 import DemoAudio from "../audio/DemoAudio.js";
+import { System } from "./System.js";
 export default class AudioSystem implements System {
     private mute = false;
     private readonly demoAudio = new DemoAudio;

@@ -1,7 +1,6 @@
 import { Camera, Euler, OGLRenderingContext, Quat, Vec3 } from "ogl";
-import { System } from "./System.js";
-import Device from "../device/Device.js";
 import { table } from "../misc/rotation.js";
+import { System } from "./System.js";
 
 export class CameraSystem implements System {
     private _uiCamera?: Camera;

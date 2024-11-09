@@ -1,9 +1,6 @@
 import { Mat4, Mesh, Quat, Transform, Vec3 } from "ogl";
 import { MainMessage, PhysicsObject, WorkerMessage } from "../../worker/ammo.worker";
 import { System } from "./System";
-import AudioSystem from "./AudioSystem";
-import { EventSystem } from "./EventSystem";
-import LevelSystem from "./LevelSystem";
 
 type Direction = "Down" | "Up" | "Left" | "Right";
 export default class PhysicsSystem implements System {

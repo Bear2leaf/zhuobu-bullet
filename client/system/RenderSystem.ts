@@ -1,12 +1,9 @@
-import { Camera, Geometry, GLTF, GLTFLoader, Mesh, OGLRenderingContext, Plane, Program, Renderer, RenderTarget, Sphere, Texture, Transform, Vec2, Vec3 } from "ogl";
-import { System } from "./System.js";
-import { Convert, Tiled } from "../misc/TiledParser.js";
-import LevelSystem from "./LevelSystem.js";
-import { PhysicsObject, WorkerMessage } from "../../worker/ammo.worker.js";
-import { radius } from "../misc/radius.js";
+import { GLTF, GLTFLoader, Mesh, OGLRenderingContext, Renderer, RenderTarget, Texture, Transform } from "ogl";
+import { PhysicsObject } from "../../worker/ammo.worker.js";
 import DracoTask from "../draco/DracoTask.js";
 import { createProgram } from "../misc/createProgram.js";
-import AnimationSystem from "./AnimationSystem.js";
+import LevelSystem from "./LevelSystem.js";
+import { System } from "./System.js";
 
 export class RenderSystem implements System {
     readonly uiRoot = new Transform;

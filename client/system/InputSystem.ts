@@ -1,7 +1,6 @@
-import { Camera, Mesh, Raycast, Transform, Vec2 } from "ogl";
-import { System } from "./System.js";
+import { Camera, Mesh, Raycast, Vec2 } from "ogl";
 import UIElement from "../ui/UIElement.js";
-import UISystem from "./UISystem.js";
+import { System } from "./System.js";
 
 export class InputSystem implements System {
     private readonly mouse = new Vec2();

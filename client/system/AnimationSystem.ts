@@ -1,4 +1,4 @@
-import { Animation, GLTF, GLTFAnimationReference } from "ogl";
+import { GLTF, GLTFAnimationReference } from "ogl";
 import { System } from "./System";
 
 export default class AnimationSystem implements System {

@@ -1,7 +1,7 @@
 import { GLTF, Plane, Transform, Vec3 } from "ogl";
 
-import { Vec2, Camera, Mesh, Geometry, Program, Texture, RenderTarget, OGLRenderingContext } from "ogl";
-import { LayerLayer, Tiled, Tileset } from "../misc/TiledParser.js";
+import { Mesh, OGLRenderingContext, Program, RenderTarget, Texture, Vec2 } from "ogl";
+import { LayerLayer, Tileset } from "../misc/TiledParser.js";
 import { counterHandler, radius } from "../misc/radius.js";
 import { TileLayer } from "../tiled/TileLayer.js";
 import { Level } from "./Level.js";
