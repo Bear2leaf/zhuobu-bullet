@@ -13,7 +13,7 @@ import LevelIndicator from "../ui/LevelIndicator.js";
 import { GltfLevel } from "../level/GltfLevel.js";
 import PhysicsSystem from "./PhysicsSystem.js";
 import Device from "../device/Device.js";
-import { RenderTarget, Texture, OGLRenderingContext, GLTF, Renderer } from "ogl";
+import { RenderTarget, Texture, OGLRenderingContext, GLTF, Renderer, Quat, Mat4 } from "ogl";
 import { PhysicsObject } from "../../worker/ammo.worker.js";
 export class EventSystem implements System {
     private readonly helpMsg = "操作说明：\n1.划动屏幕旋转关卡\n2.引导小球抵达终点\n3.点击缩放聚焦小球\n4.点击箭头切换关卡\n（点击关闭说明）";
@@ -59,10 +59,6 @@ export class EventSystem implements System {
                 this.onrelease && this.onrelease();
             }
         }
-        this.levelSystem.collections.forEach((level, index) => {
-            level.init();
-            level.node.setParent(this.renderSystem.levelRoot);
-        });
         this.physicsSystem.onrequestlevel = this.requestLevel.bind(this);
         this.physicsSystem.onplayaudio = this.audioSystem.play.bind(this.audioSystem);
         this.physicsSystem.onhideMesh = this.hideMesh.bind(this);
@@ -75,11 +71,52 @@ export class EventSystem implements System {
         this.physicsSystem.ongetdirentities = this.levelSystem.getDirEntities.bind(this.levelSystem);
         this.physicsSystem.onhidedirentity = this.levelSystem.hideDirEntity.bind(this.levelSystem);
         this.physicsSystem.onshowdirentity = this.levelSystem.showDirEntity.bind(this.levelSystem);
+        this.levelSystem.onloadtiled = (tiledData) => {
+            const images = tiledData.tilesets.map(tileset => tileset.image);
+            this.renderSystem.setImages(images);
+        }
+        this.levelSystem.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>, convex?: boolean) => {
+            this.physicsSystem.addMesh(name, transform, vertices, indices, propertities, convex);
+        }
+        this.levelSystem.onaddball = (transform: number[], isBall: boolean) => {
+            this.physicsSystem.addBall(transform, isBall);
+        }
+        this.levelSystem.ondisablemesh = (name: string | undefined) => {
+            this.physicsSystem.disableMesh(name);
+        }
+        this.levelSystem.onenablemesh = (name: string | undefined) => {
+            this.physicsSystem.enableMesh(name);
+        }
+        this.physicsSystem.ongetcurrentlevelnode = (name: string) => {
+            return this.levelSystem.getCurrentLevelNode(name);
+        }
+        this.physicsSystem.ongetteleportdestinationname = () => {
+            return this.levelSystem.getTeleportDestinationName();
+         }
+        this.physicsSystem.onremoverock = (name: string) => {
+            this.levelSystem.removeRock(name);
+         }
+        this.physicsSystem.ongetpickaxe = () => {
+            this.levelSystem.getPickaxe();
+         }
+        this.physicsSystem.onupdatelevel = (reverse: boolean) => {
+            this.levelSystem.updateLevel(reverse);
+         }
+        const quat = new Quat()
+        const matrix = new Mat4();
         this.renderSystem.onrender = (renderer) => {
             const levelRoot = this.renderSystem.levelRoot;
             const uiRoot = this.renderSystem.uiRoot;
             const camera = this.cameraSystem.camera;
             const uiCamera = this.cameraSystem.uiCamera;
+            const scene = this.renderSystem.levelRoot;
+            this.cameraSystem.radius = this.levelSystem.radius;
+            this.cameraSystem.ballPosition.copy(this.renderSystem.levelRoot.children[0].position);
+            this.cameraSystem.center.copy(this.levelSystem.center);
+            quat.fill(0)
+            matrix.fromArray(camera.viewMatrix.multiply(scene.worldMatrix));
+            matrix.getRotation(quat);
+            this.physicsSystem.updateQuat(quat);
             renderer.render({ scene: levelRoot, camera: camera });
             renderer.render({ scene: uiRoot, camera: uiCamera, clear: false });
         }
@@ -96,7 +133,7 @@ export class EventSystem implements System {
                     this.levelSystem.current = level;
                     this.isContinue = false;
                     this.pause = false;
-                    this.onresetworld && this.onresetworld();
+                    this.physicsSystem.resetWorld();
                 }
             };
         }
@@ -112,6 +149,15 @@ export class EventSystem implements System {
             level.initGraphics(renderTarget, gl, spriteVertex, spriteFragment, vertex, fragment);
             level.initGltfLevel(gltf);
         }
+        this.ongetpickaxe = () => {
+            this.levelSystem.getPickaxe();
+        };
+        this.onpause = () => {
+            this.physicsSystem.pause();
+        };
+        this.onrelease = () => {
+            this.physicsSystem.release();
+        };
         this.inputSystem.onclick = (tag) => {
             if (this.uiSystem.freeze) {
                 if (tag === "continue") {
@@ -131,12 +177,12 @@ export class EventSystem implements System {
                 this.isContinue = false;
                 this.levelSystem.updateLevel(false);
                 this.updateLevelUI();
-                this.onresetworld && this.onresetworld();
+                this.physicsSystem.resetWorld()
             } else if (tag === "prev") {
                 this.isContinue = false;
                 this.levelSystem.updateLevel(true);
                 this.updateLevelUI();
-                this.onresetworld && this.onresetworld();
+                this.physicsSystem.resetWorld()
             } else if (tag === "audio") {
                 this.ontoggleaudio && this.ontoggleaudio()
             } else if (tag === "information") {
@@ -160,8 +206,12 @@ export class EventSystem implements System {
                     specials.add(index);
                 }
             }
-            this.uiSystem.getUIElement<LevelIndicator>("indicator").updateTotal(this.renderSystem.levelRoot.children.length - 1, specials);
-
+            this.uiSystem.getUIElement<LevelIndicator>("indicator").updateTotal(this.levelSystem.collections.length, specials);
+            this.inputSystem.initInput(device.getWindowInfo(), this.cameraSystem.uiCamera, this.uiSystem.all);
+            this.levelSystem.collections.forEach((level, index) => {
+                level.init();
+                level.node.setParent(this.renderSystem.levelRoot);
+            });
         };
         this.inputSystem.onswipe = (dir) => {
             if (this.freezeRotation) {
@@ -171,7 +221,6 @@ export class EventSystem implements System {
         }
         this.renderSystem.initRenderer(device.getCanvasGL(), device.getWindowInfo());
         this.audioSystem.initAudioContext(device.createWebAudioContext());
-        this.inputSystem.initInput(device.getWindowInfo(), this.cameraSystem.camera, this.uiSystem.all);
     }
     updateLevelUI() {
         const current = this.uiSystem.getUIElement<LevelIndicator>("indicator").getCurrent();
@@ -288,15 +337,10 @@ export class EventSystem implements System {
     async load(): Promise<void> {
         this.charset = await (await fetch("resources/font/charset.txt")).text();
     };
+    ontoggleaudio?: VoidFunction;
+    ongetpickaxe?: () => void;
     onpause?: () => void;
     onrelease?: () => void;
-    onclick?: (tag?: string) => void;
-    onteleport?: (from: string, to: string) => void;
-    onupdatevelocity?: (name: string, x: number, y: number, z: number) => void;
-    ontoggleaudio?: VoidFunction;
-    onresetworld?: VoidFunction;
-    onremovemesh?: (name: string) => void;
-    ongetpickaxe?: () => void;
     update(timeStamp: number): void {
     }
 

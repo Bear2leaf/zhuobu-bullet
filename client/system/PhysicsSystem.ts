@@ -14,12 +14,6 @@ export default class PhysicsSystem implements System {
     private readonly gravity = new Vec3();
     private readonly acc = new Vec3(0, -this.gravityScale, 0);
     private _levelNode?: Transform;
-    onupdatevelocity: any;
-    onpause: any;
-    levelSystem: any;
-    onresetworld: any;
-    onremovemesh: any;
-    onteleport: any;
     private get levelNode() {
         if (!this._levelNode) {
             throw new Error("levelNode not initialized");
@@ -32,7 +26,7 @@ export default class PhysicsSystem implements System {
     setLevelNode(levelNode: Transform) {
         this._levelNode = levelNode;
     }
-    addMesh(name: string, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>, convex?: boolean) {
+    addMesh(name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>, convex?: boolean) {
         if (!name) {
             throw new Error("name is undefined");
         }
@@ -153,30 +147,38 @@ export default class PhysicsSystem implements System {
         // console.log("collision: ", ...data)
         if (data[0] === "Ball") {
             if (this.oncheckneedexit && this.oncheckneedexit(data[1])) {
-                this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 0, 0);
-                this.onpause && this.onpause();
-                this.levelSystem.updateLevel(false);
-                this.onresetworld && this.onresetworld();
+                this.updateVelocity(data[0], 0, 0, 0);
+                this.pause && this.pause();
+                this.onupdatelevel && this.onupdatelevel(false);
+                this.resetWorld && this.resetWorld();
             } else if (this.oncheckgetpickaxe && this.oncheckgetpickaxe(data[1])) {
-                this.levelSystem.getPickaxe();
-                this.onremovemesh && this.onremovemesh(data[1])
+                this.ongetpickaxe && this.ongetpickaxe();
+                this.removeMesh(data[1])
             } else if (this.oncheckrock && this.oncheckrock(data[1])) {
-                this.levelSystem.removeRock(data[1]);
-                this.onremovemesh && this.onremovemesh(data[1])
+                this.onremoverock && this.onremoverock(data[1]);
+                this.removeMesh(data[1])
             } else if (this.oncheckteleport && this.oncheckteleport(data[1])) {
-                const to = this.levelSystem.getTeleportDestinationName();
-                this.onteleport && this.onteleport(data[0], to);
+                const to = this.ongetteleportdestinationname && this.ongetteleportdestinationname();
+                if (!to) {
+                    throw new Error("to is undefined");
+                }
+                this.teleport(data[0], to);
             } else if (this.oncheckbeltup && this.oncheckbeltup(data[1])) {
-                const node = this.levelSystem.getCurrentLevelNode(data[1]);
+                const node = this.ongetcurrentlevelnode && this.ongetcurrentlevelnode(data[1]);
                 if (!node) {
                     throw new Error("node is undefined");
                 }
                 const transform = node.matrix;
                 this.addBall(transform, true);
-                this.onupdatevelocity && this.onupdatevelocity(data[0], 0, 200, 0);
+                this.updateVelocity(data[0], 0, 200, 0);
             }
         }
     }
+    ongetcurrentlevelnode?: (name: string) => Transform | undefined;
+    ongetteleportdestinationname?: () => string;
+    onremoverock?: (name: string) => void;
+    ongetpickaxe?: () => void;
+    onupdatelevel?: (reverse: boolean) => void;
     updateDirObjects() {
         let dir: Direction = "Down";
         {
@@ -272,7 +274,6 @@ export default class PhysicsSystem implements System {
                 objects.push(physicsObject);
             }
         });
-
         this.sendmessage && this.sendmessage({ type: "updateGravity", data: `${this.gravity[0]},${this.gravity[1]},${this.gravity[2]}` })
 
         this.sendmessage && this.sendmessage({

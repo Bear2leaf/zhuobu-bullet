@@ -34,7 +34,7 @@ export default class Engine {
             animationSystem,
             physicsSystem
         );
-        this.systems.push(eventSystem, audioSystem, renderSystem, cameraSystem, levelSystem, animationSystem,  uiSystem, inputSystem, physicsSystem);
+        this.systems.push(eventSystem, audioSystem, uiSystem, levelSystem, renderSystem, cameraSystem, inputSystem, animationSystem, physicsSystem);
     }
     async load() {
         for await (const system of this.systems) {

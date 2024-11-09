@@ -27,7 +27,6 @@ export class InputSystem implements System {
         this.height = windowInfo.windowHeight;
         this._camera = camera;
         this.all.splice(0, this.all.length, ...all);
-        this.init();
         this.initTouchEvents();
     }
     init(): void {

@@ -24,6 +24,7 @@ export default class LevelSystem implements System {
     ondisablemesh?: (name: string | undefined) => void;
     onenablemesh?: (name: string | undefined) => void;
     onaddball?: (transform: number[], isBall: boolean) => void;
+    onloadtiled?: (tiledData: Tiled) => void;
     update(): void {
     }
 
@@ -31,6 +32,7 @@ export default class LevelSystem implements System {
 
         const tiledJsonText = await (await fetch("resources/tiled/starter.json")).text();
         this._tiledData = Convert.toTiled(tiledJsonText);
+        this.onloadtiled && this.onloadtiled(this._tiledData)
         
     }
     isCurrentGltfLevel() {

@@ -148,6 +148,7 @@ export class RenderSystem implements System {
     }
     oninitanimations?: (gltf: GLTF) => void;
     init(): void {
+        this.gl.clearColor(0.3, 0.3, 0.6, 1);
     }
     start(): void {
         for (const scene of this.gltf?.scene || []) {
@@ -164,6 +165,9 @@ export class RenderSystem implements System {
         this.onrender && this.onrender(this.renderer);
     }
     onrender?: (renderer: Renderer) => void;
+    setImages(images: string[]) {
+        this.images.push(...images);
+    }
     initCurrentLevel(current: number) {
         const renderTarget = new RenderTarget(this.gl, {
             minFilter: this.gl.NEAREST,
