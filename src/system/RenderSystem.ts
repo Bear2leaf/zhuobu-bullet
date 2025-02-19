@@ -6,18 +6,10 @@ import LevelSystem from "./LevelSystem.js";
 import { System } from "./System.js";
 
 export class RenderSystem implements System {
-    readonly uiRoot = new Transform;
     readonly levelRoot = new Transform;
-    private fragment: string = "";
-    private vertex: string = "";
-    private spriteFragment: string = "";
-    private spriteVertex: string = "";
     private gltfFragment: string = "";
     private gltfVertex: string = "";
-    private readonly textures: Texture[] = [];
-    private readonly renderTargets: RenderTarget[] = [];
     private gltf?: GLTF;
-    private readonly images: string[] = [];
     private _renderer?: Renderer;
     oninitcameras?: (gl: OGLRenderingContext) => void;
     oninitui?: (gl: OGLRenderingContext) => void;
@@ -39,10 +31,6 @@ export class RenderSystem implements System {
         this.oninitui && this.oninitui(renderer.gl);
     }
     async load(): Promise<void> {
-        this.vertex = await (await fetch("resources/glsl/level.vert.sk")).text();
-        this.fragment = await (await fetch("resources/glsl/level.frag.sk")).text();
-        this.spriteVertex = await (await fetch("resources/glsl/sprite.vert.sk")).text();
-        this.spriteFragment = await (await fetch("resources/glsl/sprite.frag.sk")).text();
         this.gltfVertex = await (await fetch("resources/glsl/gltf.vert.sk")).text();
         this.gltfFragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
         const gl = this.gl;
@@ -145,42 +133,12 @@ export class RenderSystem implements System {
         this.onrender && this.onrender(this.renderer);
     }
     onrender?: (renderer: Renderer) => void;
-    setImages(images: string[]) {
-        this.images.push(...images);
-    }
     initCurrentLevel(current: number) {
-        const renderTarget = new RenderTarget(this.gl, {
-            minFilter: this.gl.NEAREST,
-            magFilter: this.gl.NEAREST,
-            depth: false
-        });
-        this.renderTargets.push(renderTarget);
-        this.oninitlevel && this.oninitlevel(current, renderTarget, this.textures, this.gl, this.gltf, this.vertex, this.fragment, this.spriteVertex, this.spriteFragment);
+        this.oninitlevel && this.oninitlevel(current, this.gltf);
         
 
     }
-    oninitlevel?: (current: number, renderTarget: RenderTarget, textures: Texture[], gl: OGLRenderingContext, gltf: GLTF | undefined, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string) => void;
-    hideMesh(name: string, levelSystem: LevelSystem) {
-        const scene = this.levelRoot;
-        let child: Transform | undefined;
-        if (name === "Ball") {
-            child = scene.children.find(child => child.visible && (child instanceof Mesh))
-        } else {
-            child = scene.children[levelSystem.current + 1].children.find(child => child.visible && child.name === name)
-        }
-        child && (child.visible = false);
-    }
-    showMesh(name: string, levelSystem: LevelSystem) {
-        const scene = this.levelRoot;
-        let child: Transform | undefined;
-        if (name === "Ball") {
-            child = scene.children.find(child => child.visible && (child instanceof Mesh))
-        } else {
-            child = scene.children[levelSystem.current + 1].children.find(child => child.visible && child.name === name)
-        }
-        child && (child.visible = true);
-    }
-
+    oninitlevel?: (current: number, gltf: GLTF | undefined) => void;
     updateMesh(objects: PhysicsObject[], levelSystem: LevelSystem) {
         const scene = this.levelRoot;
         scene.visible = true;

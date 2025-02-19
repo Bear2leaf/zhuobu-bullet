@@ -1,12 +1,9 @@
 import { Transform, Texture, RenderTarget, OGLRenderingContext, GLTF, Vec2, Vec3, Mesh } from "ogl";
-import { TileLayer } from "../tiled/TileLayer";
 
 export class GltfLevel {
     readonly min: Vec3 = new Vec3(Infinity, Infinity, Infinity);
     readonly max: Vec3 = new Vec3(-Infinity, -Infinity, -Infinity);
     readonly node: Transform = new Transform;
-    readonly tileLayers: TileLayer[] = [];
-    requested: boolean = false;
     constructor(
         name: string
     ) {
@@ -34,9 +31,14 @@ export class GltfLevel {
                 this.max.x = Math.max(this.max.x, max.x);
                 this.max.y = Math.max(this.max.y, max.y);
                 this.max.z = Math.max(this.max.z, max.z);
+            } else {
+                const animation = gltf.animations.find(animation => animation.animation.data.find(n => n.node.name === node.name))
+                if (animation) {
+                    animation.animation.elapsed = 0;
+                    animation.animation.update();
+                }
             }
         })
-        this.requested = true;
     }
     check(meshName: string, name: string): boolean {
         return meshName.startsWith("Goal") && name === "Exit";

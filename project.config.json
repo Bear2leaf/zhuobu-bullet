@@ -8,7 +8,11 @@
         "type": "folder"
       },
       {
-        "value": "resources/font/ZCOOLQingKeHuangYou-Regular.ttf",
+        "value": "resources/font/NotoSansSC-Regular.ttf",
+        "type": "file"
+      },
+      {
+        "value": "resources/font/fa-solid-900.ttf",
         "type": "file"
       }
     ],

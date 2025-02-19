@@ -20,17 +20,14 @@ export default class AnimationSystem implements System {
             }
 
 
-            if (animation.animation.elapsed <= 0) {
-                animation.animation.elapsed = 0;
-            } else if (animation.animation.elapsed >= animation.animation.duration) {
-                animation.animation.elapsed = animation.animation.duration;
-            } else {
-                animation.animation.update();
-            }
+            animation.animation.elapsed = Math.min(animation.animation.elapsed, animation.animation.duration);
+            animation.animation.elapsed = Math.max(animation.animation.elapsed, 0);
+            animation.animation.update();
         }
     }
     initAnimations(gltf: GLTF) {
         for (const animation of gltf.animations) {
+            animation.animation.loop = false;
             this.animations.push(animation);
         }
     }

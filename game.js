@@ -86,7 +86,7 @@ const _window = {
     WebAssembly: {
         Instance: WXWebAssembly.Instance,
         instantiate(url, imports) {
-            console.log(...arguments)
+            // console.log(...arguments)
             if (typeof url === 'string') {
                 return WXWebAssembly.instantiate(url, imports)
             } else if (url instanceof ArrayBuffer) {

@@ -9,7 +9,6 @@ import LevelSystem from "../system/LevelSystem.js";
 import PhysicsSystem from "../system/PhysicsSystem.js";
 import { RenderSystem } from "../system/RenderSystem.js";
 import { System } from "../system/System.js";
-import UISystem from "../system/UISystem.js";
 export default class Engine {
     private readonly systems: System[] = [];
     private readonly quat = new Quat()
@@ -19,7 +18,6 @@ export default class Engine {
         const levelSystem = new LevelSystem();
         const animationSystem = new AnimationSystem();
         const renderSystem = new RenderSystem();
-        const uiSystem = new UISystem();
         const inputSystem = new InputSystem();
         const physicsSystem = new PhysicsSystem();
         const audioSystem = new AudioSystem();
@@ -29,12 +27,11 @@ export default class Engine {
             cameraSystem,
             levelSystem,
             renderSystem,
-            uiSystem,
             audioSystem,
             animationSystem,
             physicsSystem
         );
-        this.systems.push(eventSystem, audioSystem, uiSystem, levelSystem, renderSystem, cameraSystem, inputSystem, animationSystem, physicsSystem);
+        this.systems.push(eventSystem, audioSystem, levelSystem, renderSystem, cameraSystem, inputSystem, animationSystem, physicsSystem);
     }
     async load() {
         for await (const system of this.systems) {

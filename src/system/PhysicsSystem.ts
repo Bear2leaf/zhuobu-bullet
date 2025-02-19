@@ -5,7 +5,6 @@ import { System } from "./System";
 type Direction = "Down" | "Up" | "Left" | "Right";
 export default class PhysicsSystem implements System {
     private readonly objectNames: Set<string> = new Set();
-    private readonly dirSet = new Set<Direction>();
     private readonly currentCollisions = new Set<string>();
     private readonly gravityScale = 100;
     private readonly gravity = new Vec3();
@@ -95,17 +94,16 @@ export default class PhysicsSystem implements System {
         }
         // console.log("message from worker", message);
         if (message.type === "requestLevel") {
-            this.dirSet.clear();
             this.objectNames.clear();
             this.currentCollisions.clear();
             this.onplayaudio && this.onplayaudio();
             this.onrequestlevel && this.onrequestlevel();
+            this.release();
         } else if (message.type === "ready") {
             sendmessage({
                 type: "resetWorld",
             });
         } else if (message.type === "removeBody") {
-            this.onhideMesh && this.onhideMesh(message.data);
         } else if (message.type === "update") {
             this.onupdateMesh && this.onupdateMesh(message.objects);
         } else if (message.type === "collisionEnter") {
@@ -148,18 +146,6 @@ export default class PhysicsSystem implements System {
                 this.pause && this.pause();
                 this.onupdatelevel && this.onupdatelevel(false);
                 this.resetWorld && this.resetWorld();
-            } else if (this.oncheckgetpickaxe && this.oncheckgetpickaxe(data[1])) {
-                this.ongetpickaxe && this.ongetpickaxe();
-                this.removeMesh(data[1])
-            } else if (this.oncheckrock && this.oncheckrock(data[1])) {
-                this.onremoverock && this.onremoverock(data[1]);
-                this.removeMesh(data[1])
-            } else if (this.oncheckteleport && this.oncheckteleport(data[1])) {
-                const to = this.ongetteleportdestinationname && this.ongetteleportdestinationname();
-                if (!to) {
-                    throw new Error("to is undefined");
-                }
-                this.teleport(data[0], to);
             } else if (this.oncheckbeltup && this.oncheckbeltup(data[1])) {
                 const node = this.ongetcurrentlevelnode && this.ongetcurrentlevelnode(data[1]);
                 if (!node) {
@@ -172,75 +158,9 @@ export default class PhysicsSystem implements System {
         }
     }
     ongetcurrentlevelnode?: (name: string) => Transform | undefined;
-    ongetteleportdestinationname?: () => string;
-    onremoverock?: (name: string) => void;
-    ongetpickaxe?: () => void;
     onupdatelevel?: (reverse: boolean) => void;
-    updateDirObjects() {
-        let dir: Direction = "Down";
-        {
-            if (this.gravity.y === -this.gravityScale) {
-                if (this.dirSet.has(dir)) {
-                    return;
-                }
-                this.dirSet.add(dir);
-                this.onhidedirentity && this.onhidedirentity(dir);
-            } else if (this.ongetdirentities && this.ongetdirentities(dir).some((name) => this.currentCollisions.has(name))) {
-
-            } else {
-                this.dirSet.delete(dir);
-                this.onshowdirentity && this.onshowdirentity(dir);
-            }
-        }
-        dir = "Up";
-        {
-            if (this.gravity.y === this.gravityScale) {
-                if (this.dirSet.has(dir)) {
-                    return;
-                }
-                this.dirSet.add(dir);
-                this.onhidedirentity && this.onhidedirentity(dir);
-            } else if (this.ongetdirentities && this.ongetdirentities(dir).some((name) => this.currentCollisions.has(name))) {
-
-            } else {
-                this.dirSet.delete(dir);
-                this.onshowdirentity && this.onshowdirentity(dir);
-            }
-        }
-        dir = "Left";
-        {
-            if (this.gravity.x === -this.gravityScale) {
-                if (this.dirSet.has(dir)) {
-                    return;
-                }
-                this.dirSet.add(dir);
-                this.onhidedirentity && this.onhidedirentity(dir);
-            } else if (this.ongetdirentities && this.ongetdirentities(dir).some((name) => this.currentCollisions.has(name))) {
-
-            } else {
-                this.dirSet.delete(dir);
-                this.onshowdirentity && this.onshowdirentity(dir);
-            }
-        }
-        dir = "Right";
-        {
-            if (this.gravity.x === this.gravityScale) {
-                if (this.dirSet.has(dir)) {
-                    return;
-                }
-                this.dirSet.add(dir);
-                this.onhidedirentity && this.onhidedirentity(dir);
-            } else if (this.ongetdirentities && this.ongetdirentities(dir).some((name) => this.currentCollisions.has(name))) {
-
-            } else {
-                this.dirSet.delete(dir);
-                this.onshowdirentity && this.onshowdirentity(dir);
-            }
-        }
-    }
     onplayaudio?: () => void;
     onrequestlevel?: () => void;
-    onhideMesh?: (name: string) => void;
     onupdateMesh?: (data: PhysicsObject[]) => void;
     oncheckneedexit?: (name: string) => boolean;
     oncheckgetpickaxe?: (name: string) => boolean;
@@ -254,7 +174,6 @@ export default class PhysicsSystem implements System {
         if (this._levelNode === undefined) {
             return;
         }
-        this.updateDirObjects();
         const objects: PhysicsObject[] = [];
         this.levelNode.traverse((node) => {
             if (node.name && this.objectNames.has(node.name) && !(node instanceof Mesh)) {
