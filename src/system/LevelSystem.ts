@@ -20,9 +20,6 @@ export default class LevelSystem implements System {
 
 
     }
-    isCurrentGltfLevel() {
-        return this.collections[this.current] instanceof GltfLevel;
-    }
     updateLevel(reverse: boolean) {
         if (reverse) {
             this.current = this.current === 0 ? (this.collections.length - 1) : (this.current - 1)
@@ -48,7 +45,7 @@ export default class LevelSystem implements System {
     request(scene: Transform) {
         scene.children.forEach((child, index) => (index === 0 || index === (this.current + 1)) ? (child.visible = true) : (child.visible = false))
         const level = this.collections[this.current];
-        this.radius = level.max.distance(level.min) / 2 * devicePixelRatio;
+        this.radius = level.max.distance(level.min);
         this.center.copy(level.max.clone().add(level.min.clone()).multiply(0.5));
         level.node.traverse(node => {
             const mesh = node;

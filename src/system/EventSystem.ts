@@ -1,4 +1,4 @@
-import { GLTF, Mat4, OGLRenderingContext, Quat, RenderTarget, Texture } from "ogl";
+import { Camera, GLTF, Mat4, OGLRenderingContext, Quat, RenderTarget, Shadow, Texture, Vec3 } from "ogl";
 import { PhysicsObject } from "../worker/ammo.worker.js";
 import Device from "../device/Device.js";
 import { GltfLevel } from "../engine/GltfLevel.js";
@@ -60,7 +60,7 @@ export class EventSystem implements System {
          }
         const quat = new Quat()
         const matrix = new Mat4();
-        this.renderSystem.onrender = (renderer) => {
+        this.renderSystem.onrender = (renderer, shadow) => {
             const levelRoot = this.renderSystem.levelRoot;
             const camera = this.cameraSystem.camera;
             const scene = this.renderSystem.levelRoot;
@@ -71,6 +71,7 @@ export class EventSystem implements System {
             matrix.fromArray(camera.viewMatrix.multiply(scene.worldMatrix));
             matrix.getRotation(quat);
             this.physicsSystem.updateQuat(quat);
+            shadow.render({ scene: levelRoot });
             renderer.render({ scene: levelRoot, camera: camera });
         }
         this.renderSystem.oninitanimations = (gltf) => {
@@ -78,6 +79,24 @@ export class EventSystem implements System {
         }
         this.renderSystem.oninitcameras = (gl: OGLRenderingContext) => {
             this.cameraSystem.initCameras(gl, device.getWindowInfo());
+            // Swap between the 'fov' and 'left/right/etc' lines to switch from an orthographic to perspective camera,
+            // and hence, directional light to spotlight projection.
+            const light = new Camera(gl, {
+                left: -10,
+                right: 10,
+                bottom: -10,
+                top: 10,
+                // fov: 30,
+                
+                near: 1,
+                far: 20,
+            });
+            light.position.set(3, 5, 8);
+            light.lookAt([0, 0, 0]);
+
+            // Create shadow instance attached to light camera
+            const shadow = new Shadow(gl, { light });
+            this.renderSystem._shadow = shadow
         }
         this.renderSystem.oninitlevel = (current: number, gltf: GLTF | undefined) => {
             const level = this.levelSystem.collections[current];

@@ -20,7 +20,7 @@ export class CameraSystem implements System {
     private scaleT = 0;
     scale = 0;
     radius: number = 0;
-    isGltf: boolean = false;
+    isGltf: boolean = true;
     async load(): Promise<void> {
     }
     initCameras(gl: OGLRenderingContext, windowInfo: WechatMinigame.WindowInfo): void {

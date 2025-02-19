@@ -31,10 +31,21 @@ uniform sampler2D boneTexture;
 uniform int boneTextureSize;
                     #endif
 
+
+                    #ifdef SHADOW
+uniform mat4 shadowViewMatrix;
+uniform mat4 shadowProjectionMatrix;
+                    #endif
+
 varying vec2 vUv;
 varying vec3 vNormal;
 varying vec3 vMPos;
 varying vec4 vMVPos;
+
+
+                    #ifdef SHADOW
+varying vec4 vLightNDC;
+                    #endif
 
                     #ifdef SKINNING
 mat4 getBoneMatrix(const in float i) {
@@ -79,6 +90,9 @@ void skin(inout vec4 pos, inout vec3 nml) {
 }
                     #endif
 
+// Matrix to shift range from -1->1 to 0->1
+const mat4 depthScaleMatrix = mat4(0.5f, 0, 0, 0, 0, 0.5f, 0, 0, 0, 0, 0.5f, 0, 0.5f, 0.5f, 0.5f, 1);
+
 void main() {
     vec4 pos = vec4(position, 1);
     vec3 nml = normal;
@@ -102,5 +116,8 @@ void main() {
     vMPos = mPos.xyz / mPos.w;
     vMVPos = modelViewMatrix * pos;
 
+                    #ifdef SHADOW
+    vLightNDC = depthScaleMatrix * shadowProjectionMatrix * shadowViewMatrix * vec4(vMPos, 1.0f);
+                    #endif
     gl_Position = projectionMatrix * vMVPos;
 }

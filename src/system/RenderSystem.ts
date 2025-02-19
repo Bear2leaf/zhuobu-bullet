@@ -1,4 +1,4 @@
-import { GLTF, GLTFLoader, Mesh, OGLRenderingContext, Renderer, RenderTarget, Texture, Transform } from "ogl";
+import { Camera, GLTF, GLTFLoader, Mesh, OGLRenderingContext, Renderer, RenderTarget, Shadow, Texture, Transform } from "ogl";
 import { PhysicsObject } from "../worker/ammo.worker.js";
 import DracoTask from "../draco/DracoTask.js";
 import { createProgram } from "../engine/createProgram.js";
@@ -11,10 +11,16 @@ export class RenderSystem implements System {
     private gltfVertex: string = "";
     private gltf?: GLTF;
     private _renderer?: Renderer;
+    _shadow?: Shadow;
     oninitcameras?: (gl: OGLRenderingContext) => void;
     oninitui?: (gl: OGLRenderingContext) => void;
     oninitlevels?: (gltf: GLTF) => void;
-
+    private get shadow() {
+        if (!this._shadow) {
+            throw new Error("shadow is not initialized");
+        }
+        return this._shadow;
+    }
     private get renderer() {
         if (this._renderer === undefined) {
             throw new Error("renderer is not initialized");
@@ -105,7 +111,10 @@ export class RenderSystem implements System {
         this.gltf.scene.forEach(scene => {
             scene.traverse(node => {
                 if (node instanceof Mesh) {
-                    createProgram(node, this.gltfVertex, this.gltfFragment, true)
+                    const noCastShadow = node.program.gltfMaterial.name === "Transparent" || (node.program.gltfMaterial.extras && node.program.gltfMaterial.extras.castShadow === false);
+                    createProgram(node, this.gltfVertex, this.gltfFragment, true, !noCastShadow)
+                    node.program.uniforms.tShadow = { value: this.shadow.target.texture };
+                    this.shadow.add({ mesh: node, cast: !noCastShadow, receive: true });
                 }
             })
         })
@@ -130,12 +139,12 @@ export class RenderSystem implements System {
         this.oninitlevels && this.oninitlevels(this.gltf);
     }
     update(timeStamp: number): void {
-        this.onrender && this.onrender(this.renderer);
+        this.onrender && this.onrender(this.renderer, this.shadow);
     }
-    onrender?: (renderer: Renderer) => void;
+    onrender?: (renderer: Renderer, shadow: Shadow) => void;
     initCurrentLevel(current: number) {
         this.oninitlevel && this.oninitlevel(current, this.gltf);
-        
+
 
     }
     oninitlevel?: (current: number, gltf: GLTF | undefined) => void;

@@ -4,6 +4,7 @@ export class GltfLevel {
     readonly min: Vec3 = new Vec3(Infinity, Infinity, Infinity);
     readonly max: Vec3 = new Vec3(-Infinity, -Infinity, -Infinity);
     readonly node: Transform = new Transform;
+    private loaded = false;
     constructor(
         name: string
     ) {
@@ -13,7 +14,7 @@ export class GltfLevel {
         if (!gltf || !this.node.name) {
             throw new Error("gltf or node name is not defined");
         }
-        const levelNode = gltf.scene[0].children.find(child => child.name === this.node.name);
+        const levelNode = this.loaded ? this.node.children[0] : gltf.scene[0].children.find(child => child.name === this.node.name);
         if (!levelNode) {
             throw new Error("levelNode not found");
         }
@@ -39,6 +40,7 @@ export class GltfLevel {
                 }
             }
         })
+        this.loaded = true;
     }
     check(meshName: string, name: string): boolean {
         return meshName.startsWith("Goal") && name === "Exit";

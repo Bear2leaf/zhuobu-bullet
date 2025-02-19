@@ -1,7 +1,6 @@
 import { Mesh, GLTF, GLTFProgram, Skin, Texture, Program, Vec3 } from "ogl";
 
-export function createProgram(node: Mesh, vertex?: string, fragment?: string, isWebgl2: boolean = true, light?: GLTF["lights"]["directional"][0]) {
-    const shadow = false;
+export function createProgram(node: Mesh, vertex?: string, fragment?: string, isWebgl2: boolean = true, shadow = false, light?: GLTF["lights"]["directional"][0]) {
     const gl = node.gl;
     const gltf = (node.program as GLTFProgram).gltfMaterial || {};
 
