@@ -4,7 +4,7 @@
   "packOptions": {
     "ignore": [
       {
-        "value": "worker",
+        "value": "src/worker",
         "type": "folder"
       },
       {
@@ -16,11 +16,11 @@
   },
   "setting": {
     "urlCheck": true,
-    "es6": true,
-    "enhance": true,
+    "es6": false,
+    "enhance": false,
     "postcss": true,
     "preloadBackgroundData": false,
-    "minified": true,
+    "minified": false,
     "newFeature": false,
     "coverView": true,
     "nodeModules": false,

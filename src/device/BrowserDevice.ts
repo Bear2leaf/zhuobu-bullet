@@ -1,6 +1,6 @@
 import Device from "./Device";
-import { WorkerMessage } from "../../worker/ammo.worker";
-import { MainMessage } from "../../worker/ammo.worker";
+import { WorkerMessage } from "../worker/ammo.worker";
+import { MainMessage } from "../worker/ammo.worker";
 export default class BrowserDevice implements Device {
     private worker?: Worker;
     private readonly windowInfo: WechatMinigame.WindowInfo;

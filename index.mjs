@@ -3,10 +3,9 @@ import * as esbuild from 'esbuild';
  * @type {esbuild.SameShape<esbuild.BuildOptions, esbuild.CommonOptions>}
  */
 const config = {
-    entryPoints: ['client/main.ts', 'worker/main.ts'],
+    entryPoints: ['src/main.ts', 'src/worker/main.ts'],
     bundle: true,
     outdir: 'dist',
-    format: 'esm',
     external: ['fs', 'path'],
     target: 'es2015',
     logLevel: 'info',

@@ -1,4 +1,4 @@
-import { radius, radius3d } from "../client/misc/radius.js";
+import { radius, radius3d } from "../engine/radius.js";
 import Ammo, { config, Module, handler, MainMessage, WorkerMessage, PhysicsObject } from "./ammo.worker.js"
 
 enum CollisionFlags {

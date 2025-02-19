@@ -1,13 +1,8 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "ES2017",
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
-    "typeRoots": [
-      "node_modules/ammojs-typed/ammo/ambient",
-      "client/misc/ndarray"
-    ]
+    "target": "ES2015",
+    "moduleResolution": "bundler",
+    "types": ["minigame-api-typings"]
   }
 }

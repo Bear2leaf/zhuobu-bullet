@@ -1,4 +1,4 @@
-import { MainMessage, WorkerMessage } from "../../worker/ammo.worker.js"
+import { MainMessage, WorkerMessage } from "../worker/ammo.worker.js"
 
 export default interface Device {
   sendmessage: (message: MainMessage) => void;

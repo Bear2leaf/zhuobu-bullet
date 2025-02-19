@@ -1,6 +1,6 @@
 import 'minigame-api-typings';
 import Device from "./Device";
-import { WorkerMessage, MainMessage } from '../../worker/ammo.worker.js';
+import { WorkerMessage, MainMessage } from '../worker/ammo.worker.js';
 
 
 export default class MinigameDevice implements Device {

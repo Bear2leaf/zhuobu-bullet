@@ -9,12 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "draco3dgltf": "^1.5.7",
-    "ogl": "^1.0.8",
-    "polygon-clipping": "^0.15.7"
+    "ogl": "^1.0.8"
   },
   "devDependencies": {
-    "@types/ndarray": "^1.0.14",
     "esbuild": "^0.23.0",
     "minigame-api-typings": "^3.8.4"
   }

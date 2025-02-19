@@ -1,5 +1,5 @@
 import { Mat4, Mesh, Quat, Transform, Vec3 } from "ogl";
-import { MainMessage, PhysicsObject, WorkerMessage } from "../../worker/ammo.worker";
+import { MainMessage, PhysicsObject, WorkerMessage } from "../worker/ammo.worker";
 import { System } from "./System";
 
 type Direction = "Down" | "Up" | "Left" | "Right";

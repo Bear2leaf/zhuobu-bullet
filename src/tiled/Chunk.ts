@@ -1,5 +1,5 @@
 import { Geometry, Mesh, OGLRenderingContext, Plane, Program, Texture, Transform, Vec2, Vec3 } from "ogl";
-import { counterHandler, radius } from "../misc/radius.js";
+import { counterHandler, radius } from "../engine/radius.js";
 import { Polygon, union } from "polygon-clipping";
 import { TileProperty, Tileset } from "../misc/TiledParser.js";
 

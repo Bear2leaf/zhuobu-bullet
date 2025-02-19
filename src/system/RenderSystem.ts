@@ -1,7 +1,7 @@
 import { GLTF, GLTFLoader, Mesh, OGLRenderingContext, Renderer, RenderTarget, Texture, Transform } from "ogl";
-import { PhysicsObject } from "../../worker/ammo.worker.js";
+import { PhysicsObject } from "../worker/ammo.worker.js";
 import DracoTask from "../draco/DracoTask.js";
-import { createProgram } from "../misc/createProgram.js";
+import { createProgram } from "../engine/createProgram.js";
 import LevelSystem from "./LevelSystem.js";
 import { System } from "./System.js";
 
@@ -9,8 +9,6 @@ export class RenderSystem implements System {
     readonly uiRoot = new Transform;
     readonly levelRoot = new Transform;
     private fragment: string = "";
-    private ballVertex: string = "";
-    private ballFragment: string = "";
     private vertex: string = "";
     private spriteFragment: string = "";
     private spriteVertex: string = "";
@@ -23,7 +21,7 @@ export class RenderSystem implements System {
     private _renderer?: Renderer;
     oninitcameras?: (gl: OGLRenderingContext) => void;
     oninitui?: (gl: OGLRenderingContext) => void;
-    oninitlevels?: () => void;
+    oninitlevels?: (gltf: GLTF) => void;
 
     private get renderer() {
         if (this._renderer === undefined) {
@@ -41,8 +39,6 @@ export class RenderSystem implements System {
         this.oninitui && this.oninitui(renderer.gl);
     }
     async load(): Promise<void> {
-        this.ballVertex = await (await fetch("resources/glsl/simple.vert.sk")).text();
-        this.ballFragment = await (await fetch("resources/glsl/simple.frag.sk")).text();
         this.vertex = await (await fetch("resources/glsl/level.vert.sk")).text();
         this.fragment = await (await fetch("resources/glsl/level.frag.sk")).text();
         this.spriteVertex = await (await fetch("resources/glsl/sprite.vert.sk")).text();
@@ -50,22 +46,6 @@ export class RenderSystem implements System {
         this.gltfVertex = await (await fetch("resources/glsl/gltf.vert.sk")).text();
         this.gltfFragment = await (await fetch("resources/glsl/gltf.frag.sk")).text();
         const gl = this.gl;
-        for await (const imageSrc of this.images) {
-            await new Promise((resoive) => {
-                const image = new Image();
-                image.onload = () => {
-                    this.textures.push(new Texture(gl, {
-                        image,
-                        width: image.width,
-                        height: image.height,
-                        magFilter: gl.NEAREST,
-                        minFilter: gl.NEAREST
-                    }));
-                    resoive(void (0));
-                };
-                image.src = `resources/tiled/${imageSrc}`;
-            })
-        }
 
 
         const desc = GLTFLoader.unpackGLB(await (await fetch('resources/gltf/marble.glb')).arrayBuffer()) as any;
@@ -93,7 +73,7 @@ export class RenderSystem implements System {
             }
         }
         let counter = 0;
-        task.onmessage({ data: { type: 'init', id: (counter++).toString(), decoderConfig: { locateFile: () => "resources/wasm/draco_decoder_gltf.wasm" } } });
+        task.onmessage({ data: { type: 'init', id: (counter++).toString(), decoderConfig: { locateFile: () => "resources/wasm/draco_decoder.wasm" } } });
         const bufferViews = desc.bufferViews;
         const buffers = desc.buffers;
         const accessors = desc.accessors;
@@ -148,7 +128,10 @@ export class RenderSystem implements System {
         this.gl.clearColor(0.3, 0.3, 0.6, 1);
     }
     start(): void {
-        for (const scene of this.gltf?.scene || []) {
+        if (!this.gltf) {
+            throw new Error("gltf not initialized");
+        }
+        for (const scene of this.gltf.scene) {
             for (const collection of scene.children) {
                 if (collection.name === "others") {
                     const ball = collection.children.find(child => child.name === "Ball");
@@ -156,7 +139,7 @@ export class RenderSystem implements System {
                 }
             }
         }
-        this.oninitlevels && this.oninitlevels();
+        this.oninitlevels && this.oninitlevels(this.gltf);
     }
     update(timeStamp: number): void {
         this.onrender && this.onrender(this.renderer);

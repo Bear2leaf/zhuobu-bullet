@@ -1,7 +1,7 @@
 import { GLTF, Mat4, OGLRenderingContext, Quat, RenderTarget, Texture } from "ogl";
-import { PhysicsObject } from "../../worker/ammo.worker.js";
+import { PhysicsObject } from "../worker/ammo.worker.js";
 import Device from "../device/Device.js";
-import { GltfLevel } from "../level/GltfLevel.js";
+import { GltfLevel } from "../engine/GltfLevel.js";
 import Button from "../ui/Button.js";
 import LevelIndicator from "../ui/LevelIndicator.js";
 import Sprite from "../ui/Sprite.js";
@@ -64,17 +64,7 @@ export class EventSystem implements System {
         this.physicsSystem.onhideMesh = this.hideMesh.bind(this);
         this.physicsSystem.onupdateMesh = this.updateMesh.bind(this);
         this.physicsSystem.oncheckneedexit = this.levelSystem.checkNeedExit.bind(this.levelSystem);
-        this.physicsSystem.oncheckgetpickaxe = this.levelSystem.checkGetPickaxe.bind(this.levelSystem);
-        this.physicsSystem.oncheckrock = this.levelSystem.checkRock.bind(this.levelSystem);
         this.physicsSystem.oncheckteleport = this.levelSystem.checkTeleport.bind(this.levelSystem);
-        this.physicsSystem.oncheckbeltup = this.levelSystem.checkBeltUp.bind(this.levelSystem);
-        this.physicsSystem.ongetdirentities = this.levelSystem.getDirEntities.bind(this.levelSystem);
-        this.physicsSystem.onhidedirentity = this.levelSystem.hideDirEntity.bind(this.levelSystem);
-        this.physicsSystem.onshowdirentity = this.levelSystem.showDirEntity.bind(this.levelSystem);
-        this.levelSystem.onloadtiled = (tiledData) => {
-            const images = tiledData.tilesets.map(tileset => tileset.image);
-            this.renderSystem.setImages(images);
-        }
         this.levelSystem.onaddmesh = (name: string | undefined, transform: number[], vertices: number[], indices: number[], propertities?: Record<string, boolean>, convex?: boolean) => {
             this.physicsSystem.addMesh(name, transform, vertices, indices, propertities, convex);
         }
@@ -90,15 +80,6 @@ export class EventSystem implements System {
         this.physicsSystem.ongetcurrentlevelnode = (name: string) => {
             return this.levelSystem.getCurrentLevelNode(name);
         }
-        this.physicsSystem.ongetteleportdestinationname = () => {
-            return this.levelSystem.getTeleportDestinationName();
-         }
-        this.physicsSystem.onremoverock = (name: string) => {
-            this.levelSystem.removeRock(name);
-         }
-        this.physicsSystem.ongetpickaxe = () => {
-            this.levelSystem.getPickaxe();
-         }
         this.physicsSystem.onupdatelevel = (reverse: boolean) => {
             this.levelSystem.updateLevel(reverse);
          }
@@ -143,15 +124,8 @@ export class EventSystem implements System {
             if (level.requested) {
                 return;
             }
-            level.setTextures(textures);
-            level.initRenderTarget(renderTarget)
-            level.initGraphicsBuffer(gl, vertex, fragment, spriteVertex, spriteFragment, renderTarget)
-            level.initGraphics(renderTarget, gl, spriteVertex, spriteFragment, vertex, fragment);
             level.initGltfLevel(gltf);
         }
-        this.ongetpickaxe = () => {
-            this.levelSystem.getPickaxe();
-        };
         this.onpause = () => {
             this.physicsSystem.pause();
         };
@@ -198,8 +172,15 @@ export class EventSystem implements System {
             this.uiSystem.getUIElement<LevelIndicator>("indicator").updateCurrent(delta);
             this.updateLevelUI();
         }
-        this.renderSystem.oninitlevels = () => {
+        this.renderSystem.oninitlevels = (gltf) => {
             const specials = new Set<number>();
+            for (const scene of gltf.scene) {
+                for (const collection of scene.children) {
+                    if (collection.name !== "others" && collection.name !== undefined) {
+                        this.levelSystem.collections.push(new GltfLevel(collection.name));
+                    }
+                }
+            }
             for (let index = 0; index < this.levelSystem.collections.length; index++) {
                 const level = this.levelSystem.collections[index];
                 if (level instanceof GltfLevel) {
@@ -209,7 +190,6 @@ export class EventSystem implements System {
             this.uiSystem.getUIElement<LevelIndicator>("indicator").updateTotal(this.levelSystem.collections.length, specials);
             this.inputSystem.initInput(device.getWindowInfo(), this.cameraSystem.uiCamera, this.uiSystem.all);
             this.levelSystem.collections.forEach((level, index) => {
-                level.init();
                 level.node.setParent(this.renderSystem.levelRoot);
             });
         };

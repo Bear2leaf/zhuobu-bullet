@@ -1,4 +1,4 @@
-import draco3dgltf, { Attribute, Decoder, DecoderBuffer, DecoderModule, DracoArray, DracoDecoderModule, DracoDecoderModuleProps, GeometryAttributeType, Mesh, PointCloud } from "draco3dgltf";
+import createDecoderModule, { Attribute, Decoder, DecoderBuffer, DecoderModule, DracoArray, DracoDecoderModule, DracoDecoderModuleProps, GeometryAttributeType, Mesh, PointCloud } from "./draco.js";
 
 type AttributeConstructor = (typeof Float32Array | typeof Int8Array | typeof Int16Array | typeof Int32Array | typeof Uint8Array | typeof Uint16Array | typeof Uint32Array);
 type AttributeType = Float32Array | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array;
@@ -27,7 +27,7 @@ export default class DracoTask {
                             // Module is Promise-like. Wrap before resolving to avoid loop.
                             resolve({ draco });
                         };
-                        draco3dgltf.createDecoderModule(decoderConfig);
+                        createDecoderModule(decoderConfig);
                     });
                     break;
 
@@ -134,6 +134,7 @@ export default class DracoTask {
             const dataType = getDracoDataType(draco, attributeType);
             const ptr = draco._malloc(byteLength);
             decoder.GetAttributeDataArrayForAllPoints(dracoGeometry, attribute, dataType, byteLength, ptr);
+            //@ts-ignore
             const array = new attributeType(draco.HEAPF32.buffer, ptr, numValues).slice();
             draco._free(ptr);
 

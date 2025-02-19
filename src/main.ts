@@ -1,14 +1,14 @@
-import Engine from "./core/Engine.js";
+import Engine from "./engine/Engine.js";
+import BrowserDevice from "./device/BrowserDevice.js";
 import Device from "./device/Device.js";
+import MinigameDevice from "./device/MinigameDevice.js";
 
-export async function mainH5() {
-    const BrowserDevice = (await import("./device/BrowserDevice.js")).default;
+async function mainH5() {
     const device = new BrowserDevice();
     new EventSource('/esbuild').addEventListener('change', () => location.reload());
     return device;
 }
-export async function mainMinigame() {
-    const MinigameDevice = (await import("./device/MinigameDevice.js")).default;
+async function mainMinigame() {
     const device = new MinigameDevice();
     await device.loadSubpackage();
     return device;
@@ -32,6 +32,4 @@ async function start(device: Device) {
         last = t;
     });
 }
-export {
-    start
-};
+typeof wx === "undefined" ? mainH5().then(start) : mainMinigame().then(start);

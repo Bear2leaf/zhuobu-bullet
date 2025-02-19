@@ -1,5 +1,5 @@
 import { Camera, Euler, OGLRenderingContext, Quat, Vec3 } from "ogl";
-import { table } from "../misc/rotation.js";
+import { table } from "../engine/rotation.js";
 import { System } from "./System.js";
 
 export class CameraSystem implements System {

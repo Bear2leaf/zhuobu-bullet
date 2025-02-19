@@ -1,8 +1,7 @@
 import { Transform, Texture, RenderTarget, OGLRenderingContext, GLTF, Vec2, Vec3, Mesh } from "ogl";
 import { TileLayer } from "../tiled/TileLayer";
-import { Level } from "./Level";
 
-export class GltfLevel implements Level {
+export class GltfLevel {
     readonly min: Vec3 = new Vec3(Infinity, Infinity, Infinity);
     readonly max: Vec3 = new Vec3(-Infinity, -Infinity, -Infinity);
     readonly node: Transform = new Transform;
@@ -39,36 +38,7 @@ export class GltfLevel implements Level {
         })
         this.requested = true;
     }
-    checkNodeEntity(node: Transform, name: string | undefined): boolean {
-        return false;
-    }
-    checkEntityName(meshName: string, name: string): boolean {
-        return false;
-    }
-    getTeleportDestinationName(): string {
-        throw new Error("Method not implemented.");
-    }
     check(meshName: string, name: string): boolean {
         return meshName.startsWith("Goal") && name === "Exit";
-    }
-    getMeshNames(name: string): string[] {
-        return [];
-    }
-    updateVisible(name: string, visible: boolean): void {
-    }
-    checkRock(collision: string): boolean {
-        return false;
-    }
-    init(): void {
-    }
-    resetVisibility(): void {
-    }
-    setTextures(textures: Texture[]): void {
-    }
-    initRenderTarget(renderTarget: RenderTarget): void {
-    }
-    initGraphicsBuffer(gl: OGLRenderingContext, vertex: string, fragment: string, spriteVertex: string, spriteFragment: string, renderTarget: RenderTarget): void {
-    }
-    initGraphics(renderTarget: RenderTarget, gl: OGLRenderingContext, spriteVertex: string, spriteFragment: string, vertex: string, fragment: string): void {
     }
 }
